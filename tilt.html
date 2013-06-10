@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	<script type="text/javascript">
+	function posKey(r, c) {
+		return r + "," + c;
+	}
+	function edgeKey(r, c, isVert) {
+		return r + "," + c + (isVert ? "V" : "H");
+	}
+	var nRows = 0;
+	var nCols = 0;
+	function c2x(c) { return 16 + c * 32; }
+	function r2y(r) { return 16 + r * 32; }
+	var NORMAL_WALL = 1;
+	var LEFT_CLIFF = 2;
+	var RIGHT_CLIFF = 3;
+	var UP_CLIFF = 4;
+	var DOWN_CLIFF = 5;
+	var GOAL_BALL = 1;
+	var EXTRA_BALL = 2;
+	var GOAL = 1;
+	var walls = {};
+	var balls = {};
+	var background = {};
+
+	function ctxCircle(ctx, r, c, rad) {
+		ctx.beginPath();
+		ctx.arc(c2x(c) + 16, r2y(r) + 16, rad, 2 * Math.PI, false);
+	}
+	function drawCliffPart(ctx, ox, oy, xd1, xd2, xd3, yd1, yd2, yd3) {
+		ctx.beginPath();
+		ctx.moveTo(ox + xd1, oy + yd1);
+		ctx.lineTo(ox + xd2, oy + yd2);
+		ctx.lineTo(ox + xd3, oy + yd3);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = '#000';
+		ctx.stroke();
+	}
+	function drawCliff(ctx, r, c, cliff) {
+		switch (cliff){
+			case LEFT_CLIFF:
+			case RIGHT_CLIFF:
+				var xm = (cliff == LEFT_CLIFF) ? 1 : -1;
+				drawCliffPart(ctx, c2x(c), r2y(r), 3 * xm, -3 * xm, 3 * xm,
+						2, 8, 14);
+				drawCliffPart(ctx, c2x(c), r2y(r), 3 * xm, -3 * xm, 3 * xm,
+						18, 24, 30);
+				break;
+			case UP_CLIFF:
+			case DOWN_CLIFF:
+				var ym = (cliff == UP_CLIFF) ? 1 : -1;
+				drawCliffPart(ctx, c2x(c), r2y(r), 2, 8, 14,
+						3 * ym, -3 * ym, 3 * ym);
+				drawCliffPart(ctx, c2x(c), r2y(r), 18, 24, 30,
+						3 * ym, -3 * ym, 3 * ym);
+		}
+	}
+
+	function drawEdge(ctx, r, c, isVert) {
+		if (edgeKey(r, c, isVert) in walls){
+			var edge = walls[edgeKey(r, c, isVert)];
+			switch (walls[edgeKey(r, c, isVert)]) {
+				case NORMAL_WALL:
+					ctx.beginPath();
+					ctx.moveTo(c2x(c), r2y(r));
+					var r2 = isVert ? (r+1) : r;
+					var c2 = isVert ? c : (c+1);
+					ctx.lineTo(c2x(c2), r2y(r2));
+					ctx.lineWidth = 1;
+					ctx.strokeStyle = '#000';
+					ctx.stroke();
+					break;
+				case LEFT_CLIFF:
+				case RIGHT_CLIFF:
+				case UP_CLIFF:
+				case DOWN_CLIFF:
+					drawCliff(ctx, r, c, edge);
+					break;
+			}
+		}
+	}
+	function drawBackground(ctx, r, c) {
+		if (posKey(r, c) in background){
+			var bg = background[posKey(r, c)];
+			if (bg == GOAL){
+				ctxCircle(ctx, r, c, 14);
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = '#00F';
+				ctx.stroke();
+			}
+		}
+	}
+	function drawBall(ctx, r, c) {
+		if (posKey(r, c) in balls){
+			var ball = balls[posKey(r, c)];
+			if (ball == EXTRA_BALL){
+				ctxCircle(ctx, r, c, 12);
+				ctx.fillStyle = '#BC0';
+				ctx.fill();
+			} else if (ball == GOAL_BALL){
+				ctxCircle(ctx, r, c, 12);
+				ctx.fillStyle = '#0C0';
+				ctx.fill();
+			}
+		}
+	}
+	function drawCell(ctx, r, c) {
+		drawBackground(ctx, r, c);
+		drawBall(ctx, r, c);
+	}
+	function drawLevel(ctx){
+		for (var r = 0; r <= nRows; r++){
+			for (var c = 0; c <= nCols; c++){
+				if (r < nRows) drawEdge(ctx, r, c, true);
+				if (c < nCols) drawEdge(ctx, r, c, false);
+				if (r < nRows && c < nCols) drawCell(ctx, r, c);
+			}
+		}
+	}
+	function loadEdge(ch, r, c, isVert){
+		switch (ch) {
+			case "|":
+			case "-":
+				walls[edgeKey(r, c, isVert)] = NORMAL_WALL;
+				break;
+			case "^":
+				walls[edgeKey(r, c, isVert)] = UP_CLIFF;
+				break;
+			case "<":
+				walls[edgeKey(r, c, isVert)] = LEFT_CLIFF;
+				break;
+			case "v":
+				walls[edgeKey(r, c, isVert)] = DOWN_CLIFF;
+				break;
+			case ">":
+				walls[edgeKey(r, c, isVert)] = RIGHT_CLIFF;
+				break;
+		}
+	}
+	function loadCell(ch, r, c){
+		switch (ch) {
+			case "G":
+				balls[posKey(r, c)] = GOAL_BALL;
+				break;
+			case "X":
+				balls[posKey(r, c)] = EXTRA_BALL;
+				break;
+			case "g":
+				background[posKey(r, c)] = GOAL;
+				break;
+		}
+	}
+	function loadLevel(txt) {
+		var hr = 0, hc = 0;
+		for (var i = 0; i < txt.length; i++){
+			var ch = txt.charAt(i);
+			if (ch == '\n'){ 
+				if ((hc >> 1) > nCols) {
+					nCols = (hc >> 1);
+				}
+				hc = 0; hr++;
+			} else {
+				if (hr % 2 == 0){
+					if (hc % 2 == 1) {
+						// Javascript integer division is nontrivial
+						// since I'm just dividing by 2, might as well just shift
+						loadEdge(ch, hr >> 1, hc >> 1, false);
+						
+					}
+				} else {
+					if (hc % 2 == 0) {
+						loadEdge(ch, hr >> 1, hc >> 1, true);
+					} else {
+						loadCell(ch, hr >> 1, hc >> 1);
+					}
+				}
+				hc++;
+			}
+		}
+		nRows = (hr >> 1);
+	}
+	// https://chaosatthesky.wordpress.com/2013/06/04/tiltmaze003/
+	var testLevel = ''+
+		' - - - - - - \n'+
+		'|G|G|.......|\n'+
+		' . . . ^ ^ . \n'+
+		'|.....>...|.|\n'+
+		' . . - ^ . . \n'+
+		'|.|.|.......|\n'+
+		' - - ^ v v ^ \n'+
+		'|X.X>...>g<.|\n'+
+		' . ^ . ^ ^ . \n'+
+		'|.>.....|...|\n'+
+		' . . ^ . . v \n'+
+		'|.....>...|g|\n'+
+		' - - - - - - ';
+	function init() {
+		var canvas = document.getElementById("canvas");
+		if (canvas.getContext) {
+			var ctx = canvas.getContext("2d");
+			loadLevel(testLevel);
+			drawLevel(ctx);
+
+			/*
+			ctx.fillStyle = "rgb(40,0,0)";
+			ctx.fillRect (20, 20, 65, 60);
+
+			ctx.fillStyle = "rgba(0, 0, 160, 0.5)";
+			ctx.fillRect (40, 40, 65, 60);
+			*/
+		}
+	}
+	</script>
+	</head>
+	<body onLoad="init();">
+		<canvas id="canvas" width="300" height="300"></canvas>
+	</body>
+
+</html>
