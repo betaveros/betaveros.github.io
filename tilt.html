@@ -2,6 +2,9 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<style>#moves {font-size: 200%; }
+
+	</style>
 	<script type="text/javascript">
 	function posKey(r, c) {
 		return r + "," + c;
@@ -24,6 +27,8 @@
 	var walls = {};
 	var balls = {};
 	var background = {};
+	var undoStack = [];
+	var moves = "";
 
 	function ctxCircle(ctx, r, c, rad) {
 		ctx.beginPath();
@@ -110,7 +115,10 @@
 		drawBackground(ctx, r, c);
 		drawBall(ctx, r, c);
 	}
-	function drawLevel(ctx){
+	function drawLevel(){
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		ctx.clearRect(0, 0, 300, 300);
 		for (var r = 0; r <= nRows; r++){
 			for (var c = 0; c <= nCols; c++){
 				if (r < nRows) drawEdge(ctx, r, c, true);
@@ -153,6 +161,8 @@
 		}
 	}
 	function loadLevel(txt) {
+		balls = {};
+		undoStack = [];
 		var hr = 0, hc = 0;
 		for (var i = 0; i < txt.length; i++){
 			var ch = txt.charAt(i);
@@ -180,6 +190,8 @@
 			}
 		}
 		nRows = (hr >> 1);
+		drawLevel();
+		resetMoves();
 	}
 	// https://chaosatthesky.wordpress.com/2013/06/04/tiltmaze003/
 	var testLevel = ''+
@@ -197,25 +209,88 @@
 		'|.....>...|g|\n'+
 		' - - - - - - ';
 	function init() {
-		var canvas = document.getElementById("canvas");
-		if (canvas.getContext) {
-			var ctx = canvas.getContext("2d");
-			loadLevel(testLevel);
-			drawLevel(ctx);
-
-			/*
-			ctx.fillStyle = "rgb(40,0,0)";
-			ctx.fillRect (20, 20, 65, 60);
-
-			ctx.fillStyle = "rgba(0, 0, 160, 0.5)";
-			ctx.fillRect (40, 40, 65, 60);
-			*/
+		loadLevel(testLevel);
+		document.onkeydown = handleArrowKeys;
+	}
+	function isBlockedByWall(rd, cd, wall) {
+		return (wall == NORMAL_WALL) ||
+			(wall == LEFT_CLIFF && cd == 1) ||
+			(wall == RIGHT_CLIFF && cd == -1) ||
+			(wall == UP_CLIFF && rd == 1) ||
+			(wall == DOWN_CLIFF && rd == -1);
+	}
+	function isBlockedByWallFrom(rd, cd, r, c) {
+		var ek = edgeKey(r + ((rd+1)>>1), c + ((cd+1)>>1), (cd != 0));
+		return (ek in walls) && (isBlockedByWall(rd, cd, walls[ek]));
+	}
+	function tilt(rd, cd, r, c) {
+		if (posKey(r, c) in balls) {
+			var cr = r;
+			var cc = c;
+			while (!isBlockedByWallFrom(rd, cd, cr, cc)
+					&& !(posKey(cr + rd, cc + cd) in balls)){
+				cr += rd;
+				cc += cd;
+				//alert("("+r+c+") => ("+cr+cc+")");
+			}
+			if (cr != r || cc != c) {
+				balls[posKey(cr, cc)] = balls[posKey(r, c)];
+				delete balls[posKey(r, c)];
+			}
+		}
+	}
+	function tiltAll(rd, cd) {
+		var copyBalls = {};
+		for (var attr in balls) { copyBalls[attr] = balls[attr]; }
+		undoStack.push(copyBalls);
+		for (var c = 0; c < nCols; c++){
+			for (var r = 0; r < nRows; r++){
+				var actualC = (cd == 1) ? (nCols - 1 - c) : c;
+				var actualR = (rd == 1) ? (nRows - 1 - r) : r;
+				tilt(rd, cd, actualR, actualC);
+			}
+		}
+		drawLevel();
+	}
+	function undo() {
+		if (undoStack.length > 0) {
+			balls = undoStack.pop();
+			drawLevel();
+		} else {
+			alert("No more moves to undo")
+		}
+	}
+	function showMoves() {
+		document.getElementById("moves").textContent = moves.length == 0 ?
+			"0" : (moves.length + ": " + moves.join(" "));
+	}
+	function resetMoves() {
+		moves = []; showMoves();
+	}
+	function addMove(s){
+		moves.push(s); showMoves();
+	}
+	function removeMove(){
+		moves.pop(); showMoves();
+	}
+	function handleArrowKeys(evt) {
+		evt = evt || ((window.event) ? event : null);
+		if (evt) {
+			switch (evt.keyCode) {
+				case 37: tiltAll(0, -1); addMove("←"); break; // left
+				case 38: tiltAll(-1, 0); addMove("↑"); break; // up
+				case 39: tiltAll(0, 1);  addMove("→"); break; // right
+				case 40: tiltAll(1, 0);  addMove("↓"); break; // down
+				case 82: loadLevel(testLevel); break;
+				case 85: undo(); removeMove(); break;
+			}
 		}
 	}
 	</script>
 	</head>
 	<body onLoad="init();">
 		<canvas id="canvas" width="300" height="300"></canvas>
+		<div id="moves"></div>
 	</body>
 
 </html>
