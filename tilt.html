@@ -6,6 +6,42 @@
 
 	</style>
 	<script type="text/javascript">
+	// parseUri 1.2.2
+	// (c) Steven Levithan <stevenlevithan.com>
+	// MIT License
+
+	function parseUri (str) {
+		var	o   = parseUri.options,
+			m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+			uri = {},
+			i   = 14;
+
+		while (i--) uri[o.key[i]] = m[i] || "";
+
+		uri[o.q.name] = {};
+		uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+			if ($1) uri[o.q.name][$1] = $2;
+		});
+
+		return uri;
+	};
+
+	parseUri.options = {
+		strictMode: false,
+		key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+		q:   {
+			name:   "queryKey",
+			parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+		},
+		parser: {
+			strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+			loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+		}
+	};
+
+	// end parseUri 1.2.2
+
+
 	function posKey(r, c) {
 		return r + "," + c;
 	}
@@ -118,7 +154,7 @@
 	function drawLevel(){
 		var canvas = document.getElementById("canvas");
 		var ctx = canvas.getContext("2d");
-		ctx.clearRect(0, 0, 300, 300);
+		ctx.clearRect(0, 0, 400, 400);
 		for (var r = 0; r <= nRows; r++){
 			for (var c = 0; c <= nCols; c++){
 				if (r < nRows) drawEdge(ctx, r, c, true);
@@ -131,18 +167,23 @@
 		switch (ch) {
 			case "|":
 			case "-":
+			case "w":
 				walls[edgeKey(r, c, isVert)] = NORMAL_WALL;
 				break;
 			case "^":
+			case "u":
 				walls[edgeKey(r, c, isVert)] = UP_CLIFF;
 				break;
 			case "<":
+			case "l":
 				walls[edgeKey(r, c, isVert)] = LEFT_CLIFF;
 				break;
 			case "v":
+			case "d":
 				walls[edgeKey(r, c, isVert)] = DOWN_CLIFF;
 				break;
 			case ">":
+			case "r":
 				walls[edgeKey(r, c, isVert)] = RIGHT_CLIFF;
 				break;
 		}
@@ -166,7 +207,7 @@
 		var hr = 0, hc = 0;
 		for (var i = 0; i < txt.length; i++){
 			var ch = txt.charAt(i);
-			if (ch == '\n'){ 
+			if (ch == '\n' || ch == '/'){ 
 				if ((hc >> 1) > nCols) {
 					nCols = (hc >> 1);
 				}
@@ -194,6 +235,9 @@
 		resetMoves();
 	}
 	// https://chaosatthesky.wordpress.com/2013/06/04/tiltmaze003/
+	var testLevel = '.-.-.-.-.-.-./|G|G|.......|/.......^.^.../|.....>...|.|/.....-.^...../|.|.|.......|/.-.-.^.v.v.^./|X.X>...>g<.|/...^...^.^.../|.>.....|...|/.....^.....v./|.....>...|g|/.-.-.-.-.-.-.';
+	var origLevel;
+	/*
 	var testLevel = ''+
 		' - - - - - - \n'+
 		'|G|G|.......|\n'+
@@ -208,8 +252,15 @@
 		' . . ^ . . v \n'+
 		'|.....>...|g|\n'+
 		' - - - - - - ';
+	*/
 	function init() {
-		loadLevel(testLevel);
+		var uri = parseUri(window.location);
+		if ("p" in uri.queryKey) {
+			origLevel = uri.queryKey.p;
+		} else {
+			origLevel = testLevel;
+		}
+		loadLevel(origLevel);
 		document.onkeydown = handleArrowKeys;
 	}
 	function isBlockedByWall(rd, cd, wall) {
@@ -281,7 +332,7 @@
 				case 38: tiltAll(-1, 0); addMove("↑"); break; // up
 				case 39: tiltAll(0, 1);  addMove("→"); break; // right
 				case 40: tiltAll(1, 0);  addMove("↓"); break; // down
-				case 82: loadLevel(testLevel); break;
+				case 82: loadLevel(origLevel); break;
 				case 85: undo(); removeMove(); break;
 			}
 		}
@@ -289,8 +340,12 @@
 	</script>
 	</head>
 	<body onLoad="init();">
-		<canvas id="canvas" width="300" height="300"></canvas>
+		<canvas id="canvas" width="400" height="400"></canvas>
 		<div id="moves"></div>
+		<ul>
+			<li><a href="?p=.-.-.-.-.-.-.-.-.-.-./|...|...|...........|/...........-...-...../|.........|.....|...|/...-................./|.....|.......|.....|/.........-...-.....-./|.|.........|.......|/.....-.........-...../|..........g|.....|.|/.-.......-.......-.../|.........|...|.....|/...-.-.....-.......-./|...|.......|.|.....|/.......-............./|.........|.........|/.............-.-...../|.|..G..|.........|.|/.........-.........../|.....|.....|.|.....|/.-.-.-.-.-.-.-.-.-.-.">1</a></li>
+			<li><a href="?p=.-.-.-.-.-.-./|G|G|.......|/.......u.u.../|.....r...|.|/.....-.u...../|.|.|.......|/.-.-.u.v.v.u./|X.Xr...rgl.|/...u...u.u.../|.r.....|...|/.....u.....v./|.....r...|g|/.-.-.-.-.-.-.">3</a></li>
+		</ul>
 	</body>
 
 </html>
