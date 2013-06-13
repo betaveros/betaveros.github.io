@@ -2,9 +2,8 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<style>#moves {font-size: 200%; }
-
-	</style>
+		<title>Tiltmaze</title>
+		<style>#moves {font-size: 200%;}</style>
 	<script type="text/javascript">
 	// parseUri 1.2.2
 	// (c) Steven Levithan <stevenlevithan.com>
@@ -75,7 +74,7 @@
 		ctx.moveTo(ox + xd1, oy + yd1);
 		ctx.lineTo(ox + xd2, oy + yd2);
 		ctx.lineTo(ox + xd3, oy + yd3);
-		ctx.lineWidth = 1;
+		ctx.lineWidth = 2;
 		ctx.strokeStyle = '#000';
 		ctx.stroke();
 	}
@@ -109,7 +108,7 @@
 					var r2 = isVert ? (r+1) : r;
 					var c2 = isVert ? c : (c+1);
 					ctx.lineTo(c2x(c2), r2y(r2));
-					ctx.lineWidth = 1;
+					ctx.lineWidth = 2;
 					ctx.strokeStyle = '#000';
 					ctx.stroke();
 					break;
@@ -120,6 +119,18 @@
 					drawCliff(ctx, r, c, edge);
 					break;
 			}
+		} else {
+			ctx.beginPath();
+			if (isVert) {
+				ctx.moveTo(c2x(c), r2y(r) + 8);
+				ctx.lineTo(c2x(c), r2y(r) + 24);
+			} else {
+				ctx.moveTo(c2x(c) + 8, r2y(r));
+				ctx.lineTo(c2x(c) + 24, r2y(r));
+			}
+			ctx.lineWidth = 1;
+			ctx.strokeStyle = '#999';
+			ctx.stroke();
 		}
 	}
 	function drawBackground(ctx, r, c) {
