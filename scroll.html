@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--
+	based on
+	https://nettuts.s3.amazonaws.com/2138_SimpleParallax/Demo/index.html
+	http://richardshepherd.com/smashing/parallax/background.html
+
+	lots of random refactorings for myself.
+-->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+		<title>Parallax Scrolling Template</title>
+		<style>
+			body{
+				margin:0;
+				padding:0;
+			}
+			#home, #goodbye { 
+				background: url("red.jpg") 50% 0 repeat fixed;
+				min-height: 1000px;
+				height: 1000px;  
+				margin: 0 auto;
+				width: 100%; 
+				max-width: 1920px; 
+				position: relative; 
+				z-index: 2;
+			}
+			#about { 
+				background: url("blue.jpg") 50% 0 repeat fixed;
+				min-height: 1000px;
+				height: 1000px;
+				margin: 0 auto; 
+				width: 100%; 
+				max-width: 1920px; 
+				position: relative; 
+			}
+
+			div.cont {
+				color: #FFF; font-size: 500%; text-align: center; height: 400px; position: absolute; top: 200px; width: 100%; z-index: 2;
+				-moz-text-shadow:    6px 6px #000;
+				-webkit-text-shadow: 6px 6px #000;
+				text-shadow:         6px 6px #000;
+			}
+			div.weird {color: #999; font-size: 200%; position: fixed; top: 5000px; z-index: 1;}
+		</style>
+		<script>
+
+			$(document).ready(function(){
+
+				// Cache window object. I don't actually know why :(
+				$window = $(window);
+
+				// Cache speed of scrolling things
+				$('[data-type]').each(function() {	
+					$(this).data('speed', parseFloat($(this).attr('data-speed')));
+					$(this).data('xpos', $(this).attr('data-xpos'));
+					$(this).data('yoff', parseInt($(this).attr('data-yoff'),10));
+				});
+
+				// For each element that has a data-type=background attribute:
+				$('section[data-type="background"]').each(function(){
+
+					// Store some variables based on where we are
+					var $self = $(this),
+						offsetCoords = $self.offset(),
+						topOffset = offsetCoords.top;
+
+					// When the window is scrolled...
+					$(window).scroll(function() {
+						// Test offsets to see if this is in view
+						if ( $window.scrollTop() < (topOffset + $self.height()) &&
+							topOffset < ($window.scrollTop() + $window.height()) ) {
+							// scroll background the way we want it
+							// with the CSS, it doesn't move when you scroll at all
+							// thus we actually want to move it UP
+							// which is why yPos is negative
+							var yPos = -($window.scrollTop() * $self.data('speed')); 
+							// If this element has a Y offset then add it on
+							if ($self.data('offsetY')) {
+								yPos += $self.data('offsetY');
+							}
+							var coords = '50% '+ yPos + 'px';
+							// move background
+							$self.css({ backgroundPosition: coords });
+							// Check for weirdness!
+							$('[data-type="midground"]', $self).each(function() {
+
+								// Cache. Why? I don't know!
+								var $mid = $(this);
+
+								// Calculate scroll
+								var yPos = -($window.scrollTop() * $mid.data('speed'));					
+
+								$mid.css({ left: $mid.data('xpos'), top: (yPos + $mid.data('yoff')) + 'px' });													
+
+							}); // midground
+						}; // in view? end
+					}); // window scroll callback
+				}); // for each data-type
+			}); // document ready
+			document.createElement("section");
+		</script>
+	</head>
+	<body>
+		<section id="home" data-type="background" data-speed="0.1">
+		<div class="cont">Hello world!</div>
+		</section>
+
+		<section id="about" data-type="background" data-speed="0.1">
+		<div class="cont">This is an example parallax scroll page.</div>
+		<div class="weird" data-type="midground" data-xpos="10%" data-yoff="350" data-speed="0.1">0.1</div>
+		<div class="weird" data-type="midground" data-xpos="20%" data-yoff="450" data-speed="0.2">0.2</div>
+		<div class="weird" data-type="midground" data-xpos="30%" data-yoff="550" data-speed="0.3">0.3</div>
+		<div class="weird" data-type="midground" data-xpos="40%" data-yoff="650" data-speed="0.4">0.4</div>
+		<div class="weird" data-type="midground" data-xpos="50%" data-yoff="750" data-speed="0.5">0.5</div>
+		<div class="weird" data-type="midground" data-xpos="60%" data-yoff="850" data-speed="0.6">0.6</div>
+		<div class="weird" data-type="midground" data-xpos="70%" data-yoff="950" data-speed="0.7">0.7</div>
+		<div class="weird" data-type="midground" data-xpos="80%" data-yoff="1050" data-speed="0.8">0.8</div>
+		<div class="weird" data-type="midground" data-xpos="90%" data-yoff="1150" data-speed="0.9">0.9</div>
+
+		<div class="weird" data-type="midground" data-xpos="10%" data-yoff="550" data-speed="0.1">0.1</div>
+		<div class="weird" data-type="midground" data-xpos="20%" data-yoff="650" data-speed="0.2">0.2</div>
+		<div class="weird" data-type="midground" data-xpos="30%" data-yoff="750" data-speed="0.3">0.3</div>
+		<div class="weird" data-type="midground" data-xpos="40%" data-yoff="850" data-speed="0.4">0.4</div>
+		<div class="weird" data-type="midground" data-xpos="50%" data-yoff="950" data-speed="0.5">0.5</div>
+		<div class="weird" data-type="midground" data-xpos="60%" data-yoff="1050" data-speed="0.6">0.6</div>
+		<div class="weird" data-type="midground" data-xpos="70%" data-yoff="1150" data-speed="0.7">0.7</div>
+		<div class="weird" data-type="midground" data-xpos="80%" data-yoff="1250" data-speed="0.8">0.8</div>
+		<div class="weird" data-type="midground" data-xpos="90%" data-yoff="1350" data-speed="0.9">0.9</div>
+
+		<div class="weird" data-type="midground" data-xpos="10%" data-yoff="750" data-speed="0.1">0.1</div>
+		<div class="weird" data-type="midground" data-xpos="20%" data-yoff="850" data-speed="0.2">0.2</div>
+		<div class="weird" data-type="midground" data-xpos="30%" data-yoff="950" data-speed="0.3">0.3</div>
+		<div class="weird" data-type="midground" data-xpos="40%" data-yoff="1050" data-speed="0.4">0.4</div>
+		<div class="weird" data-type="midground" data-xpos="50%" data-yoff="1150" data-speed="0.5">0.5</div>
+		<div class="weird" data-type="midground" data-xpos="60%" data-yoff="1250" data-speed="0.6">0.6</div>
+		<div class="weird" data-type="midground" data-xpos="70%" data-yoff="1350" data-speed="0.7">0.7</div>
+		<div class="weird" data-type="midground" data-xpos="80%" data-yoff="1450" data-speed="0.8">0.8</div>
+		<div class="weird" data-type="midground" data-xpos="90%" data-yoff="1550" data-speed="0.9">0.9</div>
+		</section>
+
+		<section id="goodbye" data-type="background" data-speed="0.1">
+		<div class="cont">Goodbye world!</div>
+		</section>
+	</body>
+</html>
