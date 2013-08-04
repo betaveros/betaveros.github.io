@@ -216,7 +216,13 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<tr><td><code>%d</code> OR <code>%i</code></td><td>int</td></tr>
 						<tr><td><code>%s</code></td><td>string (input: until whitespace)</td></tr>
 						<tr><td><code>%c</code></td><td>char (input: may be \n)</td></tr>
-					</table>	
+					</table>
+					<p><em>#include &lt;iostream&gt;</em> and <em>#include &lt;iomanip&gt;</em></p>
+					<ul>
+						<li><code>cout.precision(15);</code> OR <code>cout &lt;&lt; setprecision(15);</code> (output more digits)</li>
+						<li><code>cout &lt;&lt; fixed;</code> (prevent scientific notation for big/small numbers)</li>
+						<li>Others that can get <code>&lt;&lt;</code>ed: <code>dec</code>, <code>hex</code>, <code>oct</code>, <code>setw(7)</code>, <code>setfill('a')</code></li>
+					</ul>
 				</div>
 				<h2 id="web"><span class="toggle" onClick="toggle('webcont');return false">Web</span> <a href="#top">&uArr;</a></h2>
 				<div id="webcont">
