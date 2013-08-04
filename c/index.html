@@ -153,12 +153,25 @@
 			<p>Explicitly for algorithmic coding; parts apply to Java</p>
 			<p class="big">int: -2,147,483,648 &ndash; 2,147,483,647 | long<sup>2</sup>: &pm;9.22 &times; 10<sup>18</sup></p>
 			<p><code>typedef</code> takes type first, then alias: <code>typedef long long lli;</code></p>
+			<h2>const</h2>
+			<p><code>const</code> modifies what's immediately to its left, or if it's leftmost, to its right.
+			Read right-to-left.</p>
+			<ul>
+			<li><code>const int x = 7;</code> &equiv; <code>int const x = 7;</code> </li>
+			<li><code>int const<sub>1</sub> * const<sub>2</sub> p;</code> = constant<sub>2</sub> pointer to constant<sub>1</sub> int</li>
+			<li>References are always <code>const</code>, so <s><code>int &amp; const x</code></s> is useless; &rarr; <code>int const &amp; x</code>.</li>
+			<li>Methods: <code>const</code> at the end means it can be called on a <code>const</code> object.
+				<ul>
+					<li><code>int const&amp; operator[] (unsigned index) const;</code>
+				</ul>
+			</li>
+			</ul>
 			<h2>struct: initializer, operator</h2>
 <pre>struct query {
-	query(int l, int r): left(l), right(r) {}
+	query(int l, int r)<em>: left(l), right(r)</em> {}
 	int left;
 	int right;
-	bool operator&lt;(const query&amp; other) const {
+	<em>bool operator&lt;(const query&amp; other) const</em> {
 		if (right &lt; other.right) return true;
 		if (right &gt; other.right) return false;
 		return left &lt; other.left;
@@ -166,9 +179,9 @@
 };</pre>
 			<h2>qsort</h2>
 <pre>#include &lt;cstdlib&gt;
-int cmp(const void * a, const void * b) {
-	int av = *(int*) a;
-	int bv = *(int*) b;
+int cmp(<em>const void * a, const void * b</em>) {
+	int av = <em>*(int*)</em> a;
+	int bv = <em>*(int*)</em> b;
 	return (av == bv ? 0 : (av &lt; bv ? -1 : 1));
 }
 std::qsort(arr, n, sizeof(int), cmp);
