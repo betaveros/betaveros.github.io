@@ -54,7 +54,7 @@
 		<h1 id="top">betaveros's cheat sheet</h1>
 		<p>Javascript toggling! Click on headers to open/close sections.</p>
 		<p>Omissions and simplifications exist and are deliberate. This is a cheatsheet, mainly for my own use, so it probably seems inadequate in some places and overly detailed in others to anybody else.</p>
-		<p>Quick TOC: <a href="#general">General</a> . <a href="#python">Python</a> . <a href="#c">C/C++</a> . <a href="#web">Web</a> . <a href="#haskell">Haskell</a> . <a href="#git">Git</a> . <a href="#ascii">ASCII</a> . <a href="#key">Keyboard</a></p>
+		<p>Quick TOC: <a href="#general">General</a> . <a href="#python">Python</a> . <a href="#c">C/C++</a> . <a href="#web">Web</a> . <a href="#haskell">Haskell</a> . <a href="#latex">LaTeX</a> . <a href="#git">Git</a> . <a href="#ascii">ASCII</a> . <a href="#key">Keyboard</a></p>
 		<h2 id="general"><span class="toggle" onClick="toggle('generalcont');return false">General</span> <a href="#top">&uArr;</a></h2>
 		<div id="generalcont">
 			<a href="http://hyperpolyglot.org/">HyperPolyglot</a> is a great resource
@@ -398,6 +398,51 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>readFile :: FilePath &rarr; IO String</li>
 						<li>writeFile, appendFile :: FilePath &rarr; String &rarr; IO ()</li>
 						<li>hFileSize :: Handle &rarr; IO Integer</li>
+					</ul>
+				</div>
+				<h2 id="latex"><span class="toggle" onClick="toggle('latexcont');return false">LaTeX</span> <a href="#top">&uArr;</a></h2>
+				<div id="latexcont">
+					<h3>Packages</h3>
+					Some command-line magic: <code>ack usepackage | sed 's/^.*{\(.*\)}.*$/\1/g' | sort | uniq | less</code>. Don't do the search too widely, I think at some point the pipe gets too huge and some programs give up.
+					<ul>
+						<li><code>alltt</code>: TODO</li>
+						<li><code>amsfonts</code>: math?</li>
+						<li><code>amsmath</code>: math</li>
+						<li><code>amssymb</code>: math symbols</li>
+						<li><code>color</code>: color</li>
+						<li><code>enumerate</code>: more choices for <code>enumerate</code> item format</li>
+						<li><code>fancyhdr</code>: headers</li>
+						<li><code>fontspec</code>: ?</li>
+						<li><code>framed</code>: framing a paragraph</li>
+						<li><code>fullpage</code>: ?</li>
+						<li><code>geometry</code>: setting margins</li>
+						<li><code>graphicx</code>: graphics</li>
+						<li><code>hyperref</code>: ?</li>
+						<li><code>icomma</code>: remove space after comma in $1,000$</li>
+						<li><code>ifpdf</code>: ?</li>
+						<li><code>inputenc</code>: ?</li>
+						<li><code>lastpage</code>: ?</li>
+						<li><code>longtable</code>: ?</li>
+						<li><code>makeidx</code>: ?</li>
+						<li><code>mla</code>: ?</li>
+						<li><code>multirow</code>: \multirow</li>
+						<li><code>natbib</code>: ?</li>
+						<li><code>paralist</code>: ?</li>
+						<li><code>scrpage</code>: ?</li>
+						<li><code>sectsty</code>: ?</li>
+						<li><code>setspace</code>: double spacing</li>
+						<li><code>soul</code>: ?</li>
+						<li><code>syntonly</code>: ?</li>
+						<li><code>tabularx</code>: m, b paragraph aligning in table cells (?)</li>
+						<li><code>textcase</code>: ?</li>
+						<li><code>textcomp</code>: ?</li>
+						<li><code>theorem</code>: ?</li>
+						<li><code>thumbpdf</code>: ?</li>
+						<li><code>times</code>: Times New Roman</li>
+						<li><code>ulem</code>: ?</li>
+						<li><code>url</code>: ?</li>
+						<li><code>verbatim</code>: ?</li>
+						<li><code>xeCJK</code>: ?</li>
 					</ul>
 				</div>
 				<h2 id="git"><span class="toggle" onClick="toggle('gitcont');return false">Git</span> <a href="#top">&uArr;</a></h2>
