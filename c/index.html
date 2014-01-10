@@ -339,7 +339,6 @@ std::qsort(arr, n, sizeof(int), cmp);
 						Note: Many names clash with Prelude; please <code>import qualified Data.Map as Map</code>
 					</p>
 					<ul>
-						<li></li>
 						<li>(!) :: Ord k &rArr; Map k a &rarr; k &rarr; a</li>
 						<li>lookup :: Ord k &rArr; k &rarr; Map k a &rarr; Maybe a</li>
 						<li>findWithDefault :: Ord k &rArr; a &rarr; k &rarr; Map k a &rarr; a</li>
@@ -349,7 +348,7 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>empty :: Map k a</li>
 						<li>singleton :: k &rarr; a &rarr; Map k a</li>
 						<li>insert :: Ord k &rArr; k &rarr; a &rarr; Map k a &rarr; Map k a</li>
-						<li>insertWith :: Ord k &rArr; (a &rarr; a &rarr; a) &rarr; k &rarr; a &rarr; Map k a</li>
+						<li>insertWith :: Ord k &rArr; (a &rarr; a &rarr; a) &rarr; k &rarr; a &rarr; Map k a &rarr; Map k a</li>
 						<li>delete :: Ord k &rArr; k &rarr; Map k a &rarr; Map k a</li>
 						<li>adjust :: Ord k &rArr; (a &rarr; a) &rarr; k &rarr; Map k a &rarr; Map k a</li>
 						<li>update :: Ord k &rArr; (a &rarr; Maybe a) &rarr; k &rarr; Map k a &rarr; Map k a</li>
@@ -401,6 +400,8 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>readFile :: FilePath &rarr; IO String</li>
 						<li>writeFile, appendFile :: FilePath &rarr; String &rarr; IO ()</li>
 						<li>hFileSize :: Handle &rarr; IO Integer</li>
+						<li>hGetLine :: Handle &rarr; IO String</li>
+						<li>hGetContents :: Handle &rarr; IO String</li>
 					</ul>
 				</div>
 				<h2 id="latex"><span class="toggle" onClick="toggle('latexcont');return false">LaTeX</span> <a href="#top">&uArr;</a></h2>
