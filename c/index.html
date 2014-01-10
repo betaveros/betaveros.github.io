@@ -370,6 +370,31 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>catMaybes :: [Maybe a] &rarr; [a]</li>
 						<li>mapMaybe :: (a &rarr; Maybe b) &rarr; [a] &rarr; [b]</li>
 					</ul>
+					<h4>Data.Monoid</h4>
+					<ul>
+						<li>mappend <em>(&equiv; (&lt;&gt;))</em> :: (Monoid a) &rArr; a &rarr; a &rarr; a</li>
+					</ul>
+					<h5>newtypes:</h5>
+					<ul>
+						<li>Dual a = Dual { getDual :: a } <em>monoid with `mappend` parameters flipped</em></li>
+						<li>Endo a = Endo { appEndo :: a &rarr; a } <em>function composition</em></li>
+						<li>All = All { getAll :: Bool }</li>
+						<li>Any = Any { getAny :: Bool }</li>
+						<li>Sum a = Sum { getSum :: a } <em>addition monoid w/ (Num a)</em></li>
+						<li>Product a = Product { getProduct :: a } <em>multiplication monoid w/ (Num a)</em></li>
+						<li>First a = First { getFirst :: Maybe a }</li>
+						<li>Last a = Last { getLast :: Maybe a }</li>
+					</ul>
+					<h4>Data.Ord</h4>
+					<ul>
+						<li>comparing :: (Ord a) &rArr; (b &rarr; a) &rarr; b &rarr; b &rarr; b &rarr; Ordering <em>(used for e.g. sortBy)</em></li>
+					</ul>
+					<h5>newtype Down a</h5>
+					reverses sort order
+					<ul>
+						<li>Eq a &rArr; Eq (Down a)</li>
+						<li>Ord a &rArr; Ord (Down a)</li>
+					</ul>
 					<h4>Data.Set</h4>
 					<p>
 						Note: Many names clash with Prelude; please <code>import qualified Data.Set as Set</code>
