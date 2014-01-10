@@ -330,7 +330,7 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>nub :: Eq a &rArr; [a] &rarr; [a]</li>
 						<li>nubBy :: (a &rarr; a &rarr; Bool) &rarr; [a] &rarr; [a]</li>
 						<li>sort :: Ord a &rArr; [a] &rarr; [a]</li>
-						<li>sortBy :: (a &rarr; a &rarr; Ordering) &rarr; [a] &rarr; [a]</li>
+						<li>sortBy :: (a &rarr; a &rarr; Ordering) &rarr; [a] &rarr; [a] <em>Data.Ord.comparing useful for first arg</em></li>
 						<li>maximum, minimum :: Ord a &rArr; [a] &rarr; a</li>
 						<li>maximumBy, minimumBy :: (a &rarr; a &rarr; Ordering) &rarr; [a] &rarr; a</li>
 					</ul>
@@ -340,7 +340,7 @@ std::qsort(arr, n, sizeof(int), cmp);
 					</p>
 					<ul>
 						<li>(!) :: Ord k &rArr; Map k a &rarr; k &rarr; a</li>
-						<li>lookup :: Ord k &rArr; k &rarr; Map k a &rarr; Maybe a</li>
+						<li>lookup :: Ord k &rArr; k &rarr; Map k a &rarr; Maybe a <em>note: (!) and lookup have flipped arguments</em></li>
 						<li>findWithDefault :: Ord k &rArr; a &rarr; k &rarr; Map k a &rarr; a</li>
 						<li>null :: Map k a &rarr; Bool</li>
 						<li>size :: Map k a &rarr; Int</li>
@@ -390,10 +390,9 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>comparing :: (Ord a) &rArr; (b &rarr; a) &rarr; b &rarr; b &rarr; b &rarr; Ordering <em>(used for e.g. sortBy)</em></li>
 					</ul>
 					<h5>newtype Down a</h5>
-					reverses sort order
 					<ul>
 						<li>Eq a &rArr; Eq (Down a)</li>
-						<li>Ord a &rArr; Ord (Down a)</li>
+						<li>Ord a &rArr; Ord (Down a) <em>reverses order</em></li>
 					</ul>
 					<h4>Data.Set</h4>
 					<p>
@@ -408,7 +407,7 @@ std::qsort(arr, n, sizeof(int), cmp);
 						<li>singleton :: a &rarr; Set a</li>
 						<li>insert :: Ord a &rArr; a &rarr; Set a &rarr; Set a</li>
 						<li>delete :: Ord a &rArr; a &rarr; Set a &rarr; Set a</li>
-						<li>elems <i>(&equiv; toAscList)</i> :: Set a &rarr; [a]</li>
+						<li>elems <em>(&equiv; toAscList)</em> :: Set a &rarr; [a]</li>
 						<li>fromList :: [a] &rarr; Set a</li>
 					</ul>
 					<h4>Debug.Trace</h4>
