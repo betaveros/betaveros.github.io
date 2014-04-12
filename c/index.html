@@ -411,6 +411,67 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>elems <em>(&equiv; toAscList)</em> :: Set a &rarr; [a]</li>
 				<li>fromList :: [a] &rarr; Set a</li>
 			</ul>
+			<h4>Data.Vector</h4>
+			<p>
+			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
+			</p>
+			<p>
+			<em>u*</em> denotes presence of an unsafe variant obtainable by prefixing <code>unsafe</code> and camelCasing.
+			<em>[M]</em> denotes a monadic version (with a different type, working with Kleisli arrows).
+			</p>
+			<ul>
+				<li>(!) :: Vector a &rarr; Int &rarr; a</li>
+				<li>(!?) :: Vector a &rarr; Int &rarr; Maybe a</li>
+				<li>unsafeIndex :: Vector a &rarr; Int &rarr; a</li>
+				<li>length, null, <em>u*</em> head, <em>u*</em> last, <em>u*</em> init, <em>u*</em> tail, <em>u*</em> take, <em>u*</em> drop, splitAt :: <em>... (also have unsafe variants)</em></li>
+				<li>slice :: Int &rarr; Int &rarr; Vector a &rarr; Vector a <em>starting index, length</em></li>
+				<li><em>u*</em> indexM, <em>u*</em> headM, <em>u*</em> lastM :: Monad m &rArr; Vector a &rarr; (Int &rarr;) m a <em>allows forcing strictness</em></li>
+				<li>empty :: Vector a</li>
+				<li>singleton :: a &rarr; Vector a</li>
+				<li>replicate <em>[M]</em> :: Int &rarr; a &rarr; Vector a</li>
+				<li>generate <em>[M]</em> :: Int &rarr; (Int &rarr; a) &rarr; Vector a</li>
+				<li>iterateN :: Int &rarr; (a &rarr; a) &rarr; a &rarr; Vector a</li>
+				<li>unfoldr, (++), concat :: <em>...</em></li>
+				<li>create :: (<em>forall</em> s. ST s (MVector s a)) &rarr; Vector a</li>
+				<li>cons :: a &rarr; Vector a &rarr; Vector a</li>
+				<li>snoc :: Vector a &rarr; a &rarr; Vector a</li>
+				<li>(//) :: Vector a &rarr; [(Int, a)] &rarr; Vector a</li>
+				<li>update :: Vector a &rarr; Vector (Int, a) &rarr; Vector a</li>
+				<li>modify :: (forall s. MVector s a &rarr; ST s ()) &rarr; Vector a &rarr; Vector a</li>
+				<li>indexed :: Vector a &rarr; Vector (Int, a)</li>
+				<li>map, concatMap, filter, mapM *, forM *, zip<em>{..6}</em>, zipWith<em>{..6}</em> :: <em>...</em></li>
+				<li>imap :: (Int &rarr; a &rarr; b) &rarr; Vector a &rarr; Vector b</li>
+				<li>ifilter :: (Int &rarr; a &rarr; Bool) &rarr; Vector a &rarr; Vector a</li>
+				<li>elem, notElem, find, findIndex, fold[lr'..], all, any, or, sum, product, sequence, scan[lr'..] :: <em>...</em></li>
+				<li>maximum, minimum, maxIndex, minIndex[By] :: <em>...</em></li>
+				<li>toList, fromList :: <em>...</em></li>
+				<li>freeze :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; m (Vector a)</li>
+				<li>thaw :: PrimMonad m &rArr; Vector a &rarr; m (MVector (PrimState m) a)</li>
+				<li>copy :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; Vector a &rarr; m ()</li>
+			</ul>
+			<h4>Data.Vector.Mutable</h4>
+			<p>
+			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
+			</p>
+			<p>
+			Constructors yield <code>PrimMonad m &rArr; m (MVector (PrimState m) a)</code>;
+			destructive functions take and manipulate <code>PrinMonad m &rArr; MVector (PrimState m) a</code>.
+			These constraints are not shown below for simplicity.
+			Note that the slicing functions are pure and yield views through which the original vector can be modified.
+			Interface with pure Vector code using Data.Vector's create, modify, freeze, thaw, or copy.
+			</p>
+			<ul>
+				<li>data MVector s a</li>
+				<li>type IOVector = MVector RealWorld <em>for IO monad</em></li>
+				<li>type STVector s = MVector s <em>for ST monad</em></li>
+				<li>length, null, head, last, init, tail, take, drop, splitAt :: <em>... (also have unsafe variants)</em></li>
+				<li>new :: Int &rarr; m <em>(MVector ... a)</em></li>
+				<li>replicate :: Int &rarr; a &rarr; m <em>(MVector ... a)</em></li>
+				<li>replicateM :: Int &rarr; m a &rarr; m <em>(MVector ... a)</em></li>
+				<li>u* read :: <em>(MVector ... a)</em> &rarr; Int &rarr; m a</li>
+				<li>u* write :: <em>(MVector ... a)</em> &rarr; Int &rarr; a &rarr; m</li>
+				<li>u* swap :: <em>(MVector ... a)</em> &rarr; Int &rarr; Int &rarr; m</li>
+			</ul>
 			<h4>Debug.Trace</h4>
 			<ul>
 				<li>trace :: String &rarr; a &rarr; a</li>
