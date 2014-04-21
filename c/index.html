@@ -289,6 +289,47 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>guard :: MonadPlus p &rArr; Bool &rarr; p ()</li>
 				<li>when :: Bool &rarr; m () &rarr; m ()</li>
 			</ul>
+			<h4>Data.Array</h4>
+			<p>
+			Data.Vector is usually preferable (far more functions and typeclasses), but Data.Array can be multidimensional, can have indices defined arbitrarily, and is currently more portable.
+			Its only Array-ish typeclass of interest is <code>Functor</code>.
+			</p>
+			<ul>
+				<li>array :: Ix i &rArr; (i, i) &rarr; [(i, e)] &rarr; Array i e</li>
+				<li>listArray :: Ix i &rArr; (i, i) &rarr; [e] &rarr; Array i e</li>
+				<li>(!) :: Ix i &rArr; Array i e &rarr; i &rarr; e</li>
+				<li>indices :: Ix a &rArr; Array i e &rarr; [i]</li>
+				<li>elems :: Ix a &rArr; Array i e &rarr; [e]</li>
+				<li>assocs :: Ix a &rArr; Array i e &rarr; [(i, e)]</li>
+				<li>(//) :: Ix i &rArr; Array i e &rarr; [(i, e)] &rarr; Array i e</li>
+			</ul>
+			<h4>Data.ByteString[.Char8]</h4>
+			<p>This type is not actually parametrized. Below, <code>a</code> is <code>Word8</code> or <code>Char</code> depending on what you import. Both modules call their string type <code>ByteString</code>, though.</p>
+			<ul>
+				<li>pack :: [a] &rarr; ByteString</li>
+				<li>unpack :: ByteString &rarr; [a]</li>
+				<li>uncons :: ByteString &rarr; Maybe (a, ByteString)</li>
+				<li>unsnoc :: ByteString &rarr; Maybe (ByteString, a)</li>
+				<li>copy :: ByteString &rarr; ByteString <em>O(n), prevent a slice from keeping reference to rest of string</em></li>
+				<li>intersperse :: a &rarr; ByteString &rarr; ByteString</li>
+				<li>intercalate :: ByteString &rarr; [ByteString] &rarr; ByteString</li>
+				<li>transpose :: [ByteString] &rarr; [ByteString]</li>
+				<li>split :: a &rarr; ByteString &rarr; [ByteString]</li>
+				<li>splitWith :: (a &rarr; Bool) &rarr; ByteString &rarr; [ByteString]</li>
+				<li>is{Pre|Suf|In}fixOf :: ByteString &rarr; ByteString &rarr; Bool</li>
+				<li><em>[.Char8 only]</em> readInt :: ByteString &rarr; Maybe (Int, ByteString)</li>
+				<li><em>[.Char8 only]</em> readInteger :: ByteString &rarr; Maybe (Integer, ByteString)</li>
+				<li><em>[.Char8 only]</em> lines, words :: ByteString &rarr; [ByteString]</li>
+				<li><em>[.Char8 only]</em> unlines, unwords :: [ByteString] &rarr; ByteString</li>
+				<li>getLine :: IO ByteString</li>
+				<li>getContents :: IO ByteString</li>
+				<li>putStr :: IO ByteString</li>
+				<li><em>[deprecated for Data.ByteString, OK for .Char8]</em> putStrLn :: IO ByteString</li>
+				<li>interact :: (ByteString &rarr; Bytestring) &rarr; IO ()</li>
+				<li>readFile :: FilePath &rarr; IO ByteString</li>
+				<li>writeFile :: FilePath &rarr; ByteString &rarr; IO ()</li>
+				<li>appendFile :: FilePath &rarr; ByteString &rarr; IO ()</li>
+			</ul>
 			<h4>Data.Char</h4>
 			<ul>
 				<li>isControl, isSpace, isLower, isUpper, isAlpha, isAlphaNum, isPrint, isDigit, isOctDigit, isHexDigit, isLetter, isMark, isNumber, isPunctuation, isSymbol, isSeparator, isAscii, isLatin1, isAsciiUpper, isAsciiLower :: Char &rarr; Bool</li>
@@ -302,38 +343,68 @@ std::qsort(arr, n, sizeof(int), cmp);
 			<ul>
 				<li>on :: (b &rarr; b &rarr; c) &rarr; (a &rarr; b) &rarr; a &rarr; a &rarr; c</li>
 			</ul>
-			<h4>Data.List</h4>
+			<h4>Data.List and Friends</h4>
+			<p><code>C a</code> generically denotes a container containing objects of type <code>a</code>.</p>
+			<table class="padded">
+				<tr><th>Prelude<br/>Data.List<br/>[a]</th><th>Data.Sequence<br/>Seq a</th><th>Data.Vector<br/>Vector a</th><th>Data.ByteString[.Char8]<br/>ByteString<br/>(a = Word8 | Char)</th></tr>
+				<tr><td colspan="3"><em>Functor</em> fmap <em>&equiv;</em> (&lt;$&gt;)</td><td class="empty"></td></tr>
+				<tr><td colspan="3"><em>Applicative</em> pure, (&lt;*&gt;)</td><td class="empty"></td></tr>
+				<tr><td colspan="3"><em>Monad</em> return, (&gt;&gt;=), <em>...</em></td><td class="empty"></td></tr>
+				<tr><td colspan="3"><em>MonadPlus</em> mzero, mplus, <em>...</em></td><td class="empty"></td></tr>
+				<tr><td colspan="3"><em>Foldable</em> fold, foldMap, fold{lr1'},
+						<br/>&nbsp;&nbsp;&nbsp;&nbsp;concat <em>&sub;</em> msum, asum <em>&sub;</em> fold
+						<br/>&nbsp;&nbsp;&nbsp;&nbsp;concatMap <em>&sub;</em> foldMap
+						<br/>&nbsp;&nbsp;traverse_, mapM_, forM_, sequence_, toList <em>...</em>
+						<br/>&nbsp;&nbsp;and, or, any, all, sum, product<br/>&nbsp;&nbsp;maximum[By], minimum[By], elem, notElem, find
+				</td><td><em>&Delta; package contains many similar [Word8|Char]-only functions with same names</em><br/>unpack :: BS &rarr; [Char]</td></tr>
+				<tr><td colspan="3"><em>Traversable</em> traverse, sequenceA, mapM, sequence</td><td class="empty"></td></tr>
+				<tr><td colspan="4"><em>Monoid</em> mempty, mappend <em>&equiv;</em> (&lt;&gt;)</td></tr>
+				<tr><td>(++)</td><td>(&gt;&lt;)</td><td>(++)</td><td>append</td></tr>
+				<tr><td>[]</td><td colspan="3">empty</td></tr>
+				<tr><td class="empty"></td><td colspan="3">singleton :: a &rarr; C a</td></tr>
+				<tr><td colspan="4">null</td></tr>
+				<tr><td>length</td><td>size</td><td colspan="2">length</td></tr>
+				<tr><td colspan="4">replicate :: Int &rarr; a &rarr; C a</td></tr>
+				<tr><td><em>import Control.Monad</em><br/>replicateM :: Int &rarr; m a &rarr; m [a]</td><td colspan="2">replicateM :: Int &rarr; m a &rarr; m (C a)</td><td class="empty"></td></tr>
+				<tr><td colspan="4">head, last</td></tr>
+				<tr><td>(!!)</td><td>index</td><td>(!)<br/>(!?)<br/>unsafeIndex</td><td>index</td></tr>
+				<tr><td colspan="4">tail, init</td></tr>
+				<tr><td colspan="4">take, drop, splitAt</td></tr>
+				<tr><td colspan="2">tails, inits</td><td class="empty"></td><td colspan="2">tails, inits</td></tr>
+				<tr><td colspan="4">map</td></tr>
+				<tr><td colspan="4">reverse</td></tr>
+				<tr><td colspan="4">filter</td></tr>
+				<tr><td>(:)</td><td>(&lt;|)</td><td colspan="2">cons</td></tr>
+				<tr><td class="empty"></td><td>(|&gt;)</td><td colspan="2">snoc</td></tr>
+				<tr><td colspan="4">scan[lr][1]</td></tr>
+				<tr><td>takeWhile</td><td>takeWhileL<br/>takeWhileR</td><td colspan="2">takeWhile</td></tr>
+				<tr><td>dropWhile</td><td>dropWhileL<br/>dropWhileR</td><td colspan="2">dropWhile</td></tr>
+				<tr><td>span</td><td>spanl<br/>spanr</td><td>span</td><td>span<br/>spanEnd</td></tr>
+				<tr><td>break</td><td>breakl<br/>breakr</td><td>break</td><td>break<br/>breakEnd</td></tr>
+				<tr><td colspan="2">partition</td><td>partition<br/>unstablePartition</td><td>partition</td></tr>
+				<tr><td>sort[By]</td><td>sort[By]<br/>unstableSort[By]</td><td colspan="2">sort</td></tr>
+				<tr><td>zip<em>{..7}</em></td><td>zip<em>{..4}</em></td><td>zip<em>{..6}</em></td><td>zip :: BS &rarr; BS &rarr; [(a,a)]</td></tr>
+				<tr><td>zipWith<em>{..7}</em></td><td>zipWith<em>{..4}</em></td><td>zipWith<em>{..6}</em></td><td>zipWith :: (a &rarr; a &rarr; b) &rarr; BS &rarr; BS &rarr; [b]</td></tr>
+			</table>
+			<h4>Data.List (not mentioned above)</h4>
+			<p><em>Note:</em> Nearly every function on Foldables, defined in Data.Foldable, has a list-specific version in Data.List; see above. These are not listed although they're technically not the same functions.</p>
 			<ul>
 				<li>intersperse :: a &rarr; [a] &rarr; [a]</li>
 				<li>intercalate :: [a] &rarr; [[a]] &rarr; [a]</li>
 				<li>transpose :: [[a]] &rarr; [[a]]</li>
 				<li>subsequences :: [a] &rarr; [[a]]</li>
 				<li>permutations :: [a] &rarr; [[a]]</li>
-				<li>foldl<i>[']</i> :: (a &rarr; b &rarr; a) &rarr; a &rarr; [b] &rarr; a</li>
-				<li>foldr :: (a &rarr; b &rarr; b) &rarr; b &rarr; [a] &rarr; b</li>
-				<li>fold<i>[l1 l1' r1]</i> :: (a &rarr; a &rarr; a) &rarr; a &rarr; [a] &rarr; a</li>
-				<li>concat :: [[a]] &rarr; [a]</li>
-				<li>concatMap :: (a &rarr; [b]) &rarr; [a] &rarr; [b]</li>
-				<li>and, or :: [Bool] &rarr; Bool</li>
-				<li>any, all :: (a &rarr; Bool) &rarr; [a] &rarr; Bool</li>
-				<li>sum, product :: Num a &rArr; [a] &rarr; a</li>
 				<li>iterate :: (a &rarr; a) &rarr; a &rarr; [a]</li>
 				<li>repeat :: a &rarr; [a]</li>
-				<li>replicate :: Int &rarr; a &rarr; [a]</li>
 				<li>cycle :: [a] &rarr; [a]</li>
-				<li>find :: (a &rarr; Bool) &rarr; [a] &rarr; Maybe a</li>
 				<li>elemIndex :: Eq a &rArr; a &rarr; [a] &rarr; Maybe Int</li>
 				<li>elemIndices :: Eq a &rArr; a &rarr; [a] &rarr; [Int]</li>
 				<li>findIndex :: (a &rarr; Bool) &rarr; [a] &rarr; Maybe Int</li>
 				<li>findIndices :: (a &rarr; Bool) &rarr; [a] &rarr; [Int]</li>
 				<li>lines, words :: String &rarr; [String]</li>
-				<li>unlines, unwords:: [String] &rarr; String</li>
+				<li>unlines, unwords :: [String] &rarr; String</li>
 				<li>nub :: Eq a &rArr; [a] &rarr; [a]</li>
 				<li>nubBy :: (a &rarr; a &rarr; Bool) &rarr; [a] &rarr; [a]</li>
-				<li>sort :: Ord a &rArr; [a] &rarr; [a]</li>
-				<li>sortBy :: (a &rarr; a &rarr; Ordering) &rarr; [a] &rarr; [a] <em>Data.Ord.comparing useful for first arg</em></li>
-				<li>maximum, minimum :: Ord a &rArr; [a] &rarr; a</li>
-				<li>maximumBy, minimumBy :: (a &rarr; a &rarr; Ordering) &rarr; [a] &rarr; a</li>
 			</ul>
 			<h4>Data.Map</h4>
 			<p>
@@ -413,45 +484,35 @@ std::qsort(arr, n, sizeof(int), cmp);
 			</ul>
 			<h4>Data.Vector</h4>
 			<p>
-			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
+			Import qualified. Functions in table above not listed. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
 			</p>
 			<p>
 			<em>u*</em> denotes presence of an unsafe variant obtainable by prefixing <code>unsafe</code> and camelCasing.
 			<em>[M]</em> denotes a monadic version (with a different type, working with Kleisli arrows).
 			</p>
 			<ul>
-				<li>(!) :: Vector a &rarr; Int &rarr; a</li>
-				<li>(!?) :: Vector a &rarr; Int &rarr; Maybe a</li>
-				<li>unsafeIndex :: Vector a &rarr; Int &rarr; a</li>
-				<li>length, null, <em>u*</em> head, <em>u*</em> last, <em>u*</em> init, <em>u*</em> tail, <em>u*</em> take, <em>u*</em> drop, splitAt :: <em>... (also have unsafe variants)</em></li>
+				<li>unsafeHead, unsafeLast, unsafeInit, unsafeTail, unsafeTake, unsafeDrop</li>
 				<li>slice :: Int &rarr; Int &rarr; Vector a &rarr; Vector a <em>starting index, length</em></li>
 				<li><em>u*</em> indexM, <em>u*</em> headM, <em>u*</em> lastM :: Monad m &rArr; Vector a &rarr; (Int &rarr;) m a <em>allows forcing strictness</em></li>
-				<li>empty :: Vector a</li>
-				<li>singleton :: a &rarr; Vector a</li>
-				<li>replicate <em>[M]</em> :: Int &rarr; a &rarr; Vector a</li>
 				<li>generate <em>[M]</em> :: Int &rarr; (Int &rarr; a) &rarr; Vector a</li>
 				<li>iterateN :: Int &rarr; (a &rarr; a) &rarr; a &rarr; Vector a</li>
-				<li>unfoldr, (++), concat :: <em>...</em></li>
+				<li>unfoldr :: <em>...</em></li>
 				<li>create :: (<em>forall</em> s. ST s (MVector s a)) &rarr; Vector a</li>
-				<li>cons :: a &rarr; Vector a &rarr; Vector a</li>
-				<li>snoc :: Vector a &rarr; a &rarr; Vector a</li>
 				<li>(//) :: Vector a &rarr; [(Int, a)] &rarr; Vector a</li>
 				<li>update :: Vector a &rarr; Vector (Int, a) &rarr; Vector a</li>
-				<li>modify :: (forall s. MVector s a &rarr; ST s ()) &rarr; Vector a &rarr; Vector a</li>
+				<li>modify :: (<em>forall</em> s. MVector s a &rarr; ST s ()) &rarr; Vector a &rarr; Vector a</li>
 				<li>indexed :: Vector a &rarr; Vector (Int, a)</li>
-				<li>map, concatMap, filter, mapM *, forM *, zip<em>{..6}</em>, zipWith<em>{..6}</em> :: <em>...</em></li>
 				<li>imap :: (Int &rarr; a &rarr; b) &rarr; Vector a &rarr; Vector b</li>
 				<li>ifilter :: (Int &rarr; a &rarr; Bool) &rarr; Vector a &rarr; Vector a</li>
-				<li>elem, notElem, find, findIndex, fold[lr'..], all, any, or, sum, product, sequence, scan[lr'..] :: <em>...</em></li>
-				<li>maximum, minimum, maxIndex, minIndex[By] :: <em>...</em></li>
-				<li>toList, fromList :: <em>...</em></li>
+				<li>maxIndex, minIndex[By] :: <em>...</em></li>
+				<li>fromList :: <em>...</em></li>
 				<li>freeze :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; m (Vector a)</li>
 				<li>thaw :: PrimMonad m &rArr; Vector a &rarr; m (MVector (PrimState m) a)</li>
 				<li>copy :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; Vector a &rarr; m ()</li>
 			</ul>
 			<h4>Data.Vector.Mutable</h4>
 			<p>
-			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
+			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed.Mutable</code> has a nearly identical interface.
 			</p>
 			<p>
 			Constructors yield <code>PrimMonad m &rArr; m (MVector (PrimState m) a)</code>;
