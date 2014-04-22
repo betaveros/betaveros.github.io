@@ -1,0 +1,37 @@
+---
+layout: default
+sel: blog
+title: Test
+---
+Teaser:
+
+{% highlight haskell %}
+import Control.Applicative
+import Control.Lens
+import Control.Monad.Trans
+import Control.Monad.Trans.State
+import Control.Monad.Trans.Writer
+import Data.Monoid
+
+listTraversal :: Traversal' [a] a
+listTraversal _    []     = pure []
+listTraversal func (x:xs) = let newX = func x; newXs = listTraversal func xs in (:) <$> newX <*> newXs
+
+getSeventh :: Int -> StateT Int (Writer (First Int)) Int
+getSeventh = \a -> do
+    modify (+1)
+    i <- get
+    lift . tell . First $ if i == 7 then Just a else Nothing
+    return a
+
+increaseSeventh :: Int -> State Int Int
+increaseSeventh = \a -> do
+    modify (+1)
+    i <- get
+    return $ if i == 7 then a+1 else a
+
+main = do
+    let x = [100,200..2000]
+    print $ execWriter (execStateT (listTraversal getSeventh x) 0)
+    print $ evalState (listTraversal increaseSeventh x) 0
+{% endhighlight %}
