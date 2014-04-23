@@ -1,6 +1,9 @@
 body {
   padding-top: 50px;
 }
+h1, h2, h3, h4, h5, h6 {
+  text-shadow: #f66 1px -1px 1px;
+}
 .starter-template {
   padding: 40px 15px;
 }
