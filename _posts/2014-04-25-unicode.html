@@ -1,0 +1,212 @@
+---
+layout: default
+sel: blog
+title: Unicode
+---
+<p><a href='https://github.com/betaveros/betaveros.github.io/blob/master/_posts/unicode.hs'>Peek behind the scenes</a></p>
+
+<table class='table table-condensed table-hover'>
+<tr><td><th colspan='5'>Greek letters</th></td></tr>
+<tr><td>γ</td><td>947</td><td>3B3</td><td><code>g*</code></td><td>etc.</td></tr>
+<tr><td>Γ</td><td>915</td><td>393</td><td><code>G*</code></td><td>etc.</td></tr>
+<tr><td><th colspan='5'>Non-obvious Greek letters</th></td></tr>
+<tr><td>ξ</td><td>958</td><td>3BE</td><td><code>c*</code></td><td>(xi) (Windows symbol uses x)</td></tr>
+<tr><td>θ</td><td>952</td><td>3B8</td><td><code>h*</code></td><td>(theta) (WS: q)</td></tr>
+<tr><td>ψ</td><td>968</td><td>3C8</td><td><code>q*</code></td><td>(psi) (WS: y)</td></tr>
+<tr><td>ω</td><td>969</td><td>3C9</td><td><code>w*</code></td><td>(omega) (WS: also w)</td></tr>
+<tr><td>χ</td><td>967</td><td>3C7</td><td><code>x*</code></td><td>(chi) (WS: c)</td></tr>
+<tr><td>η</td><td>951</td><td>3B7</td><td><code>y*</code></td><td>(eta) (WS: h)</td></tr>
+<tr><td><th colspan='5'>Arithmetic</th></td></tr>
+<tr><td>√</td><td>8730</td><td>221A</td><td><code>RT</code></td><td></td></tr>
+<tr><td>½</td><td>189</td><td>BD</td><td><code>12</code></td><td>All simplified fractions with denominators 2,3,4,5,6,8 exist.</td></tr>
+<tr><td>×</td><td>215</td><td>D7</td><td><code>*X</code></td><td>multiplication sign</td></tr>
+<tr><td>÷</td><td>247</td><td>F7</td><td><code>-:</code></td><td>division sign</td></tr>
+<tr><td>∞</td><td>8734</td><td>221E</td><td><code>00</code></td><td>infinity (nb. that's two zeroes)</td></tr>
+<tr><td>∑</td><td>8721</td><td>2211</td><td><code>+Z</code></td><td>sum</td></tr>
+<tr><td>∏</td><td>8719</td><td>220F</td><td><code>*P</code></td><td>product</td></tr>
+<tr><td>±</td><td>177</td><td>B1</td><td><code>+-</code></td><td>plus-minus sign</td></tr>
+<tr><td><th colspan='5'>Floor/Ceiling</th></td></tr>
+<tr><td>⌈</td><td>8968</td><td>2308</td><td><code>&lt;7</code></td><td></td></tr>
+<tr><td>⌉</td><td>8969</td><td>2309</td><td><code>&gt;7</code></td><td></td></tr>
+<tr><td>⌊</td><td>8970</td><td>230A</td><td><code>7&lt;</code></td><td></td></tr>
+<tr><td>⌋</td><td>8971</td><td>230B</td><td><code>7&gt;</code></td><td></td></tr>
+<tr><td><th colspan='5'>(In)Equalities</th></td></tr>
+<tr><td>∼</td><td>8764</td><td>223C</td><td><code>?1</code></td><td></td></tr>
+<tr><td>≃</td><td>8771</td><td>2243</td><td><code>?-</code></td><td></td></tr>
+<tr><td>≅</td><td>8773</td><td>2245</td><td><code>?=</code></td><td></td></tr>
+<tr><td>≈</td><td>8776</td><td>2248</td><td><code>?2</code></td><td></td></tr>
+<tr><td>≠</td><td>8800</td><td>2260</td><td><code>!=</code></td><td></td></tr>
+<tr><td>≡</td><td>8801</td><td>2261</td><td><code>=3</code></td><td></td></tr>
+<tr><td>≤</td><td>8804</td><td>2264</td><td><code>=&lt;</code></td><td></td></tr>
+<tr><td>≥</td><td>8805</td><td>2265</td><td><code>&gt;=</code></td><td></td></tr>
+<tr><td>≮</td><td>8814</td><td>226E</td><td><code>!&lt;</code></td><td></td></tr>
+<tr><td>≯</td><td>8815</td><td>226F</td><td><code>!&gt;</code></td><td></td></tr>
+<tr><td>≪</td><td>8810</td><td>226A</td><td><code>&lt;*</code></td><td></td></tr>
+<tr><td>≫</td><td>8811</td><td>226B</td><td><code>*&gt;</code></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: Inequality</th></td></tr>
+<tr><td>≢</td><td>8802</td><td>2262</td><td><code>!#</code></td><td></td></tr>
+<tr><td><th colspan='5'>Superscripts, subscripts</th></td></tr>
+<tr><td>⁰</td><td>8304</td><td>2070</td><td><code>0S</code></td><td><code>0123456789+-=()n</code></td></tr>
+<tr><td>₀</td><td>8320</td><td>2080</td><td><code>0s</code></td><td><code>0123456789+-=()</code></td></tr>
+<tr><td><th colspan='5'>Geometry</th></td></tr>
+<tr><td>∠</td><td>8736</td><td>2220</td><td><code>V-</code></td><td>angle sign</td></tr>
+<tr><td>△</td><td>9651</td><td>25B3</td><td><code>uT</code></td><td>triangle (white up-pointing i.e. useful for math)</td></tr>
+<tr><td>°</td><td>176</td><td>B0</td><td><code>DG</code></td><td>degree</td></tr>
+<tr><td>∥</td><td>8741</td><td>2225</td><td><code>PP</code></td><td></td></tr>
+<tr><td>‖</td><td>8214</td><td>2016</td><td><code>!2</code></td><td></td></tr>
+<tr><td>⊥</td><td>8869</td><td>22A5</td><td><code>-T</code></td><td></td></tr>
+<tr><td><th colspan='5'>Sets</th></td></tr>
+<tr><td>∅</td><td>8709</td><td>2205</td><td><code>/0</code></td><td></td></tr>
+<tr><td>Ø</td><td>216</td><td>D8</td><td><code>O/</code></td><td></td></tr>
+<tr><td>∈</td><td>8712</td><td>2208</td><td><code>(-</code></td><td></td></tr>
+<tr><td>∋</td><td>8715</td><td>220B</td><td><code>-)</code></td><td></td></tr>
+<tr><td>∩</td><td>8745</td><td>2229</td><td><code>(U</code></td><td></td></tr>
+<tr><td>∪</td><td>8746</td><td>222A</td><td><code>U)</code></td><td></td></tr>
+<tr><td>⊂</td><td>8834</td><td>2282</td><td><code>(C</code></td><td></td></tr>
+<tr><td>⊃</td><td>8835</td><td>2283</td><td><code>)C</code></td><td></td></tr>
+<tr><td>⊆</td><td>8838</td><td>2286</td><td><code>(_</code></td><td></td></tr>
+<tr><td>⊇</td><td>8839</td><td>2287</td><td><code>)_</code></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: More Relations</th></td></tr>
+<tr><td>∉</td><td>8713</td><td>2209</td><td><code>(+</code></td><td></td></tr>
+<tr><td>∌</td><td>8716</td><td>220C</td><td><code>+)</code></td><td></td></tr>
+<tr><td>⊄</td><td>8836</td><td>2284</td><td><code>(/</code></td><td></td></tr>
+<tr><td>⊅</td><td>8837</td><td>2285</td><td><code>/)</code></td><td></td></tr>
+<tr><td>⊕</td><td>8853</td><td>2295</td><td><code>@+</code></td><td></td></tr>
+<tr><td>⊖</td><td>8854</td><td>2296</td><td><code>@-</code></td><td></td></tr>
+<tr><td>⊗</td><td>8855</td><td>2297</td><td><code>@x</code></td><td></td></tr>
+<tr><td>⊘</td><td>8856</td><td>2298</td><td><code>@/</code></td><td></td></tr>
+<tr><td>⊙</td><td>8857</td><td>2299</td><td><code>@.</code></td><td>(Already available as <code>0.</code>)</td></tr>
+<tr><td>⊚</td><td>8858</td><td>229A</td><td><code>@o</code></td><td>(Already available as <code>02</code>)</td></tr>
+<tr><td>⊛</td><td>8859</td><td>229B</td><td><code>@*</code></td><td></td></tr>
+<tr><td>⊜</td><td>8860</td><td>229C</td><td><code>@=</code></td><td></td></tr>
+<tr><td>⋘</td><td>8920</td><td>22D8</td><td><code>3&lt;</code></td><td></td></tr>
+<tr><td>⋙</td><td>8921</td><td>22D9</td><td><code>3&gt;</code></td><td></td></tr>
+<tr><td><th colspan='5'>Logic</th></td></tr>
+<tr><td>∀</td><td>8704</td><td>2200</td><td><code>FA</code></td><td>For All</td></tr>
+<tr><td>∃</td><td>8707</td><td>2203</td><td><code>TE</code></td><td>There Exists</td></tr>
+<tr><td>∧</td><td>8743</td><td>2227</td><td><code>AN</code></td><td>ANd</td></tr>
+<tr><td>∨</td><td>8744</td><td>2228</td><td><code>OR</code></td><td>OR</td></tr>
+<tr><td>∴</td><td>8756</td><td>2234</td><td><code>.:</code></td><td>consider top-to-bottom</td></tr>
+<tr><td>∵</td><td>8757</td><td>2235</td><td><code>:.</code></td><td>consider top-to-bottom</td></tr>
+<tr><td><th colspan='5'>Calculus</th></td></tr>
+<tr><td>∫</td><td>8747</td><td>222B</td><td><code>In</code></td><td></td></tr>
+<tr><td>∬</td><td>8748</td><td>222C</td><td><code>DI</code></td><td></td></tr>
+<tr><td>∂</td><td>8706</td><td>2202</td><td><code>dP</code></td><td></td></tr>
+<tr><td>∮</td><td>8750</td><td>222E</td><td><code>Io</code></td><td></td></tr>
+<tr><td>∆</td><td>8710</td><td>2206</td><td><code>DE</code></td><td></td></tr>
+<tr><td>∇</td><td>8711</td><td>2207</td><td><code>NB</code></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: Blackboard-font digraphs</th></td></tr>
+<tr><td>ℕ</td><td>8469</td><td>2115</td><td><code>NN</code></td><td></td></tr>
+<tr><td>ℚ</td><td>8474</td><td>211A</td><td><code>QQ</code></td><td></td></tr>
+<tr><td>ℝ</td><td>8477</td><td>211D</td><td><code>RR</code></td><td></td></tr>
+<tr><td>ℤ</td><td>8484</td><td>2124</td><td><code>ZZ</code></td><td></td></tr>
+<tr><td>ℂ</td><td>8450</td><td>2102</td><td><code>CC</code></td><td>CC is a default digraph for a 0x94 "CANCEL CHARACTER", but I can't imagine needing it.</td></tr>
+<tr><td><th colspan='5'>Geometric Things</th></td></tr>
+<tr><td>█</td><td>9608</td><td>2588</td><td><code>FB</code></td><td></td></tr>
+<tr><td>▀</td><td>9600</td><td>2580</td><td><code>TB</code></td><td></td></tr>
+<tr><td>▄</td><td>9604</td><td>2584</td><td><code>LB</code></td><td></td></tr>
+<tr><td>▌</td><td>9612</td><td>258C</td><td><code>lB</code></td><td></td></tr>
+<tr><td>▐</td><td>9616</td><td>2590</td><td><code>RB</code></td><td></td></tr>
+<tr><td>░</td><td>9617</td><td>2591</td><td><code>.S</code></td><td></td></tr>
+<tr><td>▒</td><td>9618</td><td>2592</td><td><code>:S</code></td><td></td></tr>
+<tr><td>▓</td><td>9619</td><td>2593</td><td><code>?S</code></td><td></td></tr>
+<tr><td>■</td><td>9632</td><td>25A0</td><td><code>fS</code></td><td></td></tr>
+<tr><td>□</td><td>9633</td><td>25A1</td><td><code>OS</code></td><td></td></tr>
+<tr><td>▢</td><td>9634</td><td>25A2</td><td><code>RO</code></td><td></td></tr>
+<tr><td>▲</td><td>9650</td><td>25B2</td><td><code>UT</code></td><td></td></tr>
+<tr><td>△</td><td>9651</td><td>25B3</td><td><code>ut</code></td><td></td></tr>
+<tr><td>▶</td><td>9654</td><td>25B6</td><td><code>PR</code></td><td></td></tr>
+<tr><td>▷</td><td>9655</td><td>25B7</td><td><code>Tr</code></td><td></td></tr>
+<tr><td>▼</td><td>9660</td><td>25BC</td><td><code>Dt</code></td><td></td></tr>
+<tr><td>▽</td><td>9661</td><td>25BD</td><td><code>dT</code></td><td></td></tr>
+<tr><td>◀</td><td>9664</td><td>25C0</td><td><code>PL</code></td><td></td></tr>
+<tr><td>◁</td><td>9665</td><td>25C1</td><td><code>Tl</code></td><td></td></tr>
+<tr><td>◆</td><td>9670</td><td>25C6</td><td><code>Db</code></td><td></td></tr>
+<tr><td>◇</td><td>9671</td><td>25C7</td><td><code>Dw</code></td><td></td></tr>
+<tr><td>○</td><td>9675</td><td>25CB</td><td><code>0m</code></td><td></td></tr>
+<tr><td>◎</td><td>9678</td><td>25CE</td><td><code>0o</code></td><td></td></tr>
+<tr><td>●</td><td>9679</td><td>25CF</td><td><code>0M</code></td><td></td></tr>
+<tr><td>★</td><td>9733</td><td>2605</td><td><code>*2</code></td><td></td></tr>
+<tr><td>☆</td><td>9734</td><td>2606</td><td><code>*1</code></td><td></td></tr>
+<tr><td><th colspan='5'>Cyrillic Spoofing</th></td></tr>
+<tr><td>А</td><td>1040</td><td>410</td><td><code>A=</code></td><td></td></tr>
+<tr><td>а</td><td>1072</td><td>430</td><td><code>a=</code></td><td></td></tr>
+<tr><td>Е</td><td>1045</td><td>415</td><td><code>E=</code></td><td></td></tr>
+<tr><td>е</td><td>1077</td><td>435</td><td><code>e=</code></td><td></td></tr>
+<tr><td>О</td><td>1054</td><td>41E</td><td><code>O=</code></td><td></td></tr>
+<tr><td>о</td><td>1086</td><td>43E</td><td><code>o=</code></td><td></td></tr>
+<tr><td>С</td><td>1057</td><td>421</td><td><code>S=</code></td><td></td></tr>
+<tr><td>с</td><td>1089</td><td>441</td><td><code>s=</code></td><td></td></tr>
+<tr><td>Р</td><td>1056</td><td>420</td><td><code>R=</code></td><td></td></tr>
+<tr><td>р</td><td>1088</td><td>440</td><td><code>r=</code></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: Geometric Things</th></td></tr>
+<tr><td>△</td><td>9651</td><td>25B3</td><td><code>^_</code></td><td></td></tr>
+<tr><td>▷</td><td>9655</td><td>25B7</td><td><code>|&gt;</code></td><td></td></tr>
+<tr><td>▽</td><td>9661</td><td>25BD</td><td><code>_v</code></td><td></td></tr>
+<tr><td>◁</td><td>9665</td><td>25C1</td><td><code>&lt;|</code></td><td></td></tr>
+<tr><td><th colspan='5'>Punctuation</th></td></tr>
+<tr><td>†</td><td>8224</td><td>2020</td><td><code>/-</code></td><td>Dagger</td></tr>
+<tr><td>‡</td><td>8225</td><td>2021</td><td><code>/=</code></td><td>Double dagger</td></tr>
+<tr><td>§</td><td>167</td><td>A7</td><td><code>SE</code></td><td>SEction sign</td></tr>
+<tr><td>¶</td><td>182</td><td>B6</td><td><code>PI</code></td><td>PIlcrow (also available as <code>pp</code>?)</td></tr>
+<tr><td><th colspan='5'>Whatever</th></td></tr>
+<tr><td>¤</td><td>164</td><td>A4</td><td><code>ox</code></td><td>"currency sign" (er... looks like TI-89 "archived" sign)</td></tr>
+<tr><td>»</td><td>187</td><td>BB</td><td><code>&gt;&gt;</code></td><td>double angle bracket, rightward</td></tr>
+<tr><td>«</td><td>171</td><td>AB</td><td><code>&lt;&lt;</code></td><td>double angle bracket, leftward</td></tr>
+<tr><td>‹</td><td>8249</td><td>2039</td><td><code>&lt;1</code></td><td>single angle bracket, rightward</td></tr>
+<tr><td>›</td><td>8250</td><td>203A</td><td><code>&gt;1</code></td><td>single angle bracket, leftward</td></tr>
+<tr><td>∙</td><td>8729</td><td>2219</td><td><code>Sb</code></td><td>"bullet operator"</td></tr>
+<tr><td>·</td><td>183</td><td>B7</td><td><code>.M</code></td><td>"middle dot"</td></tr>
+<tr><td>∘</td><td>8728</td><td>2218</td><td><code>Ob</code></td><td></td></tr>
+<tr><td>¢</td><td>162</td><td>A2</td><td><code>Ct</code></td><td></td></tr>
+<tr><td>£</td><td>163</td><td>A3</td><td><code>Pd</code></td><td></td></tr>
+<tr><td>¥</td><td>165</td><td>A5</td><td><code>Ye</code></td><td></td></tr>
+<tr><td>₤</td><td>8356</td><td>20A4</td><td><code>Li</code></td><td></td></tr>
+<tr><td>€</td><td>8364</td><td>20AC</td><td><code>Eu</code></td><td></td></tr>
+<tr><td>␣</td><td>9251</td><td>2423</td><td><code>Vs</code></td><td></td></tr>
+<tr><td>♡</td><td>9825</td><td>2661</td><td><code>cH</code></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: Whatever</th></td></tr>
+<tr><td>ಠ</td><td>3232</td><td>CA0</td><td><code>oo</code></td><td></td></tr>
+<tr><td>␣</td><td>9251</td><td>2423</td><td><code>__</code></td><td></td></tr>
+<tr><td>ə</td><td>601</td><td>259</td><td><code>ee</code></td><td></td></tr>
+<tr><td>‼</td><td>8252</td><td>203C</td><td><code>!!</code></td><td></td></tr>
+<tr><td>⁇</td><td>8263</td><td>2047</td><td><code>??</code></td><td></td></tr>
+<tr><td>⁈</td><td>8264</td><td>2048</td><td><code>?!</code></td><td></td></tr>
+<tr><td>⁉</td><td>8265</td><td>2049</td><td><code>!?</code></td><td></td></tr>
+<tr><td>‽</td><td>8253</td><td>203D</td><td><code>?|</code></td><td>the <code>|</code> character must be escaped</td></tr>
+<tr><td>♥</td><td>9829</td><td>2665</td><td><code>&lt;3</code></td><td></td></tr>
+<tr><td>…</td><td>8230</td><td>2026</td><td><code>,3</code></td><td></td></tr>
+<tr><td>ℜ</td><td>8476</td><td>211C</td><td><code>RE</code></td><td></td></tr>
+<tr><td>ℑ</td><td>8465</td><td>2111</td><td><code>IM</code></td><td></td></tr>
+<tr><td><th colspan='5'>Arrows</th></td></tr>
+<tr><td>←</td><td>8592</td><td>2190</td><td><code>&lt;-</code></td><td></td></tr>
+<tr><td>↑</td><td>8593</td><td>2191</td><td><code>-!</code></td><td></td></tr>
+<tr><td>→</td><td>8594</td><td>2192</td><td><code>-&gt;</code></td><td></td></tr>
+<tr><td>↓</td><td>8595</td><td>2193</td><td><code>-v</code></td><td></td></tr>
+<tr><td>↔</td><td>8596</td><td>2194</td><td></td><td></td></tr>
+<tr><td>↕</td><td>8597</td><td>2195</td><td></td><td></td></tr>
+<tr><td>↖</td><td>8598</td><td>2196</td><td></td><td></td></tr>
+<tr><td>↗</td><td>8599</td><td>2197</td><td></td><td></td></tr>
+<tr><td>↘</td><td>8600</td><td>2198</td><td></td><td></td></tr>
+<tr><td>↙</td><td>8601</td><td>2199</td><td></td><td></td></tr>
+<tr><td>↩</td><td>8617</td><td>21A9</td><td></td><td></td></tr>
+<tr><td>↪</td><td>8618</td><td>21AA</td><td></td><td></td></tr>
+<tr><td>⇄</td><td>8644</td><td>21C4</td><td></td><td></td></tr>
+<tr><td>⇅</td><td>8645</td><td>21C5</td><td></td><td></td></tr>
+<tr><td>⇆</td><td>8646</td><td>21C6</td><td></td><td></td></tr>
+<tr><td>⇇</td><td>8647</td><td>21C7</td><td></td><td></td></tr>
+<tr><td>⇈</td><td>8648</td><td>21C8</td><td></td><td></td></tr>
+<tr><td>⇉</td><td>8649</td><td>21C9</td><td></td><td></td></tr>
+<tr><td>⇊</td><td>8650</td><td>21CA</td><td></td><td></td></tr>
+<tr><td>←</td><td>8592</td><td>2190</td><td></td><td></td></tr>
+<tr><td>↑</td><td>8593</td><td>2191</td><td></td><td></td></tr>
+<tr><td>→</td><td>8594</td><td>2192</td><td></td><td></td></tr>
+<tr><td>⤙</td><td>10521</td><td>2919</td><td></td><td></td></tr>
+<tr><td>⤚</td><td>10522</td><td>291A</td><td></td><td></td></tr>
+<tr><td>⤛</td><td>10523</td><td>291B</td><td></td><td></td></tr>
+<tr><td>⤜</td><td>10524</td><td>291C</td><td></td><td></td></tr>
+</table>
+
+{% highlight vim %}
+digraph !# 8802 (+ 8713 +) 8716 (/ 8836 /) 8837 @+ 8853 @- 8854 @x 8855 @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 3< 8920 3> 8921 NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 ^_ 9651 \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 ee 601 !! 8252 ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230 RE 8476 IM 8465
+{% endhighlight %}

@@ -1,0 +1,199 @@
+Greek letters
+γ	g*	etc.
+Γ	G*	etc.
+Non-obvious Greek letters
+ξ	c*	(xi) (Windows symbol uses x)
+θ	h*	(theta) (WS: q)
+ψ	q*	(psi) (WS: y)
+ω	w*	(omega) (WS: also w)
+χ	x*	(chi) (WS: c)
+η	y*	(eta) (WS: h)
+Arithmetic
+√	RT
+½	12	All simplified fractions with denominators 2,3,4,5,6,8 exist.
+×	*X	multiplication sign
+÷	-:	division sign
+∞	00	infinity (nb. that's two zeroes)
+∑	+Z	sum
+∏	*P	product
+±	+-	plus-minus sign
+Floor/Ceiling
+⌈	<7
+⌉	>7
+⌊	7<
+⌋	7>
+(In)Equalities
+∼	?1
+≃	?-
+≅	?=
+≈	?2
+≠	!=
+≡	=3
+≤	=<
+≥	>=
+≮	!<
+≯	!>
+≪	<*
+≫	*>
+Custom: Inequality
+≢	!#
+Superscripts, subscripts
+⁰	0S	<code>0123456789+-=()n</code>
+₀	0s	<code>0123456789+-=()</code>
+Geometry
+∠	V-	angle sign
+△	uT	triangle (white up-pointing i.e. useful for math)
+°	DG	degree
+∥	PP
+‖	!2
+⊥	-T
+Sets
+∅	/0
+Ø	O/
+∈	(-
+∋	-)
+∩	(U
+∪	U)
+⊂	(C
+⊃	)C
+⊆	(_
+⊇	)_
+Custom: More Relations
+∉	(+
+∌	+)
+⊄	(/
+⊅	/)
+⊕	@+
+⊖	@-
+⊗	@x
+⊘	@/
+⊙	@.	(Already available as <code>0.</code>)
+⊚	@o	(Already available as <code>02</code>)
+⊛	@*
+⊜	@=
+⋘	3<
+⋙	3>
+Logic
+∀	FA	For All
+∃	TE	There Exists
+∧	AN	ANd
+∨	OR	OR
+∴	.:	consider top-to-bottom
+∵	:.	consider top-to-bottom
+Calculus
+∫	In
+∬	DI
+∂	dP
+∮	Io
+∆	DE
+∇	NB
+Custom: Blackboard-font digraphs
+ℕ	NN
+ℚ	QQ
+ℝ	RR
+ℤ	ZZ
+ℂ	CC	CC is a default digraph for a 0x94 "CANCEL CHARACTER", but I can't imagine needing it.
+Geometric Things
+█	FB
+▀	TB
+▄	LB
+▌	lB
+▐	RB
+░	.S
+▒	:S
+▓	?S
+■	fS
+□	OS
+▢	RO
+▲	UT
+△	ut
+▶	PR
+▷	Tr
+▼	Dt
+▽	dT
+◀	PL
+◁	Tl
+◆	Db
+◇	Dw
+○	0m
+◎	0o
+●	0M
+★	*2
+☆	*1
+Cyrillic Spoofing
+А	A=
+а	a=
+Е	E=
+е	e=
+О	O=
+о	o=
+С	S=
+с	s=
+Р	R=
+р	r=
+Custom: Geometric Things
+△	^_
+▷	|>
+▽	_v
+◁	<|
+Punctuation
+†	/-	Dagger
+‡	/=	Double dagger
+§	SE	SEction sign
+¶	PI	PIlcrow (also available as <code>pp</code>?)
+Whatever
+¤	ox	"currency sign" (er... looks like TI-89 "archived" sign)
+»	>>	double angle bracket, rightward
+«	<<	double angle bracket, leftward
+‹	<1	single angle bracket, rightward
+›	>1	single angle bracket, leftward
+∙	Sb	"bullet operator"
+·	.M	"middle dot"
+∘	Ob
+¢	Ct
+£	Pd
+¥	Ye
+₤	Li
+€	Eu
+␣	Vs
+♡	cH
+Custom: Whatever
+ಠ	oo
+␣	__
+ə	ee
+‼	!!
+⁇	??
+⁈	?!
+⁉	!?
+‽	?|	the <code>|</code> character must be escaped
+♥	<3
+…	,3
+ℜ	RE
+ℑ	IM
+Arrows
+←	<-
+↑	-!
+→	->
+↓	-v
+↔
+↕
+↖
+↗
+↘
+↙
+↩
+↪
+⇄
+⇅
+⇆
+⇇
+⇈
+⇉
+⇊
+←
+↑
+→
+⤙
+⤚
+⤛
+⤜
