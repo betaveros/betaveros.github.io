@@ -10,11 +10,11 @@
   <label><input type="radio" name="mode" value="grouped" autocomplete="off">Grouped</label>
   <label><input type="radio" name="mode" value="stacked" checked="checked" autocomplete="off">Stacked</label>
 </form>
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/d3.min.js" charset="utf-8"></script>
 <script type="text/javascript">
 var data = [["d679",74,53,72,85],["ca76",84,31,50,85],["a726",73,63,63,44],["7140",100,50,16,60],["e855",81,52,27,58],["464b",81,55,37,39],["c53c",84,42,32,50],["4733",69,42,42,48],["4c11",63,59,28,49],["3ea9",64,43,32,39]];
  
-var n = data[0].length, // number of layers
+var n = data[0].length - 1, // number of layers
     m = data.length, // number of samples per layer
     stack = d3.layout.stack(),
     //go through each layer
