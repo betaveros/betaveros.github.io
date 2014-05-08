@@ -78,6 +78,7 @@ Logic
 ∃	TE	There Exists
 ∧	AN	ANd
 ∨	OR	OR
+¬	NO	NOt
 ∴	.:	consider top-to-bottom
 ∵	:.	consider top-to-bottom
 Calculus
@@ -157,9 +158,12 @@ Whatever
 €	Eu
 ␣	Vs
 ♡	cH
+¯	'm	macron
+ツ	Tu	katakana
 Custom: Whatever
 ಠ	oo
 ␣	__
+⌣	uu
 ə	ee
 ‼	!!
 ⁇	??
