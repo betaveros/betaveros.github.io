@@ -304,7 +304,7 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>(//) :: Ix i &rArr; Array i e &rarr; [(i, e)] &rarr; Array i e</li>
 			</ul>
 			<h4>Data.ByteString[.Char8]</h4>
-			<p>This type is not actually parametrized. Below, <code>a</code> is <code>Word8</code> or <code>Char</code> depending on what you import. Both modules call their string type <code>ByteString</code>, though.</p>
+			<p>This type is not actually parametrized. Below, <code>a</code> is <code>Word8</code> or <code>Char</code> depending on what you import. Both modules use the same type <code>ByteString</code>, just providing different interfaces.</p>
 			<ul>
 				<li>pack :: [a] &rarr; ByteString</li>
 				<li>unpack :: ByteString &rarr; [a]</li>
