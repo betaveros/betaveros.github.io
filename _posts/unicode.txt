@@ -71,6 +71,7 @@ Custom: More Relations
 ⊚	@o	(Already available as <code>02</code>)
 ⊛	@*
 ⊜	@=
+⦶	@|
 ⋘	3<
 ⋙	3>
 Logic
@@ -148,9 +149,10 @@ Whatever
 «	<<	double angle bracket, leftward
 ‹	<1	single angle bracket, rightward
 ›	>1	single angle bracket, leftward
-∙	Sb	"bullet operator"
 ·	.M	"middle dot"
-∘	Ob
+∘	Ob	"ring operator"
+∙	Sb	"bullet operator"
+⋅	.P	"dot operator"
 ¢	Ct
 £	Pd
 ¥	Ye
