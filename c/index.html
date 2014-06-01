@@ -339,9 +339,62 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>guard :: MonadPlus p &rArr; Bool &rarr; p ()</li>
 				<li>when :: Bool &rarr; m () &rarr; m ()</li>
 			</ul>
-			<h4>Data.Array</h4>
+			<h4>ST (Control.Monad.ST + Data.STRef)</h4>
+			<ul>
+				<li>runST :: (<em>forall</em> s. ST s a) &rarr; a</li>
+				<li>readSTRef :: STRef s a &rarr; ST s a</li>
+				<li>writeSTRef :: STRef s a &rarr; a &rarr; ST s ()</li>
+				<li>modifySTRef<em>'</em> :: STRef s a &rarr; (a &rarr; a) &rarr; ST s ()</li>
+			</ul>
+			<h5>Arrays in ST</h5>
+			<p>(type constraints are elided, a = mutable array, c = immutable ("constant") array)</p>
+			<ul>
+				<li>runSTArray :: (<em>forall</em> s. ST s (STArray s i e)) &rarr; Array i e</li>
+				<li>runSTUArray :: (<em>forall</em> s. ST s (STUArray s i e)) &rarr; Array i e</li>
+				<li>newArray :: (i, i) &rarr; e &rarr; m (a i e)</li>
+				<li>readArray :: a i e &rarr; i &rarr; m e</li>
+				<li>writeArray :: a i e &rarr; i &rarr; e &rarr; m e</li>
+				<li>getElems :: a i e &rarr; m e</li>
+				<li>getAssocs :: a i e &rarr; m [(i,e)]</li>
+				<li>freeze :: a i e &rarr; m (c i e)</li>
+				<li>thaw :: c i e &rarr; m (a i e)</li>
+			</ul>
+			<p>(Variants of freeze and thaw prefixed with unsafe, which don't copy the array, are in Data.Array.Unsafe.)</p>
+			<h5>Vectors in ST (Data.Vector.Mutable)</h5>
 			<p>
-			Data.Vector is usually preferable (far more functions and typeclasses), but Data.Array can be multidimensional, can have indices defined arbitrarily, and is currently more portable.
+			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed.Mutable</code> has a nearly identical interface.
+			Constructors yield <code>PrimMonad m &rArr; m (MVector (PrimState m) a)</code>;
+			destructive functions take and manipulate <code>PrimMonad m &rArr; MVector (PrimState m) a</code>.
+			These constraints are not shown below for simplicity.
+			Note that the slicing functions are pure and yield views through which the original vector can be modified.
+			</p>
+			<p>
+			<em>u*</em> denotes presence of an unsafe variant obtainable by prefixing <code>unsafe</code> and camelCasing.
+			Here, unsafe means no bounds checking.
+			</p>
+			<ul>
+				<li>data MVector s a <em>"vec"</em></li>
+				<li>type IOVector = MVector RealWorld <em>for IO monad</em></li>
+				<li>type STVector s = MVector s <em>for ST monad</em></li>
+				<li>length, null, head, last, init, tail, take, drop, splitAt :: <em>... (also have unsafe variants)</em></li>
+				<li>new :: Int &rarr; m vec</li>
+				<li>replicate :: Int &rarr; a &rarr; m (vec a)</li>
+				<li>replicateM :: Int &rarr; m a &rarr; m (vec a)</li>
+				<li><em>u*</em> read :: vec a &rarr; Int &rarr; m a</li>
+				<li><em>u*</em> write :: vec a &rarr; Int &rarr; a &rarr; m ()</li>
+				<li><em>u*</em> swap :: vec a &rarr; Int &rarr; Int &rarr; m ()</li>
+			</ul>
+			<p>Interface with pure Vector code (import from Data.Vector; here, unsafe means no whole-array-copying):</p>
+			<ul>
+				<li>create :: (<em>forall</em> s. ST s (MVector s a)) &rarr; Vector a</li>
+				<li>modify :: (<em>forall</em> s. MVector s a &rarr; ST s ()) &rarr; Vector a &rarr; Vector a</li>
+				<li><em>u*</em> freeze :: vec a &rarr; m (Vector a)</li>
+				<li><em>u*</em> thaw :: Vector a &rarr; m (vec a)</li>
+				<li><em>u*</em> copy :: vec a &rarr; Vector a &rarr; m ()</li>
+			</ul>
+			<h4>Data.Array / Data.Vector</h4>
+			<p>
+			Data.Vector has far more functions and typeclasses, but Data.Array can be multidimensional, can have indices defined arbitrarily, and is currently more portable.
 			Its only Array-ish typeclass of interest is <code>Functor</code>.
 			</p>
 			<ul>
@@ -352,6 +405,30 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>elems :: Ix a &rArr; Array i e &rarr; [e]</li>
 				<li>assocs :: Ix a &rArr; Array i e &rarr; [(i, e)]</li>
 				<li>(//) :: Ix i &rArr; Array i e &rarr; [(i, e)] &rarr; Array i e</li>
+			</ul>
+			<p>
+			Data.Vector must be imported qualified.
+			Functions already listed in family table or as unsafe interface functions above aren't here. Obvious functions' type signatures not given.
+			<code>Data.Vector.Unboxed</code> has a nearly identical interface.
+			</p>
+			<p>
+			<em>u*</em> denotes presence of an unsafe variant obtainable by prefixing <code>unsafe</code> and camelCasing.
+			<em>[M]</em> denotes a monadic version (with a different type, working with Kleisli arrows).
+			</p>
+			<ul>
+				<li>unsafeHead, unsafeLast, unsafeInit, unsafeTail, unsafeTake, unsafeDrop</li>
+				<li>slice :: Int &rarr; Int &rarr; Vector a &rarr; Vector a <em>starting index, length</em></li>
+				<li><em>u*</em> indexM, <em>u*</em> headM, <em>u*</em> lastM :: Monad m &rArr; Vector a &rarr; (Int &rarr;) m a <em>allows forcing strictness</em></li>
+				<li>generate <em>[M]</em> :: Int &rarr; (Int &rarr; a) &rarr; Vector a</li>
+				<li>iterateN :: Int &rarr; (a &rarr; a) &rarr; a &rarr; Vector a</li>
+				<li>unfoldr :: <em>...</em></li>
+				<li>(//) :: Vector a &rarr; [(Int, a)] &rarr; Vector a</li>
+				<li>update :: Vector a &rarr; Vector (Int, a) &rarr; Vector a</li>
+				<li>indexed :: Vector a &rarr; Vector (Int, a)</li>
+				<li>imap :: (Int &rarr; a &rarr; b) &rarr; Vector a &rarr; Vector b</li>
+				<li>ifilter :: (Int &rarr; a &rarr; Bool) &rarr; Vector a &rarr; Vector a</li>
+				<li>maxIndex, minIndex[By] :: <em>...</em></li>
+				<li>fromList :: <em>...</em></li>
 			</ul>
 			<h4>Data.ByteString[.Char8]</h4>
 			<p>This type is not actually parametrized. Below, <code>a</code> is <code>Word8</code> or <code>Char</code> depending on what you import. Both modules use the same type <code>ByteString</code>, just providing different interfaces.</p>
@@ -531,57 +608,6 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>delete :: Ord a &rArr; a &rarr; Set a &rarr; Set a</li>
 				<li>elems <em>(&equiv; toAscList)</em> :: Set a &rarr; [a]</li>
 				<li>fromList :: [a] &rarr; Set a</li>
-			</ul>
-			<h4>Data.Vector</h4>
-			<p>
-			Import qualified. Functions in table above not listed. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed</code> has a nearly identical interface.
-			</p>
-			<p>
-			<em>u*</em> denotes presence of an unsafe variant obtainable by prefixing <code>unsafe</code> and camelCasing.
-			<em>[M]</em> denotes a monadic version (with a different type, working with Kleisli arrows).
-			</p>
-			<ul>
-				<li>unsafeHead, unsafeLast, unsafeInit, unsafeTail, unsafeTake, unsafeDrop</li>
-				<li>slice :: Int &rarr; Int &rarr; Vector a &rarr; Vector a <em>starting index, length</em></li>
-				<li><em>u*</em> indexM, <em>u*</em> headM, <em>u*</em> lastM :: Monad m &rArr; Vector a &rarr; (Int &rarr;) m a <em>allows forcing strictness</em></li>
-				<li>generate <em>[M]</em> :: Int &rarr; (Int &rarr; a) &rarr; Vector a</li>
-				<li>iterateN :: Int &rarr; (a &rarr; a) &rarr; a &rarr; Vector a</li>
-				<li>unfoldr :: <em>...</em></li>
-				<li>create :: (<em>forall</em> s. ST s (MVector s a)) &rarr; Vector a</li>
-				<li>(//) :: Vector a &rarr; [(Int, a)] &rarr; Vector a</li>
-				<li>update :: Vector a &rarr; Vector (Int, a) &rarr; Vector a</li>
-				<li>modify :: (<em>forall</em> s. MVector s a &rarr; ST s ()) &rarr; Vector a &rarr; Vector a</li>
-				<li>indexed :: Vector a &rarr; Vector (Int, a)</li>
-				<li>imap :: (Int &rarr; a &rarr; b) &rarr; Vector a &rarr; Vector b</li>
-				<li>ifilter :: (Int &rarr; a &rarr; Bool) &rarr; Vector a &rarr; Vector a</li>
-				<li>maxIndex, minIndex[By] :: <em>...</em></li>
-				<li>fromList :: <em>...</em></li>
-				<li>freeze :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; m (Vector a)</li>
-				<li>thaw :: PrimMonad m &rArr; Vector a &rarr; m (MVector (PrimState m) a)</li>
-				<li>copy :: PrimMonad m &rArr; MVector (PrimState m) a &rarr; Vector a &rarr; m ()</li>
-			</ul>
-			<h4>Data.Vector.Mutable</h4>
-			<p>
-			Import qualified. Obvious functions' type signatures not given. <code>Data.Vector.Unboxed.Mutable</code> has a nearly identical interface.
-			</p>
-			<p>
-			Constructors yield <code>PrimMonad m &rArr; m (MVector (PrimState m) a)</code>;
-			destructive functions take and manipulate <code>PrinMonad m &rArr; MVector (PrimState m) a</code>.
-			These constraints are not shown below for simplicity.
-			Note that the slicing functions are pure and yield views through which the original vector can be modified.
-			Interface with pure Vector code using Data.Vector's create, modify, freeze, thaw, or copy.
-			</p>
-			<ul>
-				<li>data MVector s a</li>
-				<li>type IOVector = MVector RealWorld <em>for IO monad</em></li>
-				<li>type STVector s = MVector s <em>for ST monad</em></li>
-				<li>length, null, head, last, init, tail, take, drop, splitAt :: <em>... (also have unsafe variants)</em></li>
-				<li>new :: Int &rarr; m <em>(MVector ... a)</em></li>
-				<li>replicate :: Int &rarr; a &rarr; m <em>(MVector ... a)</em></li>
-				<li>replicateM :: Int &rarr; m a &rarr; m <em>(MVector ... a)</em></li>
-				<li>u* read :: <em>(MVector ... a)</em> &rarr; Int &rarr; m a</li>
-				<li>u* write :: <em>(MVector ... a)</em> &rarr; Int &rarr; a &rarr; m</li>
-				<li>u* swap :: <em>(MVector ... a)</em> &rarr; Int &rarr; Int &rarr; m</li>
 			</ul>
 			<h4>Debug.Trace</h4>
 			<ul>
