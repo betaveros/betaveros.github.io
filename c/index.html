@@ -430,33 +430,35 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>maxIndex, minIndex[By] :: <em>...</em></li>
 				<li>fromList :: <em>...</em></li>
 			</ul>
-			<h4>Data.ByteString[.Char8]</h4>
-			<p>This type is not actually parametrized. Below, <code>a</code> is <code>Word8</code> or <code>Char</code> depending on what you import. Both modules use the same type <code>ByteString</code>, just providing different interfaces.</p>
-			<ul>
-				<li>pack :: [a] &rarr; ByteString</li>
-				<li>unpack :: ByteString &rarr; [a]</li>
-				<li>uncons :: ByteString &rarr; Maybe (a, ByteString)</li>
-				<li>unsnoc :: ByteString &rarr; Maybe (ByteString, a)</li>
-				<li>copy :: ByteString &rarr; ByteString <em>O(n), prevent a slice from keeping reference to rest of string</em></li>
-				<li>intersperse :: a &rarr; ByteString &rarr; ByteString</li>
-				<li>intercalate :: ByteString &rarr; [ByteString] &rarr; ByteString</li>
-				<li>transpose :: [ByteString] &rarr; [ByteString]</li>
-				<li>split :: a &rarr; ByteString &rarr; [ByteString]</li>
-				<li>splitWith :: (a &rarr; Bool) &rarr; ByteString &rarr; [ByteString]</li>
-				<li>is{Pre|Suf|In}fixOf :: ByteString &rarr; ByteString &rarr; Bool</li>
-				<li><em>[.Char8 only]</em> readInt :: ByteString &rarr; Maybe (Int, ByteString)</li>
-				<li><em>[.Char8 only]</em> readInteger :: ByteString &rarr; Maybe (Integer, ByteString)</li>
-				<li><em>[.Char8 only]</em> lines, words :: ByteString &rarr; [ByteString]</li>
-				<li><em>[.Char8 only]</em> unlines, unwords :: [ByteString] &rarr; ByteString</li>
-				<li>getLine :: IO ByteString</li>
-				<li>getContents :: IO ByteString</li>
-				<li>putStr :: IO ByteString</li>
-				<li><em>[deprecated for Data.ByteString, OK for .Char8]</em> putStrLn :: IO ByteString</li>
-				<li>interact :: (ByteString &rarr; Bytestring) &rarr; IO ()</li>
-				<li>readFile :: FilePath &rarr; IO ByteString</li>
-				<li>writeFile :: FilePath &rarr; ByteString &rarr; IO ()</li>
-				<li>appendFile :: FilePath &rarr; ByteString &rarr; IO ()</li>
-			</ul>
+			<h4>Data.ByteString[.Char8] | Data.Text (not mentioned in below table, plus copy)</h4>
+			<p>a is the element type, Word8 or Char. S is the string type, ByteString or Text.</p>
+			<table class="padded">
+				<tr><th>Data.ByteString[.Char8]</th><th>Data.Text</th></tr>
+				<tr><td colspan="2">pack :: [a] &rarr; S<br/>unpack :: S &rarr; [a]</td></tr>
+				<tr><td colspan="2">uncons :: S &rarr; Maybe (a, S)</td></tr>
+				<tr><td>unsnoc :: ByteString &rarr; Maybe (ByteString, a)</td><td class="empty"></td></tr>
+				<tr><td colspan="2">copy :: S &rarr; S <em>O(n), prevent a slice from keeping reference to rest of string</em></td></tr>
+				<tr><td colspan="2">intersperse :: a &rarr; S &rarr; S<br/>intercalate :: S &rarr; [S] &rarr; S</td></tr>
+				<tr><td colspan="2">transpose :: [S] &rarr; [S]</td></tr>
+				<tr><td>split :: a &rarr; ByteString &rarr; [ByteString]</td><td class="empty"></td></tr>
+				<tr><td class="empty"></td><td>splitOn :: Text &rarr; Text &rarr; [Text]</td></tr>
+				<tr><td>splitWith :: (a &rarr; Bool) &rarr; ByteString &rarr; [ByteString]</td><td>split :: (Char &rarr; Bool) &rarr; Text &rarr; [Text]</tr>
+				<tr><td colspan="2">is{Pre|Suf|In}fixOf :: S &rarr; S &rarr; Bool</td></tr>
+				<tr><td class="empty"></td><td>replace :: Text <em>(needle)</em> &rarr; Text <em>(replacement)</em> &rarr; Text <em>(haystack)</em> &rarr; Text</td></tr>
+				<tr><td class="empty"></td><td>strip, stripStart, stripEnd :: Text &rarr; Text</td></tr>
+				<tr><td><em>[.Char8 only]</em><br/>readInt :: ByteString &rarr; Maybe (Int, ByteString)<br/>readInteger :: ByteString &rarr; Maybe (Integer, ByteString)</td><td><em>import Data.Text.Read</em><br/>type Reader a = Text &rarr; Either String (a, Text)<br/><br/>decimal, hexadecimal :: Integral a &rArr; Reader a<br/>double :: Reader Double<br/>rational :: Fractional a &rArr; Reader a<br/>signed :: Num a &rArr; Reader a &rarr; Reader a</tr>
+				<tr><td colspan="2"><em>[.Char8 only]</em> lines, words :: S &rarr; [S]</td></tr>
+				<tr><td colspan="2"><em>[.Char8 only]</em> unlines, unwords :: [S] &rarr; S</td></tr>
+				<tr><td class="empty"></td><th>Data.Text.IO</th></tr>
+				<tr><td colspan="2">getLine :: IO S</td></tr>
+				<tr><td colspan="2">getContents :: IO S</td></tr>
+				<tr><td colspan="2">putStr :: S &rarr; IO ()</td></tr>
+				<tr><td colspan="2"><em>[deprecated for Data.ByteString, OK for .Char8]</em> putStrLn :: IO S</td></tr>
+				<tr><td colspan="2">interact :: (S &rarr; S) &rarr; IO ()</td></tr>
+				<tr><td colspan="2">readFile :: FilePath &rarr; IO S</td></tr>
+				<tr><td colspan="2">writeFile :: FilePath &rarr; S &rarr; IO ()</td></tr>
+				<tr><td colspan="2">appendFile :: FilePath &rarr; S &rarr; IO ()</td></tr>
+			</table>
 			<h4>Data.Char</h4>
 			<ul>
 				<li>isControl, isSpace, isLower, isUpper, isAlpha, isAlphaNum, isPrint, isDigit, isOctDigit, isHexDigit, isLetter, isMark, isNumber, isPunctuation, isSymbol, isSeparator, isAscii, isLatin1, isAsciiUpper, isAsciiLower :: Char &rarr; Bool</li>
@@ -473,56 +475,60 @@ std::qsort(arr, n, sizeof(int), cmp);
 			<h4>Data.List and Friends</h4>
 			<p><code>C a</code> generically denotes a container containing objects of type <code>a</code>.</p>
 			<table class="padded">
-				<tr><th>Prelude<br/>Data.List<br/>[a]</th><th>Data.Sequence<br/>Seq a</th><th>Data.Vector<br/>Vector a</th><th>Data.ByteString[.Char8]<br/>ByteString<br/>(a = Word8 | Char)</th></tr>
-				<tr><td colspan="3"><em>Functor</em> fmap <em>&equiv;</em> (&lt;$&gt;)</td><td class="empty"></td></tr>
-				<tr><td colspan="3"><em>Applicative</em> pure, (&lt;*&gt;)</td><td class="empty"></td></tr>
-				<tr><td colspan="3"><em>Monad</em> return, (&gt;&gt;=), <em>...</em></td><td class="empty"></td></tr>
-				<tr><td colspan="3"><em>MonadPlus</em> mzero, mplus, <em>...</em></td><td class="empty"></td></tr>
+				<tr><th>Prelude<br/>Data.List<br/>[a]</th><th>Data.Sequence<br/>Seq a</th><th>Data.Vector<br/>Vector a</th><th>Data.ByteString[.Char8]<br/>ByteString<br/>(a = Word8 | Char)</th><th>Data.Text, Data.Text.IO, Data.Text.Read<br/>Text<br/>a = Char</th></tr>
+				<tr><td colspan="3"><em>Functor</em> fmap <em>&equiv;</em> (&lt;$&gt;)</td><td class="empty" colspan="2"></td></tr>
+				<tr><td colspan="3"><em>Applicative</em> pure, (&lt;*&gt;)</td><td class="empty" colspan="2"></td></tr>
+				<tr><td colspan="3"><em>Monad</em> return, (&gt;&gt;=), <em>...</em></td><td class="empty" colspan="2"></td></tr>
+				<tr><td colspan="3"><em>MonadPlus</em> mzero, mplus, <em>...</em></td><td class="empty" colspan="2"></td></tr>
 				<tr><td colspan="3"><em>Foldable</em> fold, foldMap, fold{lr1'},
 						<br/>&nbsp;&nbsp;&nbsp;&nbsp;concat <em>&sub;</em> msum, asum <em>&sub;</em> fold
 						<br/>&nbsp;&nbsp;&nbsp;&nbsp;concatMap <em>&sub;</em> foldMap
 						<br/>&nbsp;&nbsp;traverse_, mapM_, forM_, sequence_, toList <em>...</em>
 						<br/>&nbsp;&nbsp;and, or, any, all, sum, product<br/>&nbsp;&nbsp;maximum[By], minimum[By], elem, notElem, find
-				</td><td><em>&Delta; package contains many similar [Word8|Char]-only functions with same names</em><br/>unpack :: BS &rarr; [Char]</td></tr>
-				<tr><td colspan="3"><em>Traversable</em> traverse, sequenceA, mapM, sequence</td><td class="empty"></td></tr>
-				<tr><td colspan="4"><em>Monoid</em> mempty, mappend <em>&equiv;</em> (&lt;&gt;)</td></tr>
-				<tr><td>(++)</td><td>(&gt;&lt;)</td><td>(++)</td><td>append</td></tr>
-				<tr><td>[]</td><td colspan="3">empty</td></tr>
-				<tr><td class="empty"></td><td colspan="3">singleton :: a &rarr; C a</td></tr>
-				<tr><td colspan="4">null</td></tr>
-				<tr><td>length</td><td>size</td><td colspan="2">length</td></tr>
-				<tr><td colspan="4">replicate :: Int &rarr; a &rarr; C a</td></tr>
-				<tr><td><em>import Control.Monad</em><br/>replicateM :: Int &rarr; m a &rarr; m [a]</td><td colspan="2">replicateM :: Int &rarr; m a &rarr; m (C a)</td><td class="empty"></td></tr>
-				<tr><td colspan="4">head, last</td></tr>
-				<tr><td>(!!)</td><td>index</td><td>(!)<br/>(!?)<br/>unsafeIndex</td><td>index</td></tr>
-				<tr><td colspan="4">tail, init</td></tr>
-				<tr><td colspan="4">take, drop, splitAt</td></tr>
+				</td><td colspan="2"><em>&Delta; package contains many similar [Word8|Char]-only functions with same names</em><br/>unpack :: BS &rarr; [a]<br/>unpack :: Text &rarr; [Char]</td></tr>
+				<tr><td colspan="3"><em>Traversable</em> traverse, sequenceA, mapM, sequence</td><td class="empty" colspan="2"></td></tr>
+				<tr><td colspan="5"><em>Monoid</em> mempty, mappend <em>&equiv;</em> (&lt;&gt;)</td></tr>
+				<tr><td>(++)</td><td>(&gt;&lt;)</td><td>(++)</td><td colspan="2">append</td></tr>
+				<tr><td>[]</td><td colspan="4">empty</td></tr>
+				<tr><td class="empty"></td><td colspan="4">singleton :: a &rarr; C a</td></tr>
+				<tr><td colspan="5">null</td></tr>
+				<tr><td class="empty" colspan="2"></td><td>force :: Vector a &rarr; Vector a</td><td colspan="2">copy :: {BS|Text} &rarr; {BS|Text}</td></tr>
+				<tr><td>length</td><td>size</td><td colspan="3">length</td></tr>
+				<tr><td class="empty" colspan="4"></td><td>compareLength :: Text &rarr; Int &rarr; Ordering</td></tr>
+				<tr><td colspan="4">replicate :: Int &rarr; a &rarr; C a</td><td>replicate :: Int &rarr; Text &rarr; Text</td></tr>
+				<tr><td><em>import Control.Monad</em><br/>replicateM :: Int &rarr; m a &rarr; m [a]</td><td colspan="2">replicateM :: Int &rarr; m a &rarr; m (C a)</td><td class="empty" colspan="2"></td></tr>
+				<tr><td colspan="5">head, last</td></tr>
+				<tr><td>(!!)</td><td>index</td><td>(!)<br/>(!?)<br/>unsafeIndex</td><td colspan="2">index</td></tr>
+				<tr><td colspan="5">tail, init</td></tr>
+				<tr><td colspan="5">take, drop, splitAt</td></tr>
 				<tr><td colspan="2">tails, inits</td><td class="empty"></td><td colspan="2">tails, inits</td></tr>
-				<tr><td colspan="4">map</td></tr>
-				<tr><td colspan="4">reverse</td></tr>
-				<tr><td colspan="4">filter</td></tr>
-				<tr><td>(:)</td><td>(&lt;|)</td><td colspan="2">cons</td></tr>
-				<tr><td class="empty"></td><td>(|&gt;)</td><td colspan="2">snoc</td></tr>
-				<tr><td colspan="4">scan[lr][1]</td></tr>
-				<tr><td>takeWhile</td><td>takeWhileL<br/>takeWhileR</td><td colspan="2">takeWhile</td></tr>
-				<tr><td>dropWhile</td><td>dropWhileL<br/>dropWhileR</td><td colspan="2">dropWhile</td></tr>
+				<tr><td colspan="5">map</td></tr>
+				<tr><td colspan="5">reverse</td></tr>
+				<tr><td colspan="5">filter</td></tr>
+				<tr><td>(:)</td><td>(&lt;|)</td><td colspan="3">cons</td></tr>
+				<tr><td class="empty"></td><td>(|&gt;)</td><td colspan="3">snoc</td></tr>
+				<tr><td colspan="5">scan[lr][1]</td></tr>
+				<tr><td>takeWhile</td><td>takeWhileL<br/>takeWhileR</td><td colspan="3">takeWhile</td></tr>
+				<tr><td>dropWhile</td><td>dropWhileL<br/>dropWhileR</td><td colspan="2">dropWhile</td><td>dropWhile<br/>dropWhileEnd<br/>dropAround</td></tr>
 				<tr>
 					<td>elemIndex<br/>findIndex</td>
 					<td>elemIndex{LR}<br/>findIndex</td>
 					<td>elemIndex<br/>findIndex</td>
 					<td>elemIndex[End]<br/>findIndex <em>no [End]!</em></td>
+					<td>findIndex</td>
 				<tr>
 					<td>elemIndices<br/>findIndices<br/>:: &rarr; [Int]</td>
 					<td>elemIndices{LR}<br/>findIndices{LR}<br/>:: &rarr; [Int]</td>
 					<td>elemIndices<br/>findIndices<br/>:: &rarr; Vector Int</td>
 					<td>elemIndices<br/>findIndices<br/>:: &rarr; [Int]</td>
+					<td class="empty"></td>
 				</tr>
-				<tr><td>span</td><td>spanl<br/>spanr</td><td>span</td><td>span<br/>spanEnd</td></tr>
-				<tr><td>break</td><td>breakl<br/>breakr</td><td>break</td><td>break<br/>breakEnd</td></tr>
-				<tr><td colspan="2">partition</td><td>partition<br/>unstablePartition</td><td>partition</td></tr>
-				<tr><td>sort[By]</td><td>sort[By]<br/>unstableSort[By]</td><td colspan="2">sort</td></tr>
-				<tr><td>zip<em>{..7}</em></td><td>zip<em>{..4}</em></td><td>zip<em>{..6}</em></td><td>zip :: BS &rarr; BS &rarr; [(a,a)]</td></tr>
-				<tr><td>zipWith<em>{..7}</em></td><td>zipWith<em>{..4}</em></td><td>zipWith<em>{..6}</em></td><td>zipWith :: (a &rarr; a &rarr; b) &rarr; BS &rarr; BS &rarr; [b]</td></tr>
+				<tr><td>span</td><td>spanl<br/>spanr</td><td>span</td><td>span<br/>spanEnd</td><td>span</td></tr>
+				<tr><td>break</td><td>breakl<br/>breakr</td><td>break</td><td>break<br/>breakEnd</td><td>span</td></tr>
+				<tr><td colspan="2">partition</td><td>partition<br/>unstablePartition</td><td colspan="2">partition</td></tr>
+				<tr><td>sort[By]</td><td>sort[By]<br/>unstableSort[By]</td><td colspan="2">sort</td><td class="empty"></td></tr>
+				<tr><td>zip<em>{..7}</em></td><td>zip<em>{..4}</em></td><td>zip<em>{..6}</em></td><td colspan="2">zip :: (BS|T) &rarr; (BS|T) &rarr; [(a,a)]</td></tr>
+				<tr><td>zipWith<em>{..7}</em></td><td>zipWith<em>{..4}</em></td><td>zipWith<em>{..6}</em></td><td colspan="2">zipWith :: (a &rarr; a &rarr; b) &rarr; (BS|T) &rarr; (BS|T) &rarr; [b]</td></tr>
 			</table>
 			<h4>Data.List (not mentioned above)</h4>
 			<p><em>Note:</em> Nearly every function on Foldables, defined in Data.Foldable, has a list-specific version in Data.List; see above. These are not listed although they're technically not the same functions.</p>
