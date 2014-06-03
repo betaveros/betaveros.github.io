@@ -506,6 +506,17 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<tr><td colspan="4">scan[lr][1]</td></tr>
 				<tr><td>takeWhile</td><td>takeWhileL<br/>takeWhileR</td><td colspan="2">takeWhile</td></tr>
 				<tr><td>dropWhile</td><td>dropWhileL<br/>dropWhileR</td><td colspan="2">dropWhile</td></tr>
+				<tr>
+					<td>elemIndex<br/>findIndex</td>
+					<td>elemIndex{LR}<br/>findIndex</td>
+					<td>elemIndex<br/>findIndex</td>
+					<td>elemIndex[End]<br/>findIndex <em>no [End]!</em></td>
+				<tr>
+					<td>elemIndices<br/>findIndices<br/>:: &rarr; [Int]</td>
+					<td>elemIndices{LR}<br/>findIndices{LR}<br/>:: &rarr; [Int]</td>
+					<td>elemIndices<br/>findIndices<br/>:: &rarr; Vector Int</td>
+					<td>elemIndices<br/>findIndices<br/>:: &rarr; [Int]</td>
+				</tr>
 				<tr><td>span</td><td>spanl<br/>spanr</td><td>span</td><td>span<br/>spanEnd</td></tr>
 				<tr><td>break</td><td>breakl<br/>breakr</td><td>break</td><td>break<br/>breakEnd</td></tr>
 				<tr><td colspan="2">partition</td><td>partition<br/>unstablePartition</td><td>partition</td></tr>
@@ -524,10 +535,6 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<li>iterate :: (a &rarr; a) &rarr; a &rarr; [a]</li>
 				<li>repeat :: a &rarr; [a]</li>
 				<li>cycle :: [a] &rarr; [a]</li>
-				<li>elemIndex :: Eq a &rArr; a &rarr; [a] &rarr; Maybe Int</li>
-				<li>elemIndices :: Eq a &rArr; a &rarr; [a] &rarr; [Int]</li>
-				<li>findIndex :: (a &rarr; Bool) &rarr; [a] &rarr; Maybe Int</li>
-				<li>findIndices :: (a &rarr; Bool) &rarr; [a] &rarr; [Int]</li>
 				<li>lines, words :: String &rarr; [String]</li>
 				<li>unlines, unwords :: [String] &rarr; String</li>
 				<li>nub :: Eq a &rArr; [a] &rarr; [a]</li>
