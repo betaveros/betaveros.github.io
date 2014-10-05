@@ -838,13 +838,37 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<tr><td>001 1000</td><td>030</td><td>24</td><td>18 </td><td>&#x2418; CAN</td><td class="cg">Cancel</td></tr>
 				<tr><td>001 1001</td><td>031</td><td>25</td><td>19 </td><td>&#x2419; EM</td><td class="cg">End of Medium</td></tr>
 				<tr><td>001 1010</td><td>032</td><td>26</td><td>1A </td><td>&#x241A; SUB</td><td class="cg">Substitute</td></tr>
-				<tr><td>001 1011</td><td>033</td><td>27</td><td>1B </td><td>&#x241B; ESC</td><td class="cg">Escape[i]</td></tr>
+				<tr><td>001 1011</td><td>033</td><td>27</td><td>1B </td><td>&#x241B; ESC</td><td class="cr">Escape[i]</td></tr>
 				<tr><td>001 1100</td><td>034</td><td>28</td><td>1C </td><td>&#x241C; FS</td><td class="cg">File Separator</td></tr>
 				<tr><td>001 1101</td><td>035</td><td>29</td><td>1D </td><td>&#x241D; GS</td><td class="cg">Group Separator</td></tr>
 				<tr><td>001 1110</td><td>036</td><td>30</td><td>1E </td><td>&#x241E; RS</td><td class="cg">Record Separator</td></tr>
 				<tr><td>001 1111</td><td>037</td><td>31</td><td>1F </td><td>&#x241F; US</td><td class="cg">Unit Separator</td></tr>
 			</table>
 		</div>
+		<h3>ANSI Escape</h3>
+		<p><code><em>&#x241B;[</em>0m</code>. &#x241B; = chr 27 </p>
+		<p><code>0</code> can be replaced by a sequence of semicolon-separated numbers.</p>
+		<table>
+			<tr><th>Number</th><th>Effect</th></tr>
+			<tr><td>0</td><td>Reset</td></tr>
+			<tr><td>1</td><td>Bold</td></tr>
+			<tr><td>4</td><td>Underscore</td></tr>
+			<tr><td>5</td><td>Blink</td></tr>
+			<tr><td>7</td><td>Reverse video</td></tr>
+			<tr><td>8</td><td>Concealed</td></tr>
+			<tr><td>30~37</td><td>Foreground color</td></tr>
+			<tr><td>40~47</td><td>Background color</td></tr>
+		</table>
+		<table>
+			<tr><td>?0</td><td>Black</td></tr>
+			<tr><td>?1</td><td>Red</td></tr>
+			<tr><td>?2</td><td>Green</td></tr>
+			<tr><td>?3</td><td>Yellow</td></tr>
+			<tr><td>?4</td><td>Blue</td></tr>
+			<tr><td>?5</td><td>Magenta</td></tr>
+			<tr><td>?6</td><td>Cyan</td></tr>
+			<tr><td>?7</td><td>White</td></tr>
+		</table>
 		<h2 id="key"><span class="toggle" onClick="toggle('keycont');return false">Keyboards</span> <a href="#top">&uArr;</a></h2>
 		<div id="keycont">
 			<table class="padded">
