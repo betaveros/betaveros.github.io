@@ -10,6 +10,7 @@
     <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="/css/template.css" rel="stylesheet">
     <link href="/css/jellybeans.css" rel="stylesheet">
+    {% if page.extracss %}<link href="/css/{{ page.extrajs }}.css" rel="stylesheet">{% endif %}
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -45,6 +46,7 @@
     </div>
     <script src="/js/jquery-1.11.1.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
+    {% if page.extrajs %}<script src="/js/{{ page.extrajs }}.js"></script>{% endif %}
   </body>
 </html>
 
