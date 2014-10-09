@@ -4,6 +4,9 @@ A simple .txt record of all the less variables I changed from Bootstrap's defaul
 @text-color: #000;
 @brand-primary: #cc0000;
 
+@code-color: #008080;
+@code-bg: #f0f4f4;
+
 @navbar-default-color: #b99;
 @navbar-default-link-color: @navbar-default-color;
 @navbar-inverse-bg: #411;
