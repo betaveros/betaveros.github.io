@@ -710,10 +710,11 @@ std::qsort(arr, n, sizeof(int), cmp);
 			<p>The actual cheat sheet.</p>
 			<table>
 				<tr><th>Command</th><th colspan="4">Subcommands, flags, arguments</th><th>Description</th></tr>
-				<tr><td rowspan="35">git</td>
+				<tr><td rowspan="36">git</td>
 					<td colspan="4">status</td><td class="empty"></td></tr>
 				<tr><td colspan="4">hist</td><td>[alias]<br/>&nbsp; &nbsp; hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short<br/>(see <a href="http://gitimmersion.com/lab_10.html">git immersion</a>)</td></tr>
-				<tr><td rowspan="3">add</td><td colspan="3" class="cr">files</td><td class="empty"></td></tr>
+				<tr><td rowspan="4">add</td><td colspan="3" class="cr">files</td><td class="empty"></td></tr>
+				<tr><td>-p</td><td class="cr">files</td><td>interactively stage parts</td></tr>
 				<tr><td colspan="3">-u / --update</td><td>all modifications and deletions</td></tr>
 				<tr><td colspan="3">-A / --all</td><td>all additions, modifications, and deletions</td></tr>
 				<tr><td rowspan="3">commit</td><td colspan="4" class="empty">&empty;</td></tr>
