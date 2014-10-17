@@ -216,10 +216,16 @@ std::qsort(arr, n, sizeof(int), cmp);
 				<tr><td colspan="3" class="empty"></td><td colspan="5">count(E)</td><td colspan="4">contains(o)<br/>containsAll(collection)</td></tr>
 			</table>
 			<h3>I/O</h3>
-			<code>fgets(chararr, 1000001, stdin);</code>
+			<code>char buf[1008];</code>
+			<table>
+				<tr><th>code</th><th>until</th><th>reads it?</th><th>writes it?</th></tr>
+				<tr><td><code>scanf("%1004s", buf);</code></td><td>whitespace</td><td class="cr">no</td><td class="empty"></td></tr>
+				<tr><td><code>fgets(buf, 1004, stdin);</code></td><td>\n</td><td class="cg">yes</td><td class="cg">yes</td></tr>
+				<tr><td><code>cin.get(buf, 1004);</code></td><td>\n</td><td class="cr">no</td><td class="empty"></td></tr>
+				<tr><td><code>cin.getline(buf, 1004);</code></td><td>\n</td><td class="cg">yes</td><td class="cr">no</td></tr>
+			</table>
 			<table>
 				<tr><td><code>%d</code> OR <code>%i</code></td><td>int</td></tr>
-				<tr><td><code>%s</code></td><td>string (input: until whitespace)</td></tr>
 				<tr><td><code>%c</code></td><td>char (input: may be \n)</td></tr>
 			</table>
 			<p><em>#include &lt;iostream&gt;</em> and <em>#include &lt;iomanip&gt;</em></p>
