@@ -4,6 +4,14 @@ A simple .txt record of all the less variables I changed from Bootstrap's defaul
 @text-color: #000;
 @brand-primary: #cc0000;
 
+@table-bg-hover: #fafafa;
+
+@border-radius-base: 8px;
+@border-radius-large: 12px;
+@border-radius-small: 6px;
+
+@container-large-desktop: ((940px + @grid-gutter-width));
+
 @code-color: #008080;
 @code-bg: #f0f4f4;
 
