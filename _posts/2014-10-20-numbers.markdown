@@ -1,0 +1,105 @@
+---
+layout: default
+sel: blog
+title: Numbers
+---
+
+Continuing the porting of stuff from betaveros.stash, and adding more stuff.
+
+Mnemonic
+--------
+
+<div class="col-md-6">
+<p>Here's my mnemonic table for digits, inspired by an old Martin Gardner column. I wrote from memory the first 132 digits of 2012! correctly at IMO 2012 with this table. I had remembered more, but unfortunately, if I recall correctly, I confused myself over whether I had encoded a 5 or a 2 by the S of "nose", because this is supposed to be more of a phonetic code than a spelling one &mdash; otherwise double letters would be confusing and lots of randomly appearing digraphs would be wasted, because English is weird.</p>
+<p>Although most of the associations are completely changed, the set of unused consonants is the same. They spell WHY.</p>
+</div>
+
+<div class="col-md-6">
+<div class="panel panel-default">
+<div class="panel-body">
+<table class='table table-condensed table-hover'>
+<tr><th>digit</th><th>consonant(s)</th><th>mnemonic</th></tr>
+<tr><td>1</td><td>L</td><td>l33t</td></tr>
+<tr><td>2</td><td>Z(, J, CH, TH)</td><td>l33t</td></tr>
+<tr><td>3</td><td>M</td><td>tilt head sideways</td></tr>
+<tr><td>4</td><td>F(, V)</td><td><strong>F</strong>our</td></tr>
+<tr><td>5</td><td>S(, SH)</td><td>l33t</td></tr>
+<tr><td>6</td><td>G(, K)</td><td>l33t</td></tr>
+<tr><td>7</td><td>T(, D)</td><td>l33t</td></tr>
+<tr><td>8</td><td>B(, P)</td><td>l33t</td></tr>
+<tr><td>9</td><td>N</td><td><strong>N</strong>ine</td></tr>
+<tr><td>0</td><td>R</td><td>ze<strong>R</strong>o, or it's a <strong>R</strong>ound circle</td></tr>
+</table>
+</div></div></div>
+
+<div class="clearfix"></div>
+
+Bits & Primes
+-------------
+
+<abbr title='2^4 × 3^4 × 5 × 7 × 11 × 13 × 17 × 19'>2095133040</abbr> has **1600** factors, the most of any positive integer under 2<sup>31</sup> &minus; 1. Ref: [A002182: highly composite numbers, def. 1](http://oeis.org/A002182/b002182.txt)
+
+There are 105097565 (1.05e8) primes under 2<sup>31</sup> &minus; 1.
+
+Miller-Rabin primality testing does not miss any composites:
+
+- below 2<sup>31</sup> if the first 3 primes (2, 3, 5) are used as witnesses.
+- below 2<sup>32</sup> if the first 4 primes (2, 3, 5, 7) are used as witnesses.
+- below 2<sup>64</sup> if the first 12 primes (2 to 37 inclusive) are used as witnesses.
+
+See [A014233](http://oeis.org/A014233).
+
+To verify implementations: there are <abbr title='(m: "bizarre choice", because why would you need Miller-Rabin for such small numbers?)'><strong>82025</strong></abbr> primes beneath `(1 << 20)` and <abbr title='(m: "mutable tool", as my implementation will probably get mutated when I recode it)'><strong>37871</strong></abbr> primes between `(1 << 40)` and `(1 << 40) + (1 << 20)`.
+
+<div class="col-md-6">
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">Primes in Decimal</h3></div>
+<div class="panel-body">
+<ul>
+<li>1881881</li>
+<li>99990001</li>
+<li>140000041</li>
+<li>987654323</li>
+<li>999299999</li>
+<li>999992999</li>
+<li>999999001</li>
+<li>999999929</li>
+<li>1000000007</li>
+<li>1000000009</li>
+<li>1000000021</li>
+<li>1234567891</li>
+<li>2000000011</li>
+</ul>
+</div></div></div>
+<div class="col-md-6">
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">Primes in Hexadecimal</h3></div>
+<div class="panel-body">
+<ul>
+<li><code>0xdefaced</code></li>
+<li><code>0xfacade5</code></li>
+<li><code>0x37beefed</code></li>
+<li><code>0x3c0ffee1</code></li>
+<li><code>0x3de1f1ed</code></li>
+<li><code>0x3efface5</code></li>
+<li><code>0x5eedbed5</code></li>
+</ul>
+</div></div></div>
+<div class="clearfix"></div>
+
+Floating Point
+--------------
+
+- Single-precision: sign 1b, exponent 8b, fraction 23+1b implied (= 6 ~ 9 decimal sigfigs)
+- Double-precision: sign 1b, exponent 11b, fraction 52+1b implied (= 15 ~ 17 decimal sigfigs)
+
+Special cases:
+
+- Exponent = 0
+  * fraction = 0: (±) zero
+  * fraction ≠ 0: "subnormal" number with implied bit set to 0 instead
+- Exponent = (FF or 3FF, maximum value in allocated bits)
+  * fraction = 0: (±) infinity
+  * fraction ≠ 0: NaN (sign ignored)
+    + top explicit fraction bit = 1: "quiet NaN"
+    + top explicit fraction bit = 0 (and rest ≠ 0): "signaling NaN"
