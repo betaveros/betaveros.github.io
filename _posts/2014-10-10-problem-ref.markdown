@@ -9,7 +9,9 @@ mathjax: true
 
 Certain notable problems that I don't want to look through a zillion pages to find.
 
-- [Iran TST 1996](http://www.artofproblemsolving.com/Forum/viewtopic.php?t=3547), notoriously reposted [at least 35 times on AoPS](http://www.artofproblemsolving.com/Forum/viewtopic.php?p=2089092#p2089092): if $$a, b, c \geq 0$$ then
+- [Iran TST 1996](http://www.artofproblemsolving.com/Forum/viewtopic.php?t=3547), notoriously reposted [at least 35 times on AoPS](http://www.artofproblemsolving.com/Forum/viewtopic.php?p=2089092#p2089092) (okay, many of these are actually modifications):
+
+  If $$x, y, z > 0$$ then
 
   $$
   (xy+yz+zx)\left(\frac{1}{(x+y)^2} + \frac{1}{(y+z)^2} + \frac{1}{(z+x)^2}\right) \geq \frac{9}{4}
