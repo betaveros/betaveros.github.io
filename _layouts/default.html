@@ -33,8 +33,9 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            {% if page.sel == 'home' %} <li class="active"><a href="/">Home</a></li> {% else %} <li><a href="/">Home</a></li> {% endif %}
-            {% if page.sel == 'blog' %} <li class="active"><a href="/blog/">"Blog"</a></li> {% else %} <li><a href="/blog/">"Blog"</a></li> {% endif %}
+            {% if page.category == 'home' %} <li class="active"><a href="/">Home</a></li> {% else %} <li><a href="/">Home</a></li> {% endif %}
+            {% if page.category == 'code' %} <li class="active"><a href="/code/">Code</a></li> {% else %} <li><a href="/code/">Code</a></li> {% endif %}
+            {% if page.category == 'math' %} <li class="active"><a href="/math/">Math</a></li> {% else %} <li><a href="/math/">Math</a></li> {% endif %}
           </ul>
         </div><!--/.nav-collapse -->
       </div>

@@ -1,6 +1,6 @@
 ---
 layout: default
-sel: blog
+category: code
 title: Java Clipboards and Data Transfer
 ---
 (Ported from betaveros.stash. Wow, I get syntax highlighting and footnotes!)

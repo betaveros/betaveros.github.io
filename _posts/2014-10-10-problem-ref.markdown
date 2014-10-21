@@ -1,6 +1,6 @@
 ---
 layout: default
-sel: blog
+category: math
 title: Problem Reference
 mathjax: true
 ---

@@ -1,6 +1,6 @@
 ---
 layout: default
-sel: blog
+category: code
 title: Factorize
 extrajs: factorize
 extracss: factorize

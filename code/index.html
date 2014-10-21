@@ -1,0 +1,12 @@
+---
+layout: default
+category: code
+title: Code
+---
+<ul class="master">
+  {% for post in site.categories.code %}
+    <li>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+    </li>
+  {% endfor %}
+</ul>
