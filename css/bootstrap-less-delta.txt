@@ -2,6 +2,7 @@ A simple .txt record of all the less variables I changed from Bootstrap's defaul
 
 @body-bg: #eee;
 @text-color: #000;
+@gray-lighter: #ddd;
 @brand-primary: #cc0000;
 
 @table-bg-hover: #fafafa;
@@ -24,3 +25,6 @@ A simple .txt record of all the less variables I changed from Bootstrap's defaul
 @panel-bg: #f5f5f5;
 @panel-footer-bg: #fafafa;
 @panel-default-heading-bg: #fafafa;
+
+@blockquote-border-color: @gray-light;
+@page-header-border-color: @gray-light;
