@@ -1,0 +1,56 @@
+---
+layout: default
+category: math
+title: Extreme Value Theorem
+mathjax: true
+---
+
+The "Extreme Value Theorem", according to my old calculus textbook (Larson, Hostetler, Edwards, 8th ed.), is "A continuous function defined on a closed interval attains a minimum and a maximum on the interval." The calculus textbook continues,
+
+> Although [it] is intuitively plausible, a proof of this theorem is not within the scope of this text.
+
+Of course Rudin proves this, but coming from an unrigorous calculus background, the required deductions span three chapters and are very hard to motivate. That's probably because it proves things for extremely general objects.
+
+In particular, I have no idea why the definition of "compact" is what it is: "a set for which every open cover has a finite subcovering". Therefore, here's a less general but more motivated proof, from the grounds-up.
+
+## Definitions
+
+**Real numbers** are hard to define. We only need to know that we can add, subtract, multiply, divide, and compare them, i.e. they're an ordered field, and that they have the **least-upper-bound property**. That is, if we have a set of real numbers that are bounded above, then the set has a _least upper bound_, a bound that "perfectly fits" the set. Precisely, the bound must be such that every element of the set is less than or equal to it, and no smaller value satisfies the same property.
+
+(The rationals don't have this property, since $$ \{x \in \mathbb{Q} \mid x^2 < 2\} $$ has no rational that bounds it perfectly. For any bound, you can find a smaller bound between it and that beastly irrational $$ \sqrt{2} $$.)
+
+(Also note that the least-upper-bound property quickly implies its mirror image, the greatest-lower-bound property: just consider the least-upper-bound of the lower bounds of some set.)
+
+A set is **bounded** if there's a fixed number that's greater than the distance between any two points. Easy.
+
+A set $$ S $$ is **closed**, intuitively speaking, if it contains its "boundary". Rigorously, $$ S $$ is closed iff it contains all its _limit points_, that is, any point such that for any distance $$ d $$, it's closer than distance $$ d $$ to a point in $$ S $$. So there are no fuzzy edges that $$ S $$ gets infinitely close to but never reaches.
+
+To keep things simple, we shall decree, technically incorrectly, that **a set is compact iff it is closed and bounded** for this page.
+
+## Attempting the Proof
+
+Now we try proving the Extreme Value Theorem. So: we have a continuous function $$ f : [a, b] \to \mathbb{R} $$. Since we want to use continuity, our imagined proof will end with taking a limit of $$ f $$. In both cases it's pretty clear what we want the limit to be equal to, so here's what we end up with:
+
+First, we prove $$ f $$ is bounded on $$ [a, b] $$ (otherwise where do we get a maximum?) If it isn't, then we can pick a sequence of points $$ x_1, x_2, \ldots $$ in $$ [a, b] $$ so that $$ f(x_i) \to \pm \infty $$ as $$ i \to \infty $$. Then we <em class="text-danger">???!!!???</em>, so we have $$ c $$ so that $$ \lim_{x \to c} f(x) \to \pm \infty $$, which is impossible as this limit should be defined and equal to $$ f(c) $$ (and thus finite).
+
+Next, we prove $$ f $$'s range is closed on $$ [a, b] $$. Suppose we know that for some value $$ y $$, we can pick $$ x $$ so that $$ f(x) $$ is arbitrarily close to $$ y $$ (i.e. $$ y $$ is "on the boundary"). More precisely, we can pick a sequence of points $$ x_1, x_2, \ldots $$ in $$ [a, b] $$ so that $$ f(x_i) \to y $$ as $$ i \to \infty $$. Then we <em class="text-danger">???!!!???</em>, so we have $$ c $$ so that $$ \lim_{x \to c} f(x) = y $$, so by continuity $$ f(c) = y $$. Thus the boundary points of $$ f $$'s range are in $$ f $$'s range.
+
+Thus, $$ f $$'s range is closed and bounded. Immediately we obtain that its range has and includes a least-upper-bound, so it attains its maximum.
+
+Q<em class="text-danger">?!?</em>E<em class="text-danger">?!?</em>D
+
+## Plugging the Proof
+
+So this is what our proof looks like overall. But of course this is not at all a valid proof, since there are two glaring red gaps here. What could we prove that fills them?
+
+In both cases, we have a bunch of points $$ x_1, x_2, \ldots $$, and we want some point $$ c $$ so that a subsequence of $$ \{x_i\} $$ converges to $$ c $$. And that's all we need to prove now! (Essentially the same thing is proved as 2.37 in Rudin, but it doesn't seem to get used much.)
+
+**Lemma.** Let $$ \{x_i\} $$ be an infinite sequence of points in a closed interval $$ [a, b] $$. Then there exists a subsequence $$ \{x_{j_i}\} $$ that converges to a point $$ c $$ in $$ [a, b] $$.
+
+Proving this is also rather intuitive. We just want to find a place where there are a lot of points from $$ \{x_i\} $$ nearby. So we cut $$ [a, b] $$ in half, into $$ [a, (a+b)/2] $$ and $$ [(a+b)/2, b] $$. At least one of these intervals contains infinitely many points of the sequence $$ \{x_i\} $$.
+
+And we repeat! Keep cutting the interval with infinitely many points in half, and keep picking the half that still has infinitely many points. We get an infinite sequence of intervals, each of which is one of the halves of the previous one, and each of which contains infinitely many terms of the sequence.
+
+How do we pick $$ c $$? Well, we really want it to be in all of those intervals, and the least-upper-bound property comes in useful again: if the intervals are $$ [a_i, b_i] $$, we pick it to be the least-upper-bound of all the $$ a_i $$'s. So $$ c $$ would be at least as large as every $$ a_i $$, and since each $$ b_i $$ is an upper bound of all of the $$ a_i $$'s, our value of $$ c $$ is at most as large as every $$ b_i $$. So $$ c $$ is in all the intervals.
+
+Then to get a sequence that converges to $$ c $$, we just build a sequence of $$ x_{j_i} $$s by starting with a random $$ x $$, then picking the next one from the next interval $$ [a_i, b_i] $$ that comes after all the previous $$ x $$'s; since there are always infinitely many choices, such a choice always exists. And we're done!
