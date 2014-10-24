@@ -28,3 +28,9 @@ A simple .txt record of all the less variables I changed from Bootstrap's defaul
 
 @blockquote-border-color: @gray-light;
 @page-header-border-color: @gray-light;
+
+Prepend Ubuntu to @font-family-sans-serif
+Prepend "Ubuntu Mono" to @font-family-monospace
+
+In code.less, change code, kbd, kbd kbd, and pre to font-size: 100%;
+(Ubuntu Mono is smaller relative to Ubuntu compared to most other font pairings?)
