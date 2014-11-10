@@ -329,6 +329,19 @@ std::qsort(arr, n, sizeof(int), cmp);
 		</div>
 		<h2 id="haskell"><span class="toggle" onClick="toggle('haskellcont');return false">Haskell</span> <a href="#top">&uArr;</a></h2>
 		<div id="haskellcont">
+			<h3>Typeclass Syntax</h3>
+<pre>class Foo a where
+	foo :: a -&gt; a
+instance Foo Int where
+	foo = (+2)
+class Foo a =&gt; Bar a where
+	bar :: a -&gt; a
+instance Bar Int where
+	bar = subtract 2
+class (Foo a, Bar a) =&gt; Quux a where
+	quux :: a -&gt; a
+instance Quux Int where
+	quux = (*2)</pre>
 			<h3>from Functional Python</h3>
 			<table>
 				<tr><th>Python</th><th>Haskell</th></tr>
