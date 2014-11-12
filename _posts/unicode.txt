@@ -176,6 +176,8 @@ Custom: Whatever
 …	,3
 ℜ	RE
 ℑ	IM
+℘	wp	Weierstrass p, officially SCRIPT CAPITAL P, LaTeX \wp
+�	^?
 Arrows
 ←	<-
 ↑	-!

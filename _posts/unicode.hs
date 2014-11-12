@@ -59,7 +59,7 @@ header :: String
 header = unlines
 	[ "---"
 	, "layout: default"
-	, "sel: blog"
+	, "category: code"
 	, "title: Unicode"
 	, "---"
 	, "<p><a href='" ++ selfUrl ++ "'>Peek behind the scenes</a></p>"
