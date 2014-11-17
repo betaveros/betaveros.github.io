@@ -245,6 +245,31 @@ std::qsort(arr, n, sizeof(int), cmp);
 		</div>
 		<h2 id="web"><span class="toggle" onClick="toggle('webcont');return false">Web</span> <a href="#top">&uArr;</a></h2>
 		<div id="webcont">
+			<h3>CSS</h3>
+			<table>
+				<tr><td>E F</td><td>descendant</td></tr>
+				<tr><td>E &gt; F</td><td>child</td></tr>
+				<tr><td>E:first-child</td><td>first child of its parent</td></tr>
+				<tr><td>E + F</td><td>F preceded by E</td></tr>
+				<tr><td>E[foo]</td><td>has foo attribute</td></tr>
+				<tr><td>E[foo="bar"]</td><td>foo attribute equal to bar</td></tr>
+				<tr><td>E[foo~="warning"]</td><td>foo attribute, as space-separated list, equal to bar</td></tr>
+				<tr><td>E.x</td><td>class</td></tr>
+				<tr><td>E#id</td><td>id</td></tr>
+				<tr><td rowspan="2">background:</td><td>linear-gradient(<em>to right</em>, black, white);
+						<ul>
+							<li><em>to top;</em> [top, bottom, left, right]</li>
+							<li><em>to top right;</em></li>
+							<li><em>42deg;</em> (polar in vendor, navigational in official!)</li>
+						</ul>
+				</td></tr>
+				<tr><td>url("bg.png") black repeat-y fixed;
+						<ul>
+							<li>fixed (to viewport), local (w/ contents), scroll (w/ element), inherit</li>
+							<li>repeat-x, repeat-y, repeat, no-repeat, space, round (last two are obscure)</li>
+						</ul>
+				</td></tr>
+			</table>
 			<h3>HTTP Responses</h3>
 			<table>
 				<tr><th>Response</th><th>Name</th><th>Description</th></tr>
