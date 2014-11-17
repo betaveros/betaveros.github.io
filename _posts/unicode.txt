@@ -10,7 +10,8 @@ Non-obvious Greek letters
 η	y*	(eta) (WS: h)
 Arithmetic
 √	RT
-½	12	All simplified fractions with denominators 2,3,4,5,6,8 exist.
+½	12	All simplified fractions with denominators 2, 3, 4, 5, 6, 8 exist.
+−	-2	minus sign
 ×	*X	multiplication sign
 ÷	-:	division sign
 ∞	00	infinity (nb. that's two zeroes)
@@ -139,8 +140,14 @@ Custom: Geometric Things
 ▽	_v
 ◁	<|
 Punctuation
-†	/-	Dagger
-‡	/=	Double dagger
+–	-N	en dash
+—	-M	em dash
+‘	'6	left single quote
+’	'9	right single quote
+“	"6	left double quote
+”	"9	right double quote
+†	/-	dagger
+‡	/=	double dagger
 §	SE	SEction sign
 ¶	PI	PIlcrow (also available as <code>pp</code>?)
 Whatever
@@ -159,7 +166,15 @@ Whatever
 ₤	Li
 €	Eu
 ␣	Vs
-♡	cH
+♡	cH	<code>c[CDHS]</code> for the four suits
+♩	Md
+♪	M8
+♫	M2
+♭	Mb
+♮	Mx
+♯	MX
+✓	OK
+✗	XX
 ¯	'm	macron
 ツ	Tu	katakana
 Custom: Whatever
@@ -183,8 +198,11 @@ Arrows
 ↑	-!
 →	->
 ↓	-v
-↔
-↕
+↔	<>
+↕	UD
+⇐	<=
+⇒	=>
+⇔	==
 ↖
 ↗
 ↘
@@ -205,3 +223,14 @@ Arrows
 ⤚
 ⤛
 ⤜
+Bopomofo
+ㄅ	b4	etc. (pinyin + 4)
+ㄓ	zh	etc.
+ㄞ	ai	etc.
+Non-obvious Bopomofo
+ㄠ	au	not <code>ao</code> (although that is not taken so there's no reason not to set it)
+ㄤ	aN	N = ng
+ㄥ	eN	N = ng
+ㄩ	iu
+Custom: Bopomofo fix
+ㄠ	ao
