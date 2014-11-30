@@ -842,11 +842,20 @@ instance Quux Int where
 			<p>The actual cheat sheet.</p>
 			<table>
 				<tr><th>Command</th><th colspan="4">Subcommands, flags, arguments</th><th>Description</th></tr>
-				<tr><td rowspan="36">git</td>
+				<tr><td rowspan="37">git</td>
 					<td colspan="4">status</td><td class="empty"></td></tr>
 				<tr><td colspan="4">hist</td><td>[alias]<br/>&nbsp; &nbsp; hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short<br/>(see <a href="http://gitimmersion.com/lab_10.html">git immersion</a>)</td></tr>
-				<tr><td rowspan="4">add</td><td colspan="3" class="cr">files</td><td class="empty"></td></tr>
-				<tr><td>-p</td><td colspan="2" class="cr">files</td><td>interactively stage parts</td></tr>
+				<tr><td rowspan="5">add</td><td colspan="3" class="cr">files</td><td class="empty"></td></tr>
+				<tr><td>-p</td><td colspan="2" class="cr">files</td><td>interactively stage parts ("hunks")
+						<ul>
+							<li>[y]es, [n]o, [q]uit, [a]ll (this and following), ...</li>
+							<li>[j] = leave undecided &amp; go next; [k] = leave undecided &amp; go previous</li>
+							<li>[s]plit into smaller hunks</li>
+							<li>[e]dit hunk as patch manually</li>
+							<li>[?] = help</li>
+						</ul>
+					</td></tr>
+				<tr><td>-e</td><td colspan="2" class="cr">files</td><td>edit patch yourself</td></tr>
 				<tr><td colspan="3">-u / --update</td><td>all modifications and deletions</td></tr>
 				<tr><td colspan="3">-A / --all</td><td>all additions, modifications, and deletions</td></tr>
 				<tr><td rowspan="3">commit</td><td colspan="4" class="empty">&empty;</td></tr>
