@@ -1,0 +1,52 @@
+---
+layout: default
+category: math
+title: Rudin Crib Notes
+mathjax: true
+---
+
+Brevity has been chosen over accuracy because the whole point is that you should know this stuff already.
+
+## Chapter 2: Basic Topology (+ some Ch. 3)
+
+An **isolated point** of E is in E but not a limit point of it. E is **perfect** if it is exactly equal to its set of limit points. Equivalently, it is closed and has no isolated points. Ex. 2.44: The Cantor set is perfect.
+
+A **compact set** is a set for which every open cover has a finite subcover.
+
+Compactness or compact sets have these properties (with made-up names):
+
+- 2.33, **space-independence**: still compact regardless of what space you consider it part of
+- 2.34, **closed**
+- 2.35, **hereditary**: closed subsets are compact
+- 2.36, corollary **telescoping descent**: a descending sequence of nonempty compact K<sub>1</sub> ⊃ K<sub>1</sub> ⊃ K<sub>1</sub> ⊃ ... contains at least one point
+  - 2.36 actually says if the K<sub>i</sub> are compact and any finite subcollection has nonempty intersection, then the entire colleciton has nonempty intersection.
+  - 3.10(b), <abbr title="I called it this name in a certain complex analysis post">**shrinking convergence**</abbr>: if the K<sub>i</sub> get infinitely small, they contain exactly one point.
+- 2.37, **infinite accumulation**: infinite subsets have at least one limit point
+  - 3.6, **infinite convergence**: infinite sequences have convergent subsequences
+
+## Chapter 4: Continuity
+
+- 4.8: A function is continuous iff it inverts open sets to open sets.
+  - Corollary: A function is continuous iff it inverts closed sets to closed sets
+- 4.9: A continuous function maps compact sets to compact sets.
+- 4.19: A continuous function on a compact domain is uniformly continuous.
+
+## Chapter 5: Differentiation
+
+- 5.6(b) is [the differentiable function with discontinuous derivative]({% post_url 2014-10-21-operation-exchange %}#dc).
+- 5.12: derivatives attain intermediate values.
+- 5.15, **Taylor's Theorem** (not exact form): Let f be n times differentiable near α. Then f is equal to the degree-n Taylor polynomial near α plus a remainder h(x)(x − α)<sup>n</sup> with h tending to 0 at α.
+  - Rudin states the theorem with the **Lagrange form** of the remainder: at x near α, f is equal to the degree-n Taylor polynomial *after* the coefficient of the degree-n term is fudged into using f<sup>(n)</sup>(ξ<sub>L</sub>) (instead of f<sup>(n)</sup>(x)) for some ξ<sub>L</sub> between α and x.
+  - Also the theorem's conditions are tricky about what exactly is required at endpoints of intervals.
+
+## Chapter 8: Some Special Functions
+
+- 8.8, **algeraic completeness of ℂ**.
+
+  f has an infimum of magnitude and attains it. Recenter it at that infimum and note that it behaves like its smallest-degree nonconstant monomial nearby, which means we can perturb its value towards 0 if the infimum is nonzero. So the infimum is zero.
+- 8.14: A <abbr title="According to Wikipedia this is inaccurate because Lipschitz-continuity only makes sense on intervals">"Lipschitz-continuous-at-a-point"</abbr> function is approached by its Fourier series.
+- 8.15: A 2π-periodic continuous function is uniformly approximate-able by trigonometric polynomials.
+- 8.16, **Parseval's theorem**:
+  - the integral of the square of a function's absolute difference from its Fourier series tends to 0
+  - the "dot product" of two functions tends to the dot product of their Fourier series coefficients (with fudge factors due to non-orthonormality)
+- 8.19: the gamma function is the only extension of the factorial function with a convex log.

@@ -82,7 +82,7 @@ and the integral of this is obviously 0.
 
 Once again, uniform convergence allows the exchange.
 
-## Derivative + Continuity
+## Derivative + Continuity {#dc}
 
 Single-variable: Rudin's Example 5.6(b).
 
