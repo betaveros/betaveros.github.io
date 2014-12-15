@@ -1,0 +1,111 @@
+---
+layout: default
+category: code
+title: "HOJ 226: CP (中)"
+---
+
+前置要求：treap (split, merge)，實作區段操作
+
+我討厭單字母`l`的變數名稱（跟`1`太像了），所以我的子叫做`lc`(left child)，`rc`(right child)。
+
+{% highlight cpp %}
+struct Treap {
+    Treap * lc;
+    Treap * rc;
+    unsigned pri;
+    char val;
+    int size;
+};
+
+int size(Treap * a) { return a ? a->size : 0; }
+void pull(Treap * a) {
+    if (a) a->size = 1 + size(a->lc) + size(a->rc);
+}
+{% endhighlight %}
+
+## 持久化／Copy-On-Write
+
+以前在merge裡面寫
+
+{% highlight cpp %}
+a->rc = merge(a->rc, b);
+pull(a);
+return a;
+{% endhighlight %}
+
+現在要假設別的地方可能會用a代表同一個區段，為了不改到那些別的地方，我們不能修改a，所以只好回傳新的Treap。
+
+{% highlight cpp %}
+Treap * aa = new Treap();
+aa->lc = a->lc;
+aa->rc = merge(a->rc, b);
+aa->pri = a->pri;
+aa->val = a->val;
+pull(aa);
+return aa;
+{% endhighlight %}
+
+這樣之後，你就可以放心的做`merge(m, m)`之類的東西來把一個區段複製成兩倍。
+
+## 引用計數
+
+使用Copy-On-Write會製造很多垃圾，而且在HOJ 226裡還有多於10<sup>9</sup>的字母應該刪掉，不處理的話會Memory Limit Exceed。所以沒有用的Treap必須刪掉。
+
+（split跟merge跟外面實作操作的時候，本來舊treap會被摧毀，現在因為持久化不能直接刪掉舊的，不過會少引用它所以「可能」可以刪掉。）
+
+我是苦苦的手刻引用計數才過的（記錄每一個treap有幾個指標指向它，如果到0就把treap delete掉）（我本來以為可以用STL的`shared_ptr`，不過聽說太慢了。）
+
+基本上，加入一個欄位：
+
+{% highlight cpp %}
+int refs;
+{% endhighlight %}
+
+之後在適當的地方加入：
+
+{% highlight cpp %}
+t->refs++;
+{% endhighlight %}
+
+{% highlight cpp %}
+t->refs--;
+if (t->refs <= 0) {
+    dropRef(t->lc);
+    dropRef(t->rc);
+    delete t;
+}
+{% endhighlight %}
+
+這邊要debug很久很久。
+
+## Randomized Binary (Search) Tree
+
+但這題跟NPSC那題直接用最普通的treap都有一個問題，就是複製的時候如果連priority一起複製就會失去讓treap保持指數深度的隨機性質。但你又沒辦法隨機生出一個在樹堆裡有一樣「大小含義」的priority。
+
+似乎最好的解決方式是改用近親[randomized binary (search) tree](https://en.wikipedia.org/wiki/Randomized_binary_search_tree)：節點上只記錄size（＝節點跟節點所有子孫總數），每次合併size a跟size b的樹時，呼叫一次隨機數生成器，以a/(a+b)的機率把size a樹的根當新的根，以b/(a+b)的機率把size b樹的根當新的根。
+
+### 機率很重要
+
+模擬兩邊當根的機率a/(a+b)跟b/(a+b)是必須的，不能純粹用1/2的機率，才可以有好的深度性質。
+
+可以想一下，這跟本來的Treap裡都有好性質，就是你如果併起了n個隨機的節點，那麼每個節點當根的機率都是一樣的1/n。所以這樣就可以救回O(log n)深度性質。只是呼叫隨機數產生器的時候不一樣。
+
+### 不能直接用大的那一邊當根嗎？
+
+你可能會想說，與其隨機選根，不如就選機率比較大的那一邊？想像一下，如果你有一個空的Treap，然後一直把一個頂點的Treap從右邊併進去。它會退化成往右下長的一直線。
+
+隨機是一件很神奇的東西。
+
+### 奇怪的另解
+
+其實我第一次AC這一題的時候還沒放棄Treap，而是複製了一個Treap就用奇怪的方式幫它隨機產生一個priority。
+
+這樣的速度顯著的比較慢（55626ms vs 32490ms），不過AC就是AC吧！我沒有試著用數學角度研究這樣的Treap複雜度如何。
+
+{% highlight cpp %}
+int randomPriority(int size) {
+    rseed = 0xdefaced * rseed + 1;
+    unsigned int q = 0xffffffffu / (unsigned int) size;
+    return r % q;
+}
+{% endhighlight %}
