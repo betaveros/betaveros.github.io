@@ -4,9 +4,17 @@ category: code
 title: "HOJ 226: CP (中)"
 ---
 
-前置要求：treap (split, merge)，實作區段操作
+[題目在這裡，HOJ 226](http://hoj.twbbs.org/judge/problem/view/226)
 
-我討厭單字母`l`的變數名稱（跟`1`太像了），所以我的子叫做`lc`(left child)，`rc`(right child)。
+有關的題目出現於NPSC 2014 高中組決賽pD。
+
+前置要求：treap (split, merge)跟在上面實作區段操作（請參考資訊枝幹）。
+
+這裡沒有完整的解答code，因為AC是要用血汗換來的才值得 :-)
+
+## Treap
+
+我討厭單字母`l`的變數名稱（跟`1`太像了。我沒有被這個雷過，這只是自己對自己程式碼可讀性的要求），所以我的子樹叫做`lc`(left child)，`rc`(right child)。
 
 {% highlight cpp %}
 struct Treap {
@@ -45,17 +53,23 @@ pull(aa);
 return aa;
 {% endhighlight %}
 
-這樣之後，你就可以放心的做`merge(m, m)`之類的東西來把一個區段複製成兩倍。
+把所有會改掉現存的Treap改成類似的做法之後，你就可以放心的把一個Treap重複merge到不同的地方了。
+
+例如，你可以`merge(m, m)`把一個區段複製成兩倍，但記憶體不會用到兩倍。
 
 ## 引用計數
 
-使用Copy-On-Write會製造很多垃圾，而且在HOJ 226裡還有多於10<sup>9</sup>的字母應該刪掉，不處理的話會Memory Limit Exceed。所以沒有用的Treap必須刪掉。
+（NPSC那一題不需要這一項優化。）
 
-（split跟merge跟外面實作操作的時候，本來舊treap會被摧毀，現在因為持久化不能直接刪掉舊的，不過會少引用它所以「可能」可以刪掉。）
+使用Copy-On-Write會製造很多垃圾，而且在這一題裡還有多於10<sup>6</sup>的字母可以刪掉，不處理的話會Memory Limit Exceed。所以沒有用的Treap必須刪掉。
 
-我是苦苦的手刻引用計數才過的（記錄每一個treap有幾個指標指向它，如果到0就把treap delete掉）（我本來以為可以用STL的`shared_ptr`，不過聽說太慢了。）
+什麼時候會產生沒有用的Treap呢？split跟merge跟外面實作操作的時候，本來舊treap會被摧毀，修改而成新的，被回傳的treap。現在因為持久化不能直接刪掉舊的，不過會少引用它所以「可能」可以刪掉。問題就是如何知道這個「可能」什麼時候成立。
 
-基本上，加入一個欄位：
+我是苦苦的手刻引用計數才過的：記錄每一個treap有幾個指標指向它，如果到0就把treap delete掉。
+
+我本來以為可以用STL的`shared_ptr`，不過聽說有人寫了發現太慢了。我不知道有沒有更好的做法。
+
+基本上，引用計數就是加入一個欄位：
 
 {% highlight cpp %}
 int refs;
@@ -76,31 +90,29 @@ if (t->refs <= 0) {
 }
 {% endhighlight %}
 
-這邊要debug很久很久。
+適當的地方並不明顯。這邊要debug很久很久很久（至少如果你是我的話）。
 
 ## Randomized Binary (Search) Tree
 
-但這題跟NPSC那題直接用最普通的treap都有一個問題，就是複製的時候如果連priority一起複製就會失去讓treap保持指數深度的隨機性質。但你又沒辦法隨機生出一個在樹堆裡有一樣「大小含義」的priority。
+但這題跟NPSC那題直接用最普通的treap都有一個問題，就是複製區間的時候如果連priority一起複製就會失去讓treap保持指數深度的隨機性質。但你又沒辦法隨機生出一個在樹堆裡有一樣「大小含義」的priority。不能用跟生新的節點時一樣的隨機，因為大的Treap要通常比小的Treap的priority大。（或者比較小，看你heap性質選擇哪個方向。）
 
-似乎最好的解決方式是改用近親[randomized binary (search) tree](https://en.wikipedia.org/wiki/Randomized_binary_search_tree)：節點上只記錄size（＝節點跟節點所有子孫總數），每次合併size a跟size b的樹時，呼叫一次隨機數生成器，以a/(a+b)的機率把size a樹的根當新的根，以b/(a+b)的機率把size b樹的根當新的根。
+似乎最好的解決方式是改用treap的近親[randomized binary (search) tree](https://en.wikipedia.org/wiki/Randomized_binary_search_tree)：節點上只記錄size（＝節點跟節點所有子孫總數，反正Treap的區段操作本來就要用），每次合併size a跟size b的樹時，呼叫一次隨機數生成器，以a/(a+b)的機率把size a樹的根當新的根，以b/(a+b)的機率把size b樹的根當新的根。
 
 ### 機率很重要
 
 模擬兩邊當根的機率a/(a+b)跟b/(a+b)是必須的，不能純粹用1/2的機率，才可以有好的深度性質。
 
-可以想一下，這跟本來的Treap裡都有好性質，就是你如果併起了n個隨機的節點，那麼每個節點當根的機率都是一樣的1/n。所以這樣就可以救回O(log n)深度性質。只是呼叫隨機數產生器的時候不一樣。
+可以想一下，這跟本來的Treap裡都有好性質，就是你如果併起了n個隨機的節點，那麼每個節點當根的機率都是一樣的1/n，然後下面的節點分成兩塊，遞迴下去。這樣就可以救回O(log n)深度性質，只是呼叫隨機數產生器的時候不一樣，如果你要用很高級，很耗時的隨機數產生器，可能就會有差，不過這裡不用煩惱這種東西。
 
 ### 不能直接用大的那一邊當根嗎？
 
-你可能會想說，與其隨機選根，不如就選機率比較大的那一邊？想像一下，如果你有一個空的Treap，然後一直把一個頂點的Treap從右邊併進去。它會退化成往右下長的一直線。
+你可能會想說，與其隨機選根，不如就永遠選機率比較大的那一邊？想像一下，如果你有一個空的Treap，然後一直把一個頂點的Treap從右邊併進去。它會退化成往右下長的一直線。還是要有機率把大的子樹踢到一邊。
 
 隨機是一件很神奇的東西。
 
 ### 奇怪的另解
 
-其實我第一次AC這一題的時候還沒放棄Treap，而是複製了一個Treap就用奇怪的方式幫它隨機產生一個priority。
-
-這樣的速度顯著的比較慢（55626ms vs 32490ms），不過AC就是AC吧！我沒有試著用數學角度研究這樣的Treap複雜度如何。
+其實我第一次AC這一題的時候還沒放棄Treap，而是複製了一個Treap就用奇怪的方式幫它隨機產生一個priority。（這樣連heap性質都不保，真恐怖。不過不會影響正確性。)
 
 {% highlight cpp %}
 int randomPriority(int size) {
@@ -109,3 +121,5 @@ int randomPriority(int size) {
     return r % q;
 }
 {% endhighlight %}
+
+這樣的速度顯著的比較慢（55626ms vs 32490ms），不過AC就是AC吧！我沒有試著用數學角度研究這樣的Treap複雜度如何。（注意這樣是假設merge的時候，priority較小的子樹當根。）
