@@ -75,18 +75,24 @@ return aa;
 int refs;
 {% endhighlight %}
 
-之後在適當的地方加入：
+之後在適當的地方呼叫：
 
 {% highlight cpp %}
-t->refs++;
+void takeRef(Treap * t) {
+    if (t) t->refs++;
+}
 {% endhighlight %}
 
 {% highlight cpp %}
-t->refs--;
-if (t->refs <= 0) {
-    dropRef(t->lc);
-    dropRef(t->rc);
-    delete t;
+void dropRef(Treap * t) {
+    if (t) {
+        t->refs--;
+        if (t->refs <= 0) {
+            dropRef(t->lc);
+            dropRef(t->rc);
+            delete t;
+        }
+    }
 }
 {% endhighlight %}
 
