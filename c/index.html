@@ -146,11 +146,15 @@
 			<h3>Itertools</h3>
 			<table>
 				<tr><th>(python) <a href="http://docs.python.org/library/itertools.html">itertools</a>.</th><th>&darr;</th></tr>
+				<tr><td>islice(_, 9)</td><td>[:9] (hs: take 9)</td></tr>
+				<tr><td>islice(_, 2, 9)</td><td>[2:9] (hs: take 7 . drop 2)</td></tr>
+				<tr><td>islice(_, 2, None)</td><td>[2:] (hs: drop 2)</td></tr>
+				<tr><td>islice(_, 2, 9, 3)</td><td>[2:9:3]</td></tr>
 				<tr><td>count(10)</td><td>10, 11, 12, 13...</td></tr>
 				<tr><td>count(10, 2)</td><td>10, 12, 14, 16...</td></tr>
-				<tr><td>cycle([31, 41, 59])</td><td>31, 41, 59, 31, 41, 596...</td></tr>
+				<tr><td>cycle([31, 41, 59])</td><td>31, 41, 59, 31, 41, 59...</td></tr>
 				<tr><td>repeat(42)</td><td>42, 42, 42...</td></tr>
-				<tr><td>repeat(42, 5)</td><td>42, 42, 42...</td></tr>
+				<tr><td>repeat(42, 5)</td><td>42, 42, 42, 42, 42</td></tr>
 				<tr><td>product('ABCD', 'PQRS')</td><td>AP, AQ, AR, AS, BP, BQ[...]</td></tr>
 				<tr><td>product('ABCD', repeat=2)</td><td>AA, AB, AC, AD, BA, BB[...]</td></tr>
 				<tr><td>permutations('ABCD')</td><td>ABCD, ABDC[...]</td></tr>
