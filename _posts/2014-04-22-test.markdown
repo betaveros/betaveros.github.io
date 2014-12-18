@@ -3,7 +3,31 @@ layout: default
 category: code
 title: Test
 ---
-Teaser:
+There used to be a teaser, but I'm probably not going to post the actual thing in any reasonable timeframe, so I shall use this as a dumping ground for snippets not important enough to deserve even a gist.
+
+{% highlight javascript %}
+javascript:(function(x){function%20f(n){return%20Math.round(n*1000)/1000;}alert("HP:%20"+f(x.hp)+"\nMP:%20"+f(x.mp)+"\nEXP:%20"+f(x.exp)+"\nGP:%20"+f(x.gp));}(angular.element(document.querySelector('.hero-stats')).scope().user.stats));
+{% endhighlight %}
+
+    sage: R = PolynomialRing(QQ, 'x')
+    sage: f = R.lagrange_polynomial([(0,1),(2,2),(3,-2),(-4,9)]); f
+    -23/84*x^3 - 11/84*x^2 + 13/7*x + 1
+
+{% highlight bash %}
+#!/bin/bash
+if [[ $# < 1 ]]; then
+    echo "cr: args pl0x" >&2
+    exit 1
+fi
+if g++ $1.cpp -O2 -Wall -o $1; then
+    echo "cr: compile OK" >&2
+    if [[ $# > 1 ]]; then
+        ./$1 < $1-$2.in
+    else
+        ./$1 < /dev/stdin
+    fi
+fi
+{% endhighlight %}
 
 {% highlight haskell %}
 import Control.Applicative
@@ -35,3 +59,34 @@ main = do
     print $ execWriter (execStateT (listTraversal getSeventh x) 0)
     print $ evalState (listTraversal increaseSeventh x) 0
 {% endhighlight %}
+
+    on run {input, parameters}
+        tell application "Firefox" to activate
+        tell application "System Events"
+            keystroke "|"
+            delay 0.15
+            key code 125
+            key code 123
+            delay 0.15
+            keystroke "|"
+            delay 0.15
+            key code 125
+            key code 123
+            delay 0.15
+            keystroke "|"
+            delay 0.15
+            key code 125
+            key code 123
+            delay 0.15
+            keystroke "|"
+            delay 0.15
+            key code 125
+            key code 123
+            delay 0.15
+            keystroke "|"
+            delay 0.15
+            key code 125
+            key code 123
+        end tell
+        return input
+    end run
