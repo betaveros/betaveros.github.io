@@ -25,7 +25,19 @@ Personal list of Hackage packages to install, in approximate decreasing order of
 
 `transformers` and `bytestring` are also really good, but it appears they are provided, at least with the default GHC distro.
 
-A little template:
+Someday I should get `conduit` working and learn it.
+
+## exec vs eval
+
+A silly mnemonic paragraph. A lot of monad usages end with a "return". Somebody who "turn"s is an evil disloyal person.
+
+- Use `evalState` if you want the evil re"turn"er.
+- Use `execState` if you want to "execute" the criminal and just leave the state of his destruction.
+- Obviously, the person's life is still more important than destruction he/she caused, so `runState` returns the person and then the state.
+
+This also applies to many monads similar to `State`.
+
+## template
 
 {% highlight haskell %}
 {% raw %}
