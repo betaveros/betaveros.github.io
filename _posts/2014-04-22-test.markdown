@@ -3,7 +3,21 @@ layout: default
 category: code
 title: Test
 ---
+
 There used to be a teaser, but I'm probably not going to post the actual thing in any reasonable timeframe, so I shall use this as a dumping ground for snippets not important enough to deserve even a gist.
+
+{% highlight css %}
+.meter-text { white-space: pre-wrap; }
+{% endhighlight %}
+
+{% highlight tex %}
+%% :%s/\%d160/ /g
+{% endhighlight %}
+
+{% highlight sh %}
+ifconfig en0 | grep ether
+sudo ifconfig en1 ether 12:34:56:78:9a:bc
+{% endhighlight %}
 
 {% highlight javascript %}
 javascript:(function(x){function%20f(n){return%20Math.round(n*1000)/1000;}alert("HP:%20"+f(x.hp)+"\nMP:%20"+f(x.mp)+"\nEXP:%20"+f(x.exp)+"\nGP:%20"+f(x.gp));}(angular.element(document.querySelector('.hero-stats')).scope().user.stats));
@@ -13,7 +27,7 @@ javascript:(function(x){function%20f(n){return%20Math.round(n*1000)/1000;}alert(
     sage: f = R.lagrange_polynomial([(0,1),(2,2),(3,-2),(-4,9)]); f
     -23/84*x^3 - 11/84*x^2 + 13/7*x + 1
 
-{% highlight bash %}
+{% highlight sh %}
 #!/bin/bash
 if [[ $# < 1 ]]; then
     echo "cr: args pl0x" >&2

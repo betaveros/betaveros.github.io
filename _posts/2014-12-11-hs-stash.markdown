@@ -16,6 +16,7 @@ Personal list of Hackage packages to install, in approximate decreasing order of
 - `cryptohash` (for crypto uses, self-explanatory)
 - `base16-bytestring` (also for crypto uses?)
 - `hlint`
+- `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel)
 - `hoogle`
 - `lens` (don't you just love its identity function `(%%~) :: Optical p q f s t a b -> p a (f b) -> q s (f t)` ?)
 - `pointfree`
