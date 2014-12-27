@@ -19,8 +19,17 @@ ifconfig en0 | grep ether
 sudo ifconfig en1 ether 12:34:56:78:9a:bc
 {% endhighlight %}
 
+{% highlight sh %}
+while [[ $(date +%Y) -ne 2015 ]];do figlet $(($(date -j 0101000015 +%s)-$(date +%s)));sleep 1;clear;done;figlet Happy New Year!
+{% endhighlight %}
+
 {% highlight javascript %}
 javascript:(function(x){function%20f(n){return%20Math.round(n*1000)/1000;}alert("HP:%20"+f(x.hp)+"\nMP:%20"+f(x.mp)+"\nEXP:%20"+f(x.exp)+"\nGP:%20"+f(x.gp));}(angular.element(document.querySelector('.hero-stats')).scope().user.stats));
+{% endhighlight %}
+
+{% highlight sh %}
+alias kd='ruby --external-encoding UTF-8 -S kramdown'
+alias please="sudo"
 {% endhighlight %}
 
     sage: R = PolynomialRing(QQ, 'x')
