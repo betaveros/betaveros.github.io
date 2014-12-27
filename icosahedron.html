@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+</head><body>
+<p>Based on <a href="http://bl.ocks.org/mbostock/3057239">http://bl.ocks.org/mbostock/3057239</a></p>
+<script src="js/d3.min.js"></script>
+<script src="js/d3.geodesic.v0.min.js"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var velocity = [.10, 0],
+    t0 = Date.now();
+
+var projection = d3.geo.orthographic()
+    .scale(height / 2 - 10);
+
+var canvas = d3.select("body").append("canvas")
+    .attr("width", width)
+    .attr("height", height);
+
+var context = canvas.node().getContext("2d");
+
+context.strokeStyle = "#fff";
+context.lineWidth = .5;
+context.textAlign = "center";
+context.textBaseline = "middle";
+
+var faces;
+
+var output = d3.select("output");
+var θ = 0;
+var κ = 0.5;
+var sκ = Math.sin(κ);
+var cκ = Math.cos(κ);
+
+d3.timer(function() {
+  var time = Date.now() - t0;
+  θ = time / 1400;
+  var sθ = Math.sin(θ);
+  var cθ = Math.cos(θ);
+  var sθcκ = sθ * cκ;
+  projection.rotate([
+    Math.atan2(sθcκ, cθ) / Math.PI * 180,
+    Math.atan2(sθ * sκ, Math.sqrt(cθ*cθ + sθcκ * sθcκ)) / Math.PI * 180,
+    ]);
+  redraw();
+});
+
+var faceIndices = {19: 0, 13: 1, 12: 2, 18: 3, 7: 4, 9: 5, 11: 6, 5: 7, 3: 8, 14: 9};
+var message = "ICOSAHEDRON ";
+function redraw() {
+  context.clearRect(0, 0, width, height);
+
+  faces.forEach(function(d) {
+    d.polygon[0] = projection(d[0]);
+    d.polygon[1] = projection(d[1]);
+    d.polygon[2] = projection(d[2]);
+    if (d.visible = d.polygon.area() > 0) {
+      context.fillStyle = d.fill;
+      context.beginPath();
+      drawTriangle(d.polygon);
+      context.fill();
+    }
+  });
+
+  context.beginPath();
+  context.fillStyle = "#000";
+  faces.forEach(function(d, i) {
+    if (d.visible) {
+      drawTriangle(d.polygon);
+      var ix = faceIndices[i];
+      if (ix !== undefined) {
+        // how many times has it spun around yet?
+        var gen = Math.floor(θ / (2*Math.PI) + 1/2 - ix / 10);
+        if (gen >= 0) {
+          var p = d.polygon;
+          var area = Math.abs(
+              (p[2][0] - p[0][0]) * (p[1][1] - p[0][1])
+            - (p[1][0] - p[0][0]) * (p[2][1] - p[0][1])
+            );
+          var fontPtSize = Math.min(area / 1200, 48);
+          context.font = fontPtSize + "pt sans-serif";
+          context.fillText(message.charAt((ix + 10 * gen) % message.length),
+              (d.polygon[0][0] + d.polygon[1][0] + d.polygon[2][0]) / 3,
+              (d.polygon[0][1] + d.polygon[1][1] + d.polygon[2][1]) / 3);
+        }
+      }
+    }
+  });
+  context.stroke();
+}
+
+function drawTriangle(triangle) {
+  context.moveTo(triangle[0][0], triangle[0][1]);
+  context.lineTo(triangle[1][0], triangle[1][1]);
+  context.lineTo(triangle[2][0], triangle[2][1]);
+  context.closePath();
+}
+
+function geodesic(subdivision) {
+  faces = d3.geodesic.polygons(subdivision).map(function(d, i) {
+    d = d.coordinates[0];
+    d.pop(); // use an open polygon
+    d.fill = d3.hsl(i * 30, .9, .8) + "";
+    d.polygon = d3.geom.polygon(d.map(projection));
+    return d;
+  });
+
+  redraw();
+}
+geodesic(1);
+
+</script>
+</body>
+</html>
