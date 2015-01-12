@@ -388,6 +388,65 @@ instance Quux Int where
 				<tr><td>[f(v) for v in li if cond]</td><td>[f(v) | v &lt;- li, cond]</td></tr>
 				<tr><td>lambda x, y: x + y</td><td>\x y -&gt; x + y</td></tr>
 			</table>
+			<h3><a href="https://www.haskell.org/onlinereport/decls.html#prelude-fixities">Precedence</a></h3>
+			<table>
+				<tr><th>Prec</th>
+					<th>infixl</th>
+					<th>infix</th>
+					<th>infixr</th></tr>
+				<tr><td>9</td>
+					<td>!! <em>default</em><br/>Map.! Map.\\ Set.\\ Array.! Array.//</td>
+					<td class="empty"></td>
+					<td>.</td>
+				</tr>
+				<tr><td>8</td>
+					<td>Bits.shift Bits.rotate<br/>Lens.^. <em>...</em></td>
+					<td class="empty"></td>
+					<td>^ ^^ **</td>
+				</tr>
+				<tr><td>7</td>
+					<td>* / div mod rem quot<br/>.&amp;.</td>
+					<td class="empty"></td>
+					<td class="empty"></td>
+				</tr>
+				<tr><td>6</td>
+					<td>+ -<br/>xor</td>
+					<td class="empty"></td>
+					<td class="empty"></td>
+				</tr>
+				<tr><th colspan="4">↑ ~ "calculation" / "data flow" ~ ↓</th></tr>
+				<tr><td>5</td>
+					<td>.|. Seq.|&gt;</td>
+					<td class="empty"></td>
+					<td>: ++<br/>&lt;+&gt; Seq.&lt;| Seq.&gt;&lt;</td>
+				</tr>
+				<tr><td>4</td>
+					<td>&lt;$&gt; &lt;*&gt; &lt;* *&gt; &lt;**&gt;</td>
+					<td>== /= &lt; &lt;= &gt; &gt; elem notElem</td>
+					<td>Lens..~ <em>...</em></td>
+				</tr>
+				<tr><th colspan="4">↑ ~ "data flow" / "control flow" ~ ↓</th></tr>
+				<tr><td>3</td>
+					<td>&lt;|&gt;</td>
+					<td class="empty"></td>
+					<td>&amp;&amp;<br/>*** &amp;&amp;&amp;</td>
+				</tr>
+				<tr><td>2</td>
+					<td class="empty"></td>
+					<td class="empty"></td>
+					<td>||<br/>+++ |||</td>
+				</tr>
+				<tr><td>1</td>
+					<td>&gt;&gt; &gt;&gt;=<br/>Lens.&amp;</td>
+					<td class="empty"></td>
+					<td>=&lt;&lt; &gt;=&gt; &lt;=&lt; &gt;&gt;&gt; &lt;&lt;&lt;</td>
+				</tr>
+				<tr><td>0</td>
+					<td class="empty"></td>
+					<td class="empty"></td>
+					<td>$ $! seq<br/>DeepSeq.$!!</td>
+				</tr>
+			</table>
 			<h3>Functions</h3>
 			<h4>Control.Monad</h4>
 			<p>m is a monad. * = append _ to return m () instead.</p>
