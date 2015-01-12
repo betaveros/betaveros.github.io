@@ -914,7 +914,7 @@ instance Quux Int where
 			<p>The actual cheat sheet.</p>
 			<table>
 				<tr><th>Command</th><th colspan="4">Subcommands, flags, arguments</th><th>Description</th></tr>
-				<tr><td rowspan="37">git</td>
+				<tr><td rowspan="38">git</td>
 					<td colspan="4">status</td><td class="empty"></td></tr>
 				<tr><td colspan="4">hist</td><td>[alias]<br/>&nbsp; &nbsp; hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short<br/>(see <a href="http://gitimmersion.com/lab_10.html">git immersion</a>)</td></tr>
 				<tr><td rowspan="5">add</td><td colspan="3" class="cr">files</td><td class="empty"></td></tr>
@@ -954,9 +954,9 @@ instance Quux Int where
 				<tr><td>-u / --set-upstream</td><td>track branches</td></tr>
 				<tr><td>-f / --force</td><td>after you screw up</td></tr>
 				<tr><td>merge</td><td class="cg" colspan="3">branch</td><td>Use some other tree-ish to extend this one</td></tr>
-				<tr><td rowspan="4">rebase</td><td class="cg" rowspan="2">stem</td><td class="empty" colspan="2"></td><td>Graft branch and commits somewhere else</td></tr>
+				<tr><td rowspan="5">rebase</td><td class="cg" rowspan="2">stem</td><td class="empty" colspan="2"></td><td>Graft branch and commits somewhere else</td></tr>
 				<tr><td class="cg" colspan="2">tip</td><td>(tip will first get checked out)</td></tr>
-				<tr><td>-i / --interactive</td><td class="cg" colspan="2">HEAD~1337</td><td>interactive rebase: rearrange, edit, squash commits...
+				<tr><td rowspan="2">-i / --interactive</td><td class="cg" colspan="2">HEAD~1337</td><td rowspan="2">interactive rebase: rearrange, edit, squash commits...
 						<ul>
 							<li>pick: keep as is</li>
 							<li>edit: make changes (can add commits etc.)</li>
@@ -964,6 +964,7 @@ instance Quux Int where
 							<li>squash: absorb into previous commit + message</li>
 							<li>fixup: absorb into previous commit, delete this message</li>
 				</ul></td></tr>
+				<tr><td colspan="2">--root</td></tr>
 				<tr><td colspan="3">--continue</td><td>with interactive</td></tr>
 				<tr><td>revert</td><td class="cg" colspan="3">tree-ish</td><td>Make a commit that restores to this commit</td></tr>
 				<tr><td>ls-files</td><td colspan="3">| xargs wc -l</td><td>Count lines...</td></tr>
