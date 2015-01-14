@@ -1,0 +1,233 @@
+---
+layout: default
+category: code
+title: C/C++ to D
+---
+
+Some notes.
+
+I'm assuming you want to use D largely, but not entirely, for competitive programming. That's me right now.
+
+## Basics
+
+Syntax is very similar. Function definitions, semicolon-terminated statements, variable declarations, and so on. You can declare `int main() {...}` or `void main() {...}` or something with arguments.
+
+Basic types like `bool` and `int` and `double` are all there. Wonderfully, `long` is 64 bits. Instead of `unsigned` whatever, just prefix a `u`, e.g. `uint`.
+
+Arithmetic operators and bit operators are all there too, including unsigned right shift `>>>`. Although `^` is still xor, D has exponentiation as `^^`. Sadly, `%` is still same-sign remainder; there's no true mod.
+
+{% highlight d %}
+import std.stdio;
+{% endhighlight %}
+
+## Control Flow
+
+`if`, `while`, `for`, `do`, and even `switch` all work as you'd expect, along with `break` and `continue`.
+
+`foreach` is the nice addition though. Not only can you iterate over arrays and stuff, but range loops go like:
+
+{% highlight d %}
+foreach (i; 0 .. 10) writeln(i);
+{% endhighlight %}
+
+If you want both the index and the element (a la `zipWithIndex`):
+
+{% highlight d %}
+foreach (i, e; array) writeln(i, e);
+{% endhighlight %}
+
+And to modify the element in place:
+
+{% highlight d %}
+foreach (ref e; array) e += 4;
+{% endhighlight %}
+
+This `ref` is also the syntax to pass something by reference to a function, by the way. Functions are otherwise pretty much the same.
+
+{% highlight d %}
+void func(ref int x) { x += 4; }
+{% endhighlight %}
+
+## I/O
+
+You have access to `scanf` and `printf`, for some weird reason.
+
+But D's alternatives are `readf` and `writef`. They also have variants `writefln` to add a newline. You often won't even need `writef` anyway, since `write` and `writeln` take any number of arguments and turn them into strings before printing.
+
+{% highlight d %}
+int n = 100;
+writeln("Case #1: ", n, " is the answer.");
+{% endhighlight %}
+
+Two gotchas with `readf`:
+
+<ol>
+<li>
+<strong><code>readf</code> specifiers don't skip white space</strong>, so where you'd write:
+
+{% highlight c %}
+scanf("%d%d", &a, &b);
+{% endhighlight %}
+
+you should write:
+
+{% highlight d %}
+readf(" %d %d", &a, &b);
+{% endhighlight %}
+
+</li>
+<li><strong><code>readf</code> on a string reads to end of input.</strong></li></ol>
+
+So call `readln` instead, to read a line: either with no arguments to return a string or with a buffer to read it into there. This also reads the newline, but after `import std.string;` you can call `s = chomp(s);` to get rid of control characters.
+
+Call functions like `stderr.writef(...)` for debug output.
+
+## I just want my int-scanning macro so I don't forget my ampersands, please
+
+I can do better: `readf` infers the type of whatever you give it. This variadic magic fits on an 80-character line. After seeing this, just thinking about `cstdio` code makes me angry.
+
+{% highlight d %}
+void scan(T...)(ref T args) { foreach (ref arg; args) readf(" %s", &arg); }
+{% endhighlight %}
+
+## Arrays
+
+`int[100008] a;` gives you a static (fixed-length) array.
+
+`int[] b;` gives you a dynamic (variable-length) array. It's quite like C++'s STL `vector`.
+
+For dynamic arrays, binary `~` is the append or concatenate operator; you can append elements by writing `b ~= 3;` Experimenting shows that D does roughly double its size each reallocation so that this is amortized O(1), as you'd hope, although I can't find any documentation saying so.
+
+You can get the length with `b.length`.
+
+Inside indexes, `$` is a shortcut for array length, so `a[$-1]` is the last element.
+
+Also, if you `import std.array;`, you get to do `b.front` and `b.back` (you don't need parentheses!), which are refs through which you can modify the element. You also get `b.popFront()` and `b.popBack()` (which are `void` like their C++ STL counterparts, to my disappointment) and `b.empty`.
+
+There doesn't appear to be a `.clear()` function but you can just set `b.length = 0;`.
+
+## Deques, etc.
+
+This is so far the one place D has disappointed me relative to C++, and only mildly. Your best bet is `DList` (doubly-linked list) from `std.container`. The type looks like `DList!int` (you use a bang for templates in D). As above, you can `.front`, `.popFront()`, and also `.insertFront(x)`, and same for `back` and cognates, of course.
+
+You can also `.empty`, but sadly, you can't get the length of a `DList`. But now that I think about it, `.empty` is often enough anyway if you're BFSing or whatever, and you can always maintain the length yourself somewhere.
+
+There is a `RedBlackTree` in `std.container`, and also, you can declare associative arrays by putting stuff between the same square brackets you used for arrays. I haven't gotten around to writing them up yet, though.
+
+## Structs
+
+As you'd expect, but no semicolon.
+
+{% highlight d %}
+struct Pt {
+    int x;
+    int y;
+}
+{% endhighlight %}
+
+## Debug
+
+Sweet: just surround a block with `debug`.
+
+{% highlight d %}
+debug {
+    // code here
+}
+{% endhighlight %}
+
+Compile with `-debug` to enable.
+
+You also get `assert(...);`, which is normally enabled; you compile with `-release` to disable.
+
+## Pairs/Tuples
+
+Not as beautiful as I'd hoped, but certainly not worse than C++. The import is
+
+{% highlight d %}
+import std.typecons;
+{% endhighlight %}
+
+The type looks like `Tuple!(int, string)`. Construct as `tuple(1337, "hi")`. Access elements with `[0]`, `[1]` and so on.
+
+The nice thing is that these are real tuples that can hold more than two things, I guess.
+
+Also, interestingly, you can `foreach`-iterate across a tuple, which gets expanded at compile-time.
+
+## Alias
+
+D's alternatives to `typedef`s and some other things.
+
+`alias Weight = double;`
+
+## Sorting and Other Algorithms
+
+{% highlight d %}
+import std.algorithm;
+{% endhighlight %}
+
+No `s.begin(), s.end()` nonsense. Just `sort(array)`. Optionally, you can specify a comparator with either a string or a function:
+
+{% highlight d %}
+sort!"a > b"(array);
+
+sort!((x, y) => x > y)(array);
+
+bool myComp(int x, int y) @safe pure nothrow { return x > y; }
+sort!myComp(array);
+{% endhighlight %}
+
+The string made me kind of uncomfortable at first, but I guess that's my reflex to JavaScript string callbacks and the same concerns don't apply here. There's no `eval`ing, it's all compile time, and local variables don't leak; any expression involving `a` and `b` works.
+
+What else is there? `min` and `max`, which support more than 2 arguments; `swap`; `fill(array, val)`; `sum`.
+
+Also, functional goodies `filter`, `map`, `reduce`, which are also called like `sort`, with the bang `!` template-ish syntax.
+
+You can call `reduce(seed, array)` (= foldl) or `reduce(array)` (= foldl1).
+
+## Extra Things
+
+The `case`s of `switch` has some extra goodies. You can write
+
+{% highlight d %}
+case 2: .. case 5:
+{% endhighlight %}
+
+or
+
+{% highlight d %}
+case 2, 4:
+{% endhighlight %}
+
+Also, remember how you strangely import stuff from `std.array` and then you can call things on arrays? This is actually **Uniform Function Call Syntax** (UFCS) sugar; you can write `array.front` to call `front(array)`. Of course, you can directly call `front(array)` too. This is how the `std.array` functions work.
+
+You can even do it yourself, although I probably wouldn't advise it:
+
+{% highlight d %}
+int foo(int a, int b) {
+    return a + b + 1;
+}
+writeln(3.foo(4));
+{% endhighlight %}
+
+Also note that UFCS lets you chain functional goodies like `array.map!"a + 1".filter!"a > 5"`.
+
+### Template
+
+Okay, I added a few more imports, but this is still much shorter than my C++ template.
+
+I don't need any of the range-loop macros or scanning macros or debug macros or `(s).begin(), (s).end()` macros or vector-dumping function (vectors have nice `to!string` already) or typedefs.
+
+I might need to add a `minify` and `maxify`, but the definitions of those will be shorter than C++ too. w00t. For now (this'll get updated later):
+
+{% highlight d %}
+import std.algorithm;
+import std.array;
+import std.container;
+import std.math;
+import std.random;
+import std.range;
+import std.stdio;
+import std.string;
+import std.typecons;
+void scan(T...)(ref T args) { foreach (ref arg; args) readf(" %s", &arg); }
+{% endhighlight %}
