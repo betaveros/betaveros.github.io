@@ -20,6 +20,8 @@ Arithmetic operators and bit operators are all there too, including unsigned rig
 import std.stdio;
 {% endhighlight %}
 
+Casts look like `cast(int) x;`
+
 ## Control Flow
 
 `if`, `while`, `for`, `do`, and even `switch` all work as you'd expect, along with `break` and `continue`.
@@ -100,11 +102,13 @@ For dynamic arrays, binary `~` is the append or concatenate operator; you can ap
 
 You can get the length with `b.length`.
 
-Inside indexes, `$` is a shortcut for array length, so `a[$-1]` is the last element.
-
 Also, if you `import std.array;`, you get to do `b.front` and `b.back` (you don't need parentheses!), which are refs through which you can modify the element. You also get `b.popFront()` and `b.popBack()` (which are `void` like their C++ STL counterparts, to my disappointment) and `b.empty`.
 
 There doesn't appear to be a `.clear()` function but you can just set `b.length = 0;`.
+
+Also, calling `.dup` makes a dynamic copy.
+
+Strings (`string`) are just an alias for immutable `char[]`s. (So if you want to store a string in a `char[]`, call `.dup`. But you can still `~=` a string to a variable of type `string`; it just replaces the variable with a new copy.)
 
 ## Deques, etc.
 
@@ -112,8 +116,21 @@ This is so far the one place D has disappointed me relative to C++, and only mil
 
 You can also `.empty`, but sadly, you can't get the length of a `DList`. But now that I think about it, `.empty` is often enough anyway if you're BFSing or whatever, and you can always maintain the length yourself somewhere.
 
-There is a `RedBlackTree` in `std.container`, and also, you can declare associative arrays by putting stuff between the same square brackets you used for arrays. I haven't gotten around to writing them up yet, though.
+You can declare associative arrays by putting stuff between the same square brackets you used for arrays. These are **hash tables, not ordered.** The type is just e.g.
 
+{% highlight d %}
+string[int] map; // int to string map
+{% endhighlight %}
+
+Test for key inclusion Pythonically with `in`, as:
+
+{% highlight d %}
+if (key in map) map[key] += 1;
+{% endhighlight %}
+
+It also supports `.length`; `.keys` and `.values` (dynamic array copies); `.byKey()` and `.byValue()` and `.byKeyValue()` (iterable-ish things, not copies); `.get` (pass a second default value to return if )
+
+There is a [`RedBlackTree`](http://dlang.org/phobos/std_container.html#.RedBlackTree) and a [`BinaryHeap`](http://dlang.org/phobos/std_container.html#.BinaryHeap) in `std.container`.
 ## Structs
 
 As you'd expect, but no semicolon.
@@ -124,6 +141,8 @@ struct Pt {
     int y;
 }
 {% endhighlight %}
+
+You get `==` and a constructor `Pt(42, 1337)` for free.
 
 ## Debug
 
@@ -180,11 +199,13 @@ The string made me kind of uncomfortable at first, but I guess that's my reflex 
 
 What else is there? `min` and `max`, which support more than 2 arguments; `swap`; `fill(array, val)`; `sum`.
 
-Also, functional goodies `filter`, `map`, `reduce`, which are also called like `sort`, with the bang `!` template-ish syntax.
-
-You can call `reduce(seed, array)` (= foldl) or `reduce(array)` (= foldl1).
-
 ## Extra Things
+
+Inside indexes, `$` is a shortcut for array length, so `a[$-1]` is the last element. You can do stuff like `a[$/2]` too.
+
+D has `const`, which has the same meaning as in C++ (you can't modify the variable through *this* pointer) but it also has two more powerful modifiers: `immutable` (this variable is guaranteed not-modifiable through any pointer) and `enum` (compile-time constants, as if `#define`d). If you write `enum x = ...` you can force D to calculate the expression at compile-time, even if it's very complicated involving function calls and whatnot
+
+Other function parameter modifiers than `ref` include `in`, `out`, `lazy`.
 
 The `case`s of `switch` has some extra goodies. You can write
 
@@ -209,7 +230,57 @@ int foo(int a, int b) {
 writeln(3.foo(4));
 {% endhighlight %}
 
-Also note that UFCS lets you chain functional goodies like `array.map!"a + 1".filter!"a > 5"`.
+There are functional goodies `filter`, `map`, `reduce`, which are also called like `sort`, with the bang `!` template-ish syntax.
+UFCS lets you chain functional goodies like `array.map!"a + 1".filter!"a > 5"` if you want to.
+You can call `reduce(seed, array)` (= foldl) or `reduce(array)` (= foldl1).
+
+These goodies work on "ranges", not just arrays, which are things that allow sequential access in general, like how C++ uses pairs of generators. Note that `filter` and `map` return lazy ranges; you can call `array` on the results (after importing `std.array`) to convert it to an array.
+
+`std.range` has lots of other more basic things you'd expect in a functional language:
+
+- `take`, `drop`, `repeat`, `cycle` (all with the same meaning as in Haskell)
+- `retro` is a reversed version of a range like Python's `reversed`
+- `chain(...)` chains two or more ranges together like Python's `itertools.chain`
+- `chunks(n)` cuts the source into chunks of length n
+- `only` yields a range of its varargs.
+
+The function `to` from `std.conv` does conversions between types, and is quite good at it, e.g. `to!int` and `to!string`.
+
+Operator overloading is a bit weird (but see [D's rationale](http://dlang.org/rationale.html)):
+
+{% highlight d %}
+import std.stdio;
+import std.algorithm;
+import std.array;
+struct Pt {
+    int x, y;
+    Pt opBinary(string op)(in Pt o)
+        if (op == "+") // this is checked at compile time
+    {
+        return Pt(x + o.x, y + o.x);
+    }
+    int opCmp()(const ref Pt o) const {
+        if (x != o.x) return x < o.x ? -1 : 1;
+        if (y != o.y) return y < o.y ? -1 : 1;
+        return 0;
+    }
+}
+void main() {
+    Pt[] ps = [ Pt(1, 2), Pt(3, 4), Pt(1, 5), Pt(3, 2) ];
+    sort(ps);
+    writeln(ps);
+    ps = ps.map!(a => a + Pt(100, 100)).array;
+    Pt res = ps.reduce!"a + b";
+    writeln(ps);
+    writeln(res);
+}
+{% endhighlight %}
+
+`opCmp` is three-valued, and the comparison operators `<`, `<=`, `>`, `>=` are derived from it. Unfortunately, there doesn't seem to be a more convenient way to write this that is still as fast; you can do `cmp(only(x, y), only(o.x, o.y))`, using `cmp` from `std.algorithm` for lexicographical comparison and `only` from `std.range` to create a lazy range, but it still takes 3 to 4 times as much time. (This version is then 3 to 4 times faster than if you `cmp([x, y], [o.x, o.y])`.)
+
+Pleasingly, structs have a built-in definition of `==`.
+
+Note, by the way, we can't use `map!"a + Pt(100,100)"` because "Pt" isn't available in the thing that compiles the string into the function.
 
 ### Template
 
@@ -220,14 +291,7 @@ I don't need any of the range-loop macros or scanning macros or debug macros or 
 I might need to add a `minify` and `maxify`, but the definitions of those will be shorter than C++ too. w00t. For now (this'll get updated later):
 
 {% highlight d %}
-import std.algorithm;
-import std.array;
-import std.container;
-import std.math;
-import std.random;
-import std.range;
-import std.stdio;
-import std.string;
-import std.typecons;
+import std.stdio, std.array, std.range, std.string, std.typecons;
+import std.algorithm, std.container, std.math, std.random;
 void scan(T...)(ref T args) { foreach (ref arg; args) readf(" %s", &arg); }
 {% endhighlight %}
