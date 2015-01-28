@@ -22,11 +22,17 @@ escape c = [c]
 vimEscape '|' = "\\|"
 vimEscape c = [c]
 
+paddedHex :: Int -> String
+paddedHex n = let
+		hex = printf "%X" n
+		padding = if length hex < 4 then "<span class='text-muted'>" ++ (replicate (4 - length hex) '0') ++ "</span>" else ""
+	in padding ++ hex
+
 row :: (Char, Maybe String, String) -> String
 row (c,ks,desc) = let n = ord c in tr $
 	[ [c]
 	, show n
-	, printf "%X" n
+	, paddedHex n
 	, maybe "" (codeTag . concatMap escape) ks
 	, desc
 	]

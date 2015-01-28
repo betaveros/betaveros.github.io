@@ -193,6 +193,7 @@ Custom: Whatever
 ℑ	IM
 ℘	wp	Weierstrass p, officially SCRIPT CAPITAL P, LaTeX \wp
 �	^?
+ʘ	O.	Bilabial click
 Arrows
 ←	<-
 ↑	-!
