@@ -96,23 +96,31 @@ void scan(T...)(ref T args) { foreach (ref arg; args) readf(" %s", &arg); }
 
 `int[100008] a;` gives you a static (fixed-length) array.
 
-`int[] b;` gives you a dynamic (variable-length) array. It's quite like C++'s STL `vector`.
+`int[] b;` gives you a dynamic (variable-length) array. It's sort of like C++'s STL `vector`. Actually, it's properly called a slice, and you can read more about it in the [D Slices](http://dlang.org/d-array-article.html) article, which gets linked quite often in the forum.
 
-For dynamic arrays, binary `~` is the append or concatenate operator; you can append elements by writing `b ~= 3;` Experimenting shows that D does roughly double its size each reallocation so that this is amortized O(1), as you'd hope, although I can't find any documentation saying so.
+Unfortunately after a tragic experience on Codeforces, I've discovered its reallocation semantics seems somewhat slow when compared to similar uses of C++ `vector` for one big problem: **after you pop an element off the back or otherwise decrease the length, the slice must be reallocated to insert more elements**. So far, I've found `std.container.Array` better fits such needs. But if you only push things in, iterate across them, or delete everything at once, I think slices are okay.
 
-You can get the length with `b.length`.
+Declare `Array`s like:
 
-Also, if you `import std.array;`, you get to do `b.front` and `b.back` (you don't need parentheses!), which are refs through which you can modify the element. You also get `b.popFront()` and `b.popBack()` (which are `void` like their C++ STL counterparts, to my disappointment) and `b.empty`.
+{% highlight d %}
+Array!int a;
+{% endhighlight %}
 
-There doesn't appear to be a `.clear()` function but you can just set `b.length = 0;`.
+You use a bang for templates in D.
 
-Also, calling `.dup` makes a dynamic copy.
+Anyway, in general, binary `~` is the append or concatenate operator; you can append elements by writing `b ~= 3;` or `b ~= [5, 7];` For slices, experimenting shows that D does roughly double the slice after each reallocation so that this is amortized O(1), as you'd hope, although I can't find any documentation saying so. You can get the length with `b.length`.
+
+`Array`s, on the other hand, multiply their capacities by 3/2 on reallocation.
+
+Also, if you `import std.array;`, you get to do `b.front` and `b.back` on slices (you don't need parentheses!), which are refs through which you can modify the element. You also get `b.popFront()` and `b.popBack()` (which are `void` like their C++ STL counterparts, to my disappointment) and `b.empty`. There doesn't appear to be a `.clear()` function but you can just set `b.length = 0;`. Also, calling `.dup` makes a dynamic copy.
 
 Strings (`string`) are just an alias for immutable `char[]`s. (So if you want to store a string in a `char[]`, call `.dup`. But you can still `~=` a string to a variable of type `string`; it just replaces the variable with a new copy.)
 
+`Array`s also have `.front`, `.back`, `.length`, `.empty`, indexing and so on. Their popping methods are called `.removeFront()` and `removeBack()`, however. `Array`s *do* have a `.clear()` method, but unlike STL `vector`, it throws away any capacity. It appears setting `.length = 0` is slightly faster if you expect to make the `Array` large again soon.
+
 ## Deques, etc.
 
-This is so far the one place D has disappointed me relative to C++, and only mildly. Your best bet is `DList` (doubly-linked list) from `std.container`. The type looks like `DList!int` (you use a bang for templates in D). As above, you can `.front`, `.popFront()`, and also `.insertFront(x)`, and same for `back` and cognates, of course.
+This is so far the one place D has disappointed me relative to C++, and only mildly. Your best bet is `DList` (doubly-linked list) from `std.container`. The type looks like `DList!int`. As above, you can `.front`, `.popFront()`, and also `.insertFront(x)`, and same for `back` and cognates, of course.
 
 You can also `.empty`, but sadly, you can't get the length of a `DList`. But now that I think about it, `.empty` is often enough anyway if you're BFSing or whatever, and you can always maintain the length yourself somewhere.
 
@@ -131,6 +139,7 @@ if (key in map) map[key] += 1;
 It also supports `.length`; `.keys` and `.values` (dynamic array copies); `.byKey()` and `.byValue()` and `.byKeyValue()` (iterable-ish things, not copies); `.get` (pass a second default value to return if )
 
 There is a [`RedBlackTree`](http://dlang.org/phobos/std_container.html#.RedBlackTree) and a [`BinaryHeap`](http://dlang.org/phobos/std_container.html#.BinaryHeap) in `std.container`.
+
 ## Structs
 
 As you'd expect, but no semicolon.
@@ -292,6 +301,10 @@ I might need to add a `minify` and `maxify`, but the definitions of those will b
 
 {% highlight d %}
 import std.stdio, std.array, std.range, std.string, std.typecons;
-import std.algorithm, std.container, std.math, std.random;
+import std.algorithm, std.container, std.math, std.numeric, std.random;
 void scan(T...)(ref T args) { foreach (ref arg; args) readf(" %s", &arg); }
+void minify(T)(ref T a, in T b) { if (a > b) a = b; }
+void maxify(T)(ref T a, in T b) { if (a < b) a = b; }
+void ewriteln(T...)(T args) { stderr.writeln("\033[35m", args, "\033[0m"); }
+int ilen(T)(const ref T a) { return cast(int)(T.length); }
 {% endhighlight %}
