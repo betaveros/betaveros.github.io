@@ -4,29 +4,146 @@ category: code
 title: Haskell Stash
 ---
 
-(not very polished finalized)
+## Installation Notes
 
-Personal list of Hackage packages to install, in approximate decreasing order of priority. Asterisked ones are likely requisite of others:
+Personal list of Hackage packages to install, in approximate decreasing order of priority.
 
-- `ghc-mod` (basic, basic Syntastic integration, whoo)
-- `data-memocombinators` (Project Euler)
-- `vector` (better than `array`)
+### In Haskell Platform
+
+[Changelog](https://www.haskell.org/platform/changelog.html) (in case there was any doubt)
+
+GHC notably has `array`, `bytestring`, `template-haskell`, `transformers`.
+
+Additional libraries notably include `attoparsec`, `HTTP`, `HUnit`, `mtl`, `parsec`, `QuickCheck`, `text`, `vector`.
+
+Still, come to think of it, these libraries may well have updated since the platform release...
+
+I'm too lazy to reinstall *all* of them, so here are the ones I recognize that I care about, minus `containers` because it mysteriously threatens to break `ghc-7.8.3` itself, plus the `update` that I always forget:
+
+    cabal update
+    cabal install HTTP HUnit QuickCheck array attoparsec bytestring mtl parsec random split text transformers unordered-containers vector
+
+Of those, I'd say these are particularly important:
+
+- `vector` (better than `array`...?)
 - `parsec` (parsing with Haskell is awesome)
-- `idris` (dependent typing FTW)
-- `cryptohash` (for crypto uses, self-explanatory)
-- `base16-bytestring` (also for crypto uses?)
-- `hlint`
-- `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel)
-- `hoogle`
-- `lens` (don't you just love its identity function `(%%~) :: Optical p q f s t a b -> p a (f b) -> q s (f t)` ?)
-- `pointfree`
-- `quickcheck`
-- `hdevtools`
-- `criterion`
 
-`transformers` and `bytestring` are also really good, but it appears they are provided, at least with the default GHC distro.
+### Bare GHC?
 
-Someday I should get `conduit` working and learn it.
+After asking around on #haskell, I learned [https://ghcformacosx.github.io/](https://ghcformacosx.github.io/), which is easy to relocate doesn't come with those default extra slightly-out-of-date packages, only the basic GHC and cabal-install.
+
+### Cabal Preparation
+
+Go to `~/.cabal/config` and change these settings:
+
+    verbose: 3
+    documentation: True
+
+Verbosity helps keep me sane when Cabal seems screwy or lagging.
+
+Sometimes Cabal generates Haddock documentation explicitly without me saying so, sometimes it doesn't. Better safe than sorry.
+
+`cabal install cabal-install` for the newest version.
+
+Then, **restart your terminal**. Make sure `cabal --version` says what it should.
+
+## cabal sandbox
+
+I took too long to figure this out.
+
+Pick a nice folder or create one, `cd` there, and then:
+
+{% highlight sh %}
+$ cabal sandbox init
+$ cabal install whatever
+{% endhighlight %}
+
+Now `cabal` will use packages in the sandbox for everything. But for my use case, I only want access to certain libraries for quick scripts without bringing the rest of my installation crashing down into dependency hell.
+
+That means I'll `ghc` or `runhaskell` them, which does *not* automatically use the sandbox. Instead, I can:
+
+{% highlight sh %}
+$ cabal exec runhaskell myscript.hs
+{% endhighlight %}
+
+Or even do this to get a brand-new shell where `ghc` and `runhaskell` all know about the sandbox:
+
+{% highlight sh %}
+$ cabal exec sh
+{% endhighlight %}
+
+More full-blown:
+
+{% highlight sh %}
+$ cabal exec sh -- --login
+{% endhighlight %}
+
+Somewhat strangely, however, `cabal install` doesn't work inside the `cabal exec sh`. Oh well.
+
+So, I think I'll try to avoid entering a shell. It took a little searching but finally I found [cabal sandbox tips](https://ro-che.info/articles/2014-03-05-cabal-sandbox-tips) for some ways to get cabal to "stay with you". The weird `${a+b}` syntax is one of various [parameter substitution](http://tldp.org/LDP/abs/html/parameter-substitution.html) syntaxes. Eventually I cobbled this together:
+
+{% highlight sh %}
+export PS1='${sandbox_name+\[\e[0;31m\][box $sandbox_name]}\[\e[1;32m\]\u\[\e[0m\]@ \[\e[0;34m\]\W\[\e[0m\]\$ '
+
+function cabalize() {
+    if [[ -e cabal.sandbox.config ]]; then
+        echo "cabalizing to `basename $PWD`..."
+        export sandbox_name=`basename $PWD`
+        export CABAL_SANDBOX_CONFIG=$PWD/cabal.sandbox.config
+    else
+        echo "uncabalizing..."
+        unset sandbox_name
+        unset CABAL_SANDBOX_CONFIG
+    fi
+}
+{% endhighlight %}
+
+(Note that this has to be like a function in `.profile` because scripts can't set environment variables seen by the parent shell.)
+
+Now all that's necessary is to make aliases for `cabal exec ghc` or `cabal exec runhaskell`.
+
+TODO: Integrate `ghc-mod`.
+
+### My Sandboxes
+
+Link: [Haskell Best Practices for Avoiding "Cabal Hell"](http://softwaresimply.blogspot.tw/2014/07/haskell-best-practices-for-avoiding.html)
+
+Paranoid triple-checking preparatory checklist:
+
+- Is the `cabal` version new enough? (or `cabal install cabal-install`)
+- Have you `cabal update`d sufficiently recently?
+- **Did you actually run `cabal sandbox init`**?
+
+Okay. Useful commands:
+
+- `cabal get`?
+- `cabal add-source`, if you need to make cabal install from a repo in a sandbox not yet uploaded to hackage
+- `--allow-newer`
+
+And the sandboxes:
+
+- **ghc-mod-box**: `ghc-mod` (big package! pulls in `hlint`) && `hdevtools` && `hoogle`, for editor integration and command-line tools.
+- **wreq-box**: `wreq` (snappy high-level HTTP awesomeness with lenses) && `haskeline` (pretty much solely for `getPassword`)
+
+  Things this pulls in:
+
+  - `cryptohash` and `base16-bytestring` (and `base64-bytestring`), so I think this can also be my messing-with-cryptography box
+  - `attoparsec`, `lens` (duh), `semigroups`, `semigroupoids`...
+
+  I maly also add `JuicyPixels` here, to generalize it to being the master web-interaction exploitation capture-the-flag box.
+
+- **eulerbox**: `data-memocombinators` && `base-unicode-symbols` && `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel? (Although I already have and in a certain sense it's part of the point of Project Euler))
+
+  *As of time of writing*, `arithmoi` appears to have an overly harsh upper bound on `random`. There are even two pull request [#5](https://bitbucket.org/dafis/arithmoi/pull-request/5/bump-random-upper-version-bounds/diff) [#6](https://bitbucket.org/dafis/arithmoi/pull-request/6/allow-random-11/diff) trying to rectify this, but they're three months old and haven't been pulled, sadly. In the meantime, there is a nice [bugfix fork](https://github.com/mietek/arithmoi) that you can `git pull` and `cabal install` from.
+- **`idris`** (dependent typing FTW)
+
+I guess `hspec` (colorful tests FTW) should go in a project-local sandbox.
+
+### Packages Pending Investigation
+
+- `classy-prelude` (I'm quite ambivalent right now because the dependencies are huge for something I want in quick-and-dirty scripts)
+- `pointfree` (I don't actually use this, although come to think of it, there are probably times when I would have benefited but brushed it off)
+- `criterion` (benchmarking. I should learn this some day)
 
 ## exec vs eval
 
