@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+     <meta charset="UTF-8" />
+     <title>Bars 2015</title>
+     <meta http-equiv="X-UA-Compatible" content="IE=9" />
+  </head>
+  <body>
+  <p>2015/4/13. Generated with <a href="http://www.d3-generator.com/">d3-generator.com</a>. If you don't see a bar graph below, your browser is not modern enough :(</p>
+  <p>The only manual change I made was to add the ordinal scale coloring by top-level domain. If even Gmail considered it spam, it didn't go here.</p>
+  <p>* The letter from andrew.cmu.edu is about a local event by Emory U, Case Western Reserve U, Carnegie Mellon U, New York U and the U of Rochester.</p>
+  <p>** Two of the emails from rice.edu are about a local event by Cornell, Rice, UChicago and Vanderbilt.</p>
+  <p>† Some colleges sent from two domains. Notably, if you combine Loyola's two bars, it takes second place by a thin margin. I marked these manually and may have missed some though.</p>
+  <p>‡ Not from a college or specific colleges, but related to the topic.</p>
+    <div id="chart"></div>
+    <script src="/js/d3.min.js"></script>
+    <script>
+function renderChart() {
+
+var data = d3.csv.parse(d3.select('#csv').text());
+var valueLabelWidth = 40; // space reserved for value labels (right)
+var barHeight = 16; // height of one bar
+var barLabelWidth = 360; // space reserved for bar labels
+var barLabelPadding = 5; // padding between bar and bar labels (left)
+var gridLabelHeight = 18; // space reserved for gridline labels
+var gridChartOffset = 3; // space between start of grid and first bar
+var maxBarWidth = 420; // width of the bar with the max value
+
+// accessor functions
+var barLabel = function(d) { return d['Email']; };
+var barValue = function(d) { return parseFloat(d['Count']); };
+
+// sorting
+var sortedData = data.sort(function(a, b) {
+ return d3.descending(barValue(a), barValue(b));
+});
+
+// scales
+var yScale = d3.scale.ordinal().domain(d3.range(0, sortedData.length)).rangeBands([0, sortedData.length * barHeight]);
+var y = function(d, i) { return yScale(i); };
+var yText = function(d, i) { return y(d, i) + yScale.rangeBand() / 2; };
+var x = d3.scale.linear().domain([0, d3.max(sortedData, barValue)]).range([0, maxBarWidth]);
+// svg container element
+var chart = d3.select('#chart').append("svg")
+  .attr('width', maxBarWidth + barLabelWidth + valueLabelWidth)
+  .attr('height', gridLabelHeight + gridChartOffset + sortedData.length * barHeight);
+// grid line labels
+var gridContainer = chart.append('g')
+  .attr('transform', 'translate(' + barLabelWidth + ',' + gridLabelHeight + ')');
+gridContainer.selectAll("text").data(x.ticks(10)).enter().append("text")
+  .attr("x", x)
+  .attr("dy", -3)
+  .attr("text-anchor", "middle")
+  .text(String);
+// vertical grid lines
+gridContainer.selectAll("line").data(x.ticks(10)).enter().append("line")
+  .attr("x1", x)
+  .attr("x2", x)
+  .attr("y1", 0)
+  .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+  .style("stroke", "#ccc");
+// bar labels
+var labelsContainer = chart.append('g')
+  .attr('transform', 'translate(' + (barLabelWidth - barLabelPadding) + ',' + (gridLabelHeight + gridChartOffset) + ')');
+labelsContainer.selectAll('text').data(sortedData).enter().append('text')
+  .attr('y', yText)
+  .attr('stroke', 'none')
+  .attr('fill', 'black')
+  .attr("dy", ".35em") // vertical-align: middle
+  .attr('text-anchor', 'end')
+  .text(barLabel);
+// bars
+var color = d3.scale.category10();
+var barsContainer = chart.append('g')
+  .attr('transform', 'translate(' + barLabelWidth + ',' + (gridLabelHeight + gridChartOffset) + ')');
+barsContainer.selectAll("rect").data(sortedData).enter().append("rect")
+  .attr('y', y)
+  .attr('height', yScale.rangeBand())
+  .attr('width', function(d) { return x(barValue(d)); })
+  .attr('stroke', 'white')
+  .attr('fill', function(d, i){
+    var x = d.Email.split(".");
+    return color(x[x.length - 1]);
+  });
+// bar value labels
+barsContainer.selectAll("text").data(sortedData).enter().append("text")
+  .attr("x", function(d) { return x(barValue(d)); })
+  .attr("y", yText)
+  .attr("dx", 3) // padding-left
+  .attr("dy", ".35em") // vertical-align: middle
+  .attr("text-anchor", "start") // text-align: right
+  .attr("fill", "black")
+  .attr("stroke", "none")
+  .text(function(d) { return d3.round(barValue(d), 2); });
+// start line
+barsContainer.append("line")
+  .attr("y1", -gridChartOffset)
+  .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+  .style("stroke", "#000");
+
+}
+    </script>
+    <script id="csv" type="text/csv">Email,Count
+*andrew.cmu.edu,1
+(Boston College) bc.edu,1
+† (for St John's College) prsms.com,1
+† (Texas Christian U) tcu.edu,1
+† (Texas Christian U) tcuchoice.org,1
+ucmerced.edu,1
+yale-nus.edu.sg,1
+(Michigan State U) msu.emasservices.com,2
+† northwestern.edu,2
+‡ qemailserver.com,3
+† ugadm.northwestern.edu,3
+† (Worcester Polytechnic Institute) welcome.wpi.edu,3
+jacobs-university.de,4
+uconn.edu,4
+(William & Mary) wm.edu,4
+ad3.ucdavis.edu,5
+reed.edu,5
+sa.ucsb.edu,5
+usc.edu,5
+carleton.edu,6
+† (Worcester Polytechnic Institute) wpi.edu,6
+admissions.rochester.edu,7
+admissions.ucla.edu,8
+colostate.edu,9
+marist.edu,9
+ucf.edu,9
+ucsc.edu,9
+(George Washington U) gwu.edu,10
+uoregon.edu,10
+kenyon.edu,11
+southwestern.edu,11
+(for UC Riverside) crm.orionondemand.com,12
+† drexelinfo.org,12
+gomillsaps.org,12
+(Ohio Northern U) onu.edu,12
+(U of South Carolina) sc-now.org,12
+dartmouth.edu,14
+pace.edu,14
+rhodes.edu,14
+**rice.edu,14
+swarthmoreadmit.org,14
+(U of Central Florida) UCFinfo.org,15
+† (Loyola U Chicago) lucadmission.org,15
+santaclarauniv.org,15
+† stjohnsadmin.org,15
+ugadm.rutgers.edu,15
+umadmission.org,15
+‡ members.privatecolleges.com,16
+cornell.edu,18
+miami.edu,18
+pitzer.edu,18
+(Johns Hopkins U) jhu.edu,19
+uchicago.edu,20
+(Northeastern U) neu.edu,23
+admissions.upenn.edu,24
+† drexel.edu,24
+fordhamu.org,34
+american.edu,38
+† (Loyola U Chicago) luc.edu,42
+(Seton Hall U) shuadmissions.org,42
+(Rensselaer Polytechnic Institute) rpinow.org,48
+columbia.edu,59</script>
+    <script>renderChart();</script>
+  </body>
+</html>
