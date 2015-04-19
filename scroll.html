@@ -9,31 +9,31 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+		<script src="/js/jquery-1.11.1.min.js"></script>
 		<title>Parallax Scrolling Template</title>
 		<style>
 			body{
 				margin:0;
 				padding:0;
 			}
-			#home, #goodbye { 
+			#home, #goodbye {
 				background: url("red.jpg") 50% 0 repeat fixed;
 				min-height: 1000px;
-				height: 1000px;  
+				height: 1000px;
 				margin: 0 auto;
-				width: 100%; 
-				max-width: 1920px; 
-				position: relative; 
+				width: 100%;
+				max-width: 1920px;
+				position: relative;
 				z-index: 2;
 			}
-			#about { 
+			#about {
 				background: url("blue.jpg") 50% 0 repeat fixed;
 				min-height: 1000px;
 				height: 1000px;
-				margin: 0 auto; 
-				width: 100%; 
-				max-width: 1920px; 
-				position: relative; 
+				margin: 0 auto;
+				width: 100%;
+				max-width: 1920px;
+				position: relative;
 			}
 
 			div.cont {
@@ -75,7 +75,7 @@
 							// with the CSS, it doesn't move when you scroll at all
 							// thus we actually want to move it UP
 							// which is why yPos is negative
-							var yPos = -($window.scrollTop() * $self.data('speed')); 
+							var yPos = -($window.scrollTop() * $self.data('speed'));
 							// If this element has a Y offset then add it on
 							if ($self.data('offsetY')) {
 								yPos += $self.data('offsetY');
