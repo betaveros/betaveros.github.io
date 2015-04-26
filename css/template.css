@@ -12,5 +12,5 @@ h3, h4, h5, h6 {
 }
 .master { font-size: 120%; }
 .master a { font-weight: 500; }
-.master a strong { color: #c00; font-size: 120%; }
-.master a.list-group-item-info strong { color: #00c; }
+a .master strong { color: #c00; font-size: 120%; }
+a.list-group-item-info .master strong { color: #00c; }
