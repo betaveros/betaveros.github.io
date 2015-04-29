@@ -47,6 +47,8 @@ Sometimes Cabal generates Haddock documentation explicitly without me saying so,
 
 Then, **restart your terminal**. Make sure `cabal --version` says what it should.
 
+Also, apparently you should install `happy` and `alex` unsandboxed.
+
 ## cabal sandbox
 
 I took too long to figure this out.
@@ -119,6 +121,7 @@ Okay. Useful commands:
 - `cabal get`?
 - `cabal add-source`, if you need to make cabal install from a repo in a sandbox not yet uploaded to hackage
 - `--allow-newer`
+- `--dry-run` to see what cabal will try to install
 
 And the sandboxes:
 
