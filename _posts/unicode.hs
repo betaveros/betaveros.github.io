@@ -1,5 +1,6 @@
 import Control.Applicative
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Trans.State
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
@@ -8,6 +9,7 @@ import Data.List
 import Data.Function
 import Text.Printf
 import Data.Maybe
+import Data.List.Split
 
 td s = "<td>" ++ s ++ "</td>"
 codeTag s = "<code>" ++ s ++ "</code>"
@@ -38,17 +40,17 @@ row (c,ks,desc) = let n = ord c in tr $
 	]
 thRow s = tr ["<th colspan='5'>" ++ s ++ "</th>"]
 
-type CharMake x = WriterT (String,String) (State Bool) x
+type CharMake x = WriterT (String,[String]) (State Bool) x
 
 tellData :: (Char, Maybe String, String) -> CharMake ()
 tellData tup@(c, Just ks, _) = do
 	isCustom <- lift get
-	tell (row tup, if isCustom then " " ++ ks ++ " " ++ show (ord c) else "")
-tellData tup@_ = tell (row tup, "")
+	tell (row tup, if isCustom then [ks ++ " " ++ show (ord c)] else [])
+tellData tup@_ = tell (row tup, [])
 
 tellHeader :: String -> CharMake ()
 tellHeader s = do
-	tell (thRow s, "")
+	tell (thRow s, [])
 	lift . put $ "Custom:" `isPrefixOf` s
 
 pr :: [String] -> CharMake ()
@@ -82,5 +84,5 @@ main = do
 	putStrLn header
 	putStrLn $ table tableContent
 	putStrLn "{% highlight vim %}"
-	putStrLn $ "digraph" ++ concatMap vimEscape digraphContent
+	forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
 	putStrLn "{% endhighlight %}"
