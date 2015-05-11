@@ -5,6 +5,8 @@ title: Extreme Value Theorem
 mathjax: true
 ---
 
+[original sillier post](http://www.artofproblemsolving.com/community/c1285h1042959)
+
 The "Extreme Value Theorem", according to my old calculus textbook (Larson, Hostetler, Edwards, 8th ed.), is "A continuous function defined on a closed interval attains a minimum and a maximum on the interval." The calculus textbook continues,
 
 > Although [it] is intuitively plausible, a proof of this theorem is not within the scope of this text.
