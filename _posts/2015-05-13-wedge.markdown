@@ -1,0 +1,97 @@
+---
+layout: default
+category: math
+title: "|Wedge|"
+mathjax: true
+---
+[original sillier post](http://www.artofproblemsolving.com/community/c1285h1033032)
+
+Note on notation: to be maximally clear, I have bolded all my vectors and put tiny arrows on them. Normal letters are usually reals, uppercase letters are usually bigger matrices. Also, $$\cdot^T$$ denotes the transpose of a matrix.
+
+---
+
+Let $$\vec{\textbf{v}}_1, \ldots, \vec{\textbf{v}}_m$$ be elements of $$\mathbb{R}^n$$ where $$m \leq n$$, i.e. column vectors with $$n$$ real elements. Let $$V = [\vec{\textbf{v}}_1, \ldots, \vec{\textbf{v}}_m]$$. This means pasting the column vectors together to make an $$n \times m$$ matrix ($$n$$ rows $$m$$ columns).
+
+
+Consider the thing $$\vec{\textbf{v}}_1 \wedge \vec{\textbf{v}}_2 \wedge \cdots \wedge \vec{\textbf{v}}_m$$, which can be visualized as the hyperparallelogram $$\left\{\sum_{i=1}^{m} t_i\vec{\textbf{v}}_i \,\middle\vert\, t_i \in [0,1], i = 1, 2, \ldots, m \right\}$$ but is apparently a different thing in a different vector space of things. We wonder how to compute **the hyperarea of this hyperparallelogram**.
+
+To get a simple idea of what we're trying to do, we start with the $$m = 2$$ case without any advanced stuff.
+
+## m = 2
+
+We have two $$n$$-dimensional vectors $$\vec{\textbf{v}}_1$$ and $$\vec{\textbf{v}}_2$$, and we want to consider the area of the parallelogram they bound. Well, geometrically this can be computed as
+$$
+\vert\vec{\textbf{v}}_1\vert \vert\vec{\textbf{v}}_2\vert\sin \theta
+$$
+where $$\theta$$ is the angle between the two vectors. And we can get at that angle because we know that the vectors' dot product
+$$
+\vec{\textbf{v}}_1 \cdot \vec{\textbf{v}}_2 = \vert\vec{\textbf{v}}_1\vert \vert\vec{\textbf{v}}_2\vert\cos \theta.
+$$
+
+So. Let the vectors' coordinates be $$\vec{\textbf{v}}_1 = \langle x_1, \ldots, x_n \rangle$$ and $$\vec{\textbf{v}}_2 = \langle y_1, \ldots, y_n \rangle$$.
+
+$$
+\begin{align*} A &= \vert\vec{\textbf{v}}_1\vert \vert\vec{\textbf{v}}_2\vert\sin \theta \\
+&= \vert\vec{\textbf{v}}_1\vert \vert\vec{\textbf{v}}_2\vert\sqrt{1 - \cos^2 \theta} \\
+&= \sqrt{\vert\vec{\textbf{v}}_1\vert^2\vert\vec{\textbf{v}}_2\vert^2 - (\vert\vec{\textbf{v}}_1\vert \vert\vec{\textbf{v}}_2\vert\cos \theta)^2} \\
+&= \sqrt{\sum x_i^2 \sum y_i^2 - (\sum x_i y_i)^2}
+\end{align*}
+$$
+
+This should look familiar if you've done a nontrivial inequality: it's equivalent to
+
+$$
+\sqrt{\sum_{i<j} (x_i y_j - x_j y_i)^2}
+$$
+
+which is, interestingly, 
+
+$$
+\sqrt{\sum_{i<j} \begin{vmatrix} x_i & y_i \\ x_j & y_j \end{vmatrix}^2 }
+$$
+
+This is interesting because it suggests a general formula that even works in the other cases. Maybe we just take all combinations of $$m$$ rows and compute the squares of these determinants, sum them up, and take the square root of everything. Compare with $$m = 1$$
+
+$$
+\sqrt{\sum_{i} \vert x_i\vert^2}
+$$
+
+and $$m = 3$$
+
+$$
+\sqrt{\begin{vmatrix} x_i & y_i & z_i \\ x_j & y_j & z_j \\ x_k & y_k & z_k \end{vmatrix}^2 }
+$$
+
+where the square root of the square of course just works out to be taking the absolute value.
+
+## General Case
+
+Anyway, the only way we know how to compute hyperarea of hyperparallelograms at this stage turns out to be the determinant, except we can only take determinants of hyperparallelograms that are stuck in the Euclidean space equal to their own dimension. Our vectors form an $$n \times m$$ matrix, unfortunately.
+
+So instead let's take the $$m$$-dimensional subspace $$\mathcal{S} \subset \mathbb{R}^n$$ that our vectors span (assuming they don't have any linear dependencies, because if they did then the hyperparallelogram is degenerate and has area trivially $$0$$) and try to pretend it's the normal $$\mathbb{R}^m$$ we're used to. We can do this by taking a random orthonormal basis $$\{\vec{\textbf{w}}_1, \vec{\textbf{w}}_2, \ldots, \vec{\textbf{w}}_m\} \subset \mathcal{S}$$ of it, and express each of our vectors $$\vec{\textbf{v}}_i$$ as a linear combination of the basis vectors.
+
+In other words, $$\vec{\textbf{v}}_i = [\vec{\textbf{w}}_1, \vec{\textbf{w}}_2, \ldots, \vec{\textbf{w}}_m]\vec{\textbf{c}}_i$$ for some $$\vec{\textbf{c}}_i \in \mathbb{R}^m$$ for each $$i = 1, \ldots, n$$. And since the basis is orthonormal, the hyperarea we want to compute can be computed as the determinant of the matrix with the coordinate vectors $$\vec{\textbf{c}}_i$$.
+
+Our task is now to compute $$\det(C := [\vec{\textbf{c}}_1, \ldots, \vec{\textbf{c}}_m])$$. This is hard, but it can be LaTeXed, which means now we have something to work on. Our only lead on these $$\vec{\textbf{c}}_i$$ is the way we defined it: we have $$V = [\vec{\textbf{w}}_1, \ldots, \vec{\textbf{w}}_m]C$$, but it's not useful because we have to somehow get rid of the $$[\vec{\textbf{w}}_1, \vec{\textbf{w}}_2, \ldots, \vec{\textbf{w}}_m]$$ next to it, and that's not even a square matrix.
+
+We like working in $$\mathbb{R}^n$$ more. Luckily, there's an obvious way to create an $$n \times n$$ determinant that's equal to what we want: augment an $$(n-m)\times(n-m)$$ identity matrix diagonally onto it. So we want to compute the determinant of
+
+$$
+D = \det\left( \begin{bmatrix} C & \textbf{0} \\ \textbf{0} & I_{n-m} \end{bmatrix} \right)
+$$
+
+($$I_{n-m}$$ being the $$(n-m)\times(n-m)$$ identity matrix)
+
+We can **"**obviously**"** find an orthonormal basis $$\{\vec{\textbf{w}}_1, \vec{\textbf{w}}_2, \ldots, \vec{\textbf{w}}_n\}$$ of the whole $$\mathbb{R}^n$$ that includes our orthonormal basis of $$\mathcal{S}$$. So let $$W = [\vec{\textbf{w}}_1, \vec{\textbf{w}}_2, \ldots, \vec{\textbf{w}}_n]$$.
+
+How does the property of orthonormal-basis-ness translate into in matrix language? We have $$\vec{\textbf{w}}_i \cdot \vec{\textbf{w}}_i = 1$$ and $$\vec{\textbf{w}}_i \cdot \vec{\textbf{w}}_j = 0$$ for $$i \neq j$$. The matrix multiplication that will involve these dot products is $$W^T W$$. This is not the notation either of my textbooks uses but $$W^T$$ is $$W$$'s transpose.
+
+Entry-by-entry, $$W^T W = I_n$$. So $$W^{-1} = W$$. Since determinants are multiplicative, we immediately have $$\det(W) = \det(W^T) = \pm 1$$. Also, we know $$WC$$ and we can compute $$WD$$ from that: $$WD = [\vec{\textbf{v}}_1, \ldots, \vec{\textbf{v}}_m, \vec{\textbf{w}}_{m+1}, \ldots, \vec{\textbf{w}}_n]$$. Let this matrix be $$G$$. The area we want is $$\det(G)$$.
+
+Okay so we've gotten rid of the mysterious coordinate vectors $$\vec{\textbf{c}}_i$$; unfortunately we really don't know much more about the remnants of our orthonormal basis. However since we really only want the determinant of $$G$$ we can make the matrix smash with itself this way.
+
+Consider $$G^T G$$. The elements of this are the dot products of $$G$$'s column vectors with themselves. Since the $$\vec{\textbf{w}}_{m+1}, \ldots, \vec{\textbf{w}}_n$$ are orthogonal to each other and to each of the $$\vec{\textbf{v}}_i$$...
+
+$$G^T G = \begin{vmatrix}V^T V & \textbf{0} \\ \textbf{0} & I_{n-m}\end{vmatrix}$$
+
+Taking the determinant one final time, remembering that transposing keeps it invariant, we see $$\det(G)^2 = \det(V^T V)$$ so a way to compute our final solution is $$\boxed{\sqrt{\det(V^T V)}}$$.
