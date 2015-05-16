@@ -96,6 +96,8 @@ Custom: Blackboard-font digraphs
 ℝ	RR
 ℤ	ZZ
 ℂ	CC	CC is a default digraph for a 0x94 "CANCEL CHARACTER", but I can't imagine needing it.
+𝔽	FF	default for 0x0c "FORM FEED"
+𝕂	KK
 Geometric Things
 █	FB
 ▀	TB

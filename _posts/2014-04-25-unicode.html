@@ -104,6 +104,8 @@ title: Unicode
 <tr><td>ℝ</td><td>8477</td><td>211D</td><td><code>RR</code></td><td></td></tr>
 <tr><td>ℤ</td><td>8484</td><td>2124</td><td><code>ZZ</code></td><td></td></tr>
 <tr><td>ℂ</td><td>8450</td><td>2102</td><td><code>CC</code></td><td>CC is a default digraph for a 0x94 "CANCEL CHARACTER", but I can't imagine needing it.</td></tr>
+<tr><td>𝔽</td><td>120125</td><td>1D53D</td><td><code>FF</code></td><td>default for 0x0c "FORM FEED"</td></tr>
+<tr><td>𝕂</td><td>120130</td><td>1D542</td><td><code>KK</code></td><td></td></tr>
 <tr><td><th colspan='5'>Geometric Things</th></td></tr>
 <tr><td>█</td><td>9608</td><td>2588</td><td><code>FB</code></td><td></td></tr>
 <tr><td>▀</td><td>9600</td><td>2580</td><td><code>TB</code></td><td></td></tr>
@@ -248,8 +250,8 @@ title: Unicode
 {% highlight vim %}
 digraph !# 8802 (+ 8713 +) 8716 (/ 8836 /) 8837 @+ 8853 @- 8854 @x 8855
 digraph @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 @\| 10678 3< 8920 3> 8921
-digraph NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 ^_ 9651 \|> 9655 _v 9661
-digraph <\| 9665 oo 3232 __ 9251 uu 8995 ee 601 !! 8252 ?? 8263 ?! 8264
-digraph !? 8265 ?\| 8253 <3 9829 ,3 8230 RE 8476 IM 8465 wp 8472 ^? 65533
-digraph O. 664 ao 12576
+digraph NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 FF 120125 KK 120130 ^_ 9651
+digraph \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 uu 8995 ee 601 !! 8252
+digraph ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230 RE 8476 IM 8465
+digraph wp 8472 ^? 65533 O. 664 ao 12576
 {% endhighlight %}
