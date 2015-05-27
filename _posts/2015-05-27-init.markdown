@@ -1,0 +1,53 @@
+---
+layout: default
+category: code
+title: init
+---
+
+## 1
+
+- **Firefox**
+  - **Pentadactyl, LeechBlock, LastPass**, HTTPS Everywhere, Disconnect, All-in-One Sidebar
+- **Dropbox**
+- **(g)Vim**
+  - **NeoBundle; jellybeans, syntastic**, airline, fugitive, unite.vim, nerdtree, ...
+- LaTeX
+- VLC
+- Anki
+- Colloquy
+- Geogebra, CaRMetal
+- osu!
+- MuseScore
+- VeraCrypt
+- Gyazo
+
+## h4xx0r
+
+- **git** (clone my stuff)
+- languages: [**haskell**]({% post_url 2014-12-11-hs-stash %}), scala
+- docs: kramdown, pandoc
+- command-line: mu, fasd, ack (possibly the_silver_searcher), tmux, tiny-fugue (use **homebrew** on Mac)
+
+## Mac
+
+- **Quicksilver**
+- **iTerm**
+- ShiftIt
+- GrandPerspective
+- GeekTool
+- coconutBattery
+- Karabiner (previously KeyRemap4Macbook)
+- Temperature Monitor
+- Packet Peeper
+
+## Windows
+
+This is not maintained because I haven't used one in forever...
+
+- AutoHotKey
+- Rainmeter
+
+## Fonts
+
+- Menlo (for Powerline)
+- Ubuntu (for Powerline)
