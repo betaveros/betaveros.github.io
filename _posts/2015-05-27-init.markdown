@@ -6,34 +6,38 @@ title: init
 
 ## 1
 
-- **Firefox**
-  - **Pentadactyl, LeechBlock, LastPass**, HTTPS Everywhere, Disconnect, All-in-One Sidebar
-- **Dropbox**
-- **(g)Vim**
-  - **NeoBundle; jellybeans, syntastic**, airline, fugitive, unite.vim, nerdtree, ...
-- LaTeX
-- VLC
-- Anki
-- Colloquy
-- Geogebra, CaRMetal
-- osu!
-- MuseScore
-- VeraCrypt
-- Gyazo
+- [**Firefox**](https://www.mozilla.org/en-US/firefox/new/)
+  - [**Pentadactyl**](http://5digits.org/pentadactyl/) ([nightlies](http://5digits.org/nightlies)), **[LeechBlock](http://www.proginosko.com/leechblock.html#SECT2), [LastPass](https://lastpass.com/misc_download2.php), [Xmarks](https://download.xmarks.com/download)**, [HTTPS Everywhere](https://www.eff.org/https-everywhere), [Disconnect](https://disconnect.me/), [All-in-One Sidebar](http://firefox.exxile.net/aios/)
+- [**Dropbox**](https://www.dropbox.com/) ([`db.tt`](http://db.tt/))
+- **(g)[Vim](http://www.vim.org/)** / [MacVim](https://github.com/macvim-dev/macvim)
+  - **[NeoBundle](https://github.com/Shougo/neobundle.vim); [jellybeans](https://github.com/nanotech/jellybeans.vim), [syntastic](https://github.com/scrooloose/syntastic)**, airline, fugitive, unite.vim, nerdtree, ...
+- [LaTeX](http://www.latex-project.org/)
+- [VLC](https://www.videolan.org/vlc/)
+- [Anki](http://ankisrs.net/)
+- [Geogebra](http://www.geogebra.org/), [CaRMetal](http://db-maths.nuxit.net/CaRMetal/index_en.html)
+- [osu!](https://osu.ppy.sh/p/download)
+- [Gargoyle](http://ccxvii.net/gargoyle/)
+- [MuseScore](https://musescore.org/en)
+- [μTorrent](https://www.utorrent.com/)
+- [VeraCrypt](https://veracrypt.codeplex.com/)
+- [Gyazo](https://gyazo.com/)
 
 ## h4xx0r
 
-- **git** (clone my stuff)
-- languages: [**haskell**]({% post_url 2014-12-11-hs-stash %}), scala
+Be aware of **homebrew** options.
+
+- [**git**](https://www.git-scm.com/) (clone my stuff)
+- languages: [**haskell**](https://www.haskell.org/downloads) ([stash]({% post_url 2014-12-11-hs-stash %})), [scala](http://scala-lang.org/download/)
 - docs: kramdown, pandoc
-- command-line: mu, fasd, ack (possibly the_silver_searcher), tmux, tiny-fugue (use **homebrew** on Mac)
+- command-line: mu, fasd, ack (possibly the_silver_searcher), tmux, tiny-fugue
 
 ## Mac
 
-- **Quicksilver**
-- **iTerm**
-- ShiftIt
-- GrandPerspective
+- [**Quicksilver**](http://qsapp.com/)
+- [**iTerm**2](https://iterm2.com/)
+- [ShiftIt](https://github.com/fikovnik/ShiftIt)
+- [GrandPerspective](http://grandperspectiv.sourceforge.net/)
+- [Colloquy](http://colloquy.info/downloads.html)
 - GeekTool
 - coconutBattery
 - Karabiner (previously KeyRemap4Macbook)
@@ -46,8 +50,9 @@ This is not maintained because I haven't used one in forever...
 
 - AutoHotKey
 - Rainmeter
+- CCleaner (this also exists on Mac but seems less useful)
 
 ## Fonts
 
 - Menlo (for Powerline)
-- Ubuntu (for Powerline)
+- [Ubuntu](http://font.ubuntu.com/) ([for Powerline](https://github.com/powerline/fonts/tree/master/UbuntuMono))
