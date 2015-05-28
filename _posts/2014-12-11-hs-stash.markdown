@@ -38,10 +38,13 @@ Go to `~/.cabal/config` and change these settings:
 
     verbose: 3
     documentation: True
+    require-sandbox: True
 
 Verbosity helps keep me sane when Cabal seems screwy or lagging.
 
 Sometimes Cabal generates Haddock documentation explicitly without me saying so, sometimes it doesn't. Better safe than sorry.
+
+And I've been holding out on requiring Cabal to install into sandboxes because I feel like global installs are still *sometimes* useful, but I am *constantly* being bitten by forgetting to install in a sandbox, and haven't wanted to install something globally for a long time. Should you ever really want to install something globally, `cabal` will tell you how to override that option when you try (use `--no-require-sandbox`).
 
 `cabal install cabal-install` for the newest version.
 
@@ -87,15 +90,18 @@ So, I think I'll try to avoid entering a shell. It took a little searching but f
 {% highlight sh %}
 export PS1='${sandbox_name+\[\e[0;31m\][box $sandbox_name]}\[\e[1;32m\]\u\[\e[0m\]@ \[\e[0;34m\]\W\[\e[0m\]\$ '
 
+function uncabalize() {
+    echo "uncabalizing..."
+    unset sandbox_name
+    unset CABAL_SANDBOX_CONFIG
+}
 function cabalize() {
     if [[ -e cabal.sandbox.config ]]; then
         echo "cabalizing to `basename $PWD`..."
         export sandbox_name=`basename $PWD`
         export CABAL_SANDBOX_CONFIG=$PWD/cabal.sandbox.config
     else
-        echo "uncabalizing..."
-        unset sandbox_name
-        unset CABAL_SANDBOX_CONFIG
+        uncabalize
     fi
 }
 {% endhighlight %}
@@ -104,7 +110,29 @@ function cabalize() {
 
 Now all that's necessary is to make aliases for `cabal exec ghc` or `cabal exec runhaskell`.
 
-TODO: Integrate `ghc-mod`.
+### Vim interface haxx
+
+Incohesive and undocumented. Use at your own risk.
+
+{% highlight vim %}
+function! s:get_cabal_sandbox_g_option()
+    let l:config_file = ""
+    if !empty($CABAL_SANDBOX_CONFIG)
+        let l:config_file = $CABAL_SANDBOX_CONFIG
+    elseif filereadable('cabal.sandbox.config')
+        let l:config_file = 'cabal.sandbox.config'
+    endif
+    if !empty(l:config_file)
+        let l:output = system("grep package-db < '" . l:config_file . "'")
+        let l:dir = matchstr(substitute(l:output, '\n', ' ', 'g'), 'package-db: \zs\S\+\ze')
+        return "-g-package-db='" . l:dir . "'"
+    else
+        return ''
+    endif
+endfunction
+let g:syntastic_haskell_ghc_mod_args = s:get_cabal_sandbox_g_option() . " check --boundary=' '"
+let g:syntastic_haskell_hdevtools_args = s:get_cabal_sandbox_g_option()
+{% endhighlight %}
 
 ### My Sandboxes
 
@@ -114,12 +142,12 @@ Paranoid triple-checking preparatory checklist:
 
 - Is the `cabal` version new enough? (or `cabal install cabal-install`)
 - Have you `cabal update`d sufficiently recently?
-- **Did you actually run `cabal sandbox init`**?
+- **Did you actually run `cabal sandbox init`**? (although if you put `require-sandbox: True` the computer will remember this for you)
 
 Okay. Useful commands:
 
 - `cabal get`?
-- `cabal add-source`, if you need to make cabal install from a repo in a sandbox not yet uploaded to hackage
+- `cabal sandbox add-source`, if you need to make cabal install from a repo in a sandbox not yet uploaded to hackage
 - `--allow-newer`
 - `--dry-run` to see what cabal will try to install
 
@@ -133,11 +161,11 @@ And the sandboxes:
   - `cryptohash` and `base16-bytestring` (and `base64-bytestring`), so I think this can also be my messing-with-cryptography box
   - `attoparsec`, `lens` (duh), `semigroups`, `semigroupoids`...
 
-  I maly also add `JuicyPixels` here, to generalize it to being the master web-interaction exploitation capture-the-flag box.
+  I may also add `JuicyPixels` here, to generalize it to being the master web-interaction exploitation capture-the-flag box.
 
 - **eulerbox**: `data-memocombinators` && `base-unicode-symbols` && `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel? (Although I already have and in a certain sense it's part of the point of Project Euler))
 
-  *As of time of writing*, `arithmoi` appears to have an overly harsh upper bound on `random`. There are even two pull request [#5](https://bitbucket.org/dafis/arithmoi/pull-request/5/bump-random-upper-version-bounds/diff) [#6](https://bitbucket.org/dafis/arithmoi/pull-request/6/allow-random-11/diff) trying to rectify this, but they're three months old and haven't been pulled, sadly. In the meantime, there is a nice [bugfix fork](https://github.com/mietek/arithmoi) that you can `git pull` and `cabal install` from.
+  <del>*As of time of writing*, `arithmoi` appears to have an overly harsh upper bound on `random`. There are even two pull request [#5](https://bitbucket.org/dafis/arithmoi/pull-request/5/bump-random-upper-version-bounds/diff) [#6](https://bitbucket.org/dafis/arithmoi/pull-request/6/allow-random-11/diff) trying to rectify this, but they're three months old and haven't been pulled, sadly. In the meantime, there is a nice [bugfix fork](https://github.com/mietek/arithmoi) that you can `git pull` and `cabal install` from.</del> (resolved!)
 - **`idris`** (dependent typing FTW)
 
 I guess `hspec` (colorful tests FTW) should go in a project-local sandbox.
@@ -203,15 +231,15 @@ import Text.Printf
 import System.IO
 -- }}}
 -- silly utilities {{{
--- stolen from lens:
+-- stolen from lens (note (&) is in Data.Function in 7.10):
 a & f = f a
 a <&> f = fmap f a
 infixl 1 &, <&>
 
-fi :: (Integral a, Num b) => a -> b
-fi = fromIntegral
-glength :: (Num b) => [a] -> b
-glength = genericLength
+fI :: (Integral a, Num b) => a -> b
+fI = fromIntegral
+gLen :: (Num b) => [a] -> b
+gLen = genericLength
 
 readInt     = read :: String -> Int
 readInteger = read :: String -> Integer
