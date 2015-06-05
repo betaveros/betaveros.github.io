@@ -6,12 +6,21 @@ title: Test
 
 There used to be a teaser, but I'm probably not going to post the actual thing in any reasonable timeframe, so I shall use this as a dumping ground for snippets not important enough to deserve even a gist.
 
+"If ever there is tomorrow when we're not together.. there is something you must always remember. You are braver than you believe, stronger than you seem, and smarter than you think. But the most important thing is, even if we're apart.. i'll always be with you."
+
+{% highlight sh %}
+rustc -C prefer-dynamic
+{% endhighlight sh %}
+
 {% highlight css %}
 .meter-text { white-space: pre-wrap; }
 {% endhighlight %}
 
-{% highlight tex %}
-%% :%s/\%d160/ /g
+{% highlight vim %}
+:%s/\%xa0/ /ge
+:%s/\%u2019/'/ge
+:%s/\%u201c/"/ge
+:%s/\%u201d/"/ge
 {% endhighlight %}
 
 {% highlight sh %}
@@ -35,6 +44,16 @@ alias please="sudo"
     sage: R = PolynomialRing(QQ, 'x')
     sage: f = R.lagrange_polynomial([(0,1),(2,2),(3,-2),(-4,9)]); f
     -23/84*x^3 - 11/84*x^2 + 13/7*x + 1
+
+^
+
+    /def key_pgdn = /dokey_hpage
+    /def key_pgup = /dokey_hpageback
+    /def -b'^J' = /dokey_line
+    /def -b'^K' = /dokey_lineback
+    ;; ...
+    /def -PCred -F -t'dragon'
+    /def -PCmagenta -F -t'#\d+'
 
 {% highlight sh %}
 #!/bin/bash
