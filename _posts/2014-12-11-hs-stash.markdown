@@ -44,7 +44,7 @@ Verbosity helps keep me sane when Cabal seems screwy or lagging.
 
 Sometimes Cabal generates Haddock documentation explicitly without me saying so, sometimes it doesn't. Better safe than sorry.
 
-And I've been holding out on requiring Cabal to install into sandboxes because I feel like global installs are still *sometimes* useful, but I am *constantly* being bitten by forgetting to install in a sandbox, and haven't wanted to install something globally for a long time. Should you ever really want to install something globally, `cabal` will tell you how to override that option when you try (use `--no-require-sandbox`).
+And I've been holding out on requiring Cabal to install into sandboxes because I feel like global installs are still *sometimes* useful, but I am *constantly* being bitten by forgetting to install in a sandbox, and haven't wanted to install something globally for a long time. Should you ever really want to install something globally, `cabal` will tell you how to override that option when you try: use `--no-require-sandbox`. But it **won't** tell you *where* to use `--no-require-sandbox`: you should put it as your first flag, right after `cabal` and before even the subcommand, according to [this StackOverflow answer](https://stackoverflow.com/questions/23544266/cabal-and-no-require-sandbox) and personal experience.
 
 `cabal install cabal-install` for the newest version.
 
@@ -131,8 +131,10 @@ function! s:get_cabal_sandbox_g_option()
     endif
 endfunction
 let g:syntastic_haskell_ghc_mod_args = s:get_cabal_sandbox_g_option() . " check --boundary=' '"
-let g:syntastic_haskell_hdevtools_args = s:get_cabal_sandbox_g_option()
+let g:syntastic_haskell_hdevtools_args = s:get_cabal_sandbox_g_option() . " -g-Wall"
 {% endhighlight %}
+
+Note that `ghc-mod` and `hdevtools` actually kind of fill the same niche, so I think you only need one of them. Pick whichever one you get working. `hdevtools`'s advantage is its client-server architecture means it can keep a background process alive and reload more quickly.
 
 ### My Sandboxes
 
@@ -154,6 +156,8 @@ Okay. Useful commands:
 And the sandboxes:
 
 - **ghc-mod-box**: `ghc-mod` (big package! pulls in `hlint`) && `hdevtools` && `hoogle`, for editor integration and command-line tools.
+
+  If you want "midpoints" to install parts of the dependencies, consider `haskell-src-exts` then `hlint` then `ghc-mod`.
 - **wreq-box**: `wreq` (snappy high-level HTTP awesomeness with lenses) && `haskeline` (pretty much solely for `getPassword`)
 
   Things this pulls in:
