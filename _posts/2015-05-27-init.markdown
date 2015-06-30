@@ -11,6 +11,7 @@ title: init
 - [**Dropbox**](https://www.dropbox.com/) ([`db.tt`](http://db.tt/))
 - **(g)[Vim](http://www.vim.org/)** / [MacVim](https://github.com/macvim-dev/macvim)
   - **[NeoBundle](https://github.com/Shougo/neobundle.vim); [jellybeans](https://github.com/nanotech/jellybeans.vim), [syntastic](https://github.com/scrooloose/syntastic)**, airline, fugitive, unite.vim, nerdtree, ...
+  - Make sure you change your home folder and other paths in your `.vimrc` if necessary.
 - [LaTeX](http://www.latex-project.org/)
 - [VLC](https://www.videolan.org/vlc/)
 - [Anki](http://ankisrs.net/)
@@ -33,16 +34,23 @@ Be aware of **homebrew** options.
 
 ## Mac
 
+- Use bottom-right of track pad for right-click; disable natural scrolling
+- Set Caps Lock to Control
+- In Mission Control > Hot Corners, set the lower-right corner to Mission Control
+
+`mkdir ~/bin ~/tmp`
+
 - [**Quicksilver**](http://qsapp.com/)
-- [**iTerm**2](https://iterm2.com/)
+- [**iTerm**2](https://iterm2.com/) (I like the pastel colors)
 - [ShiftIt](https://github.com/fikovnik/ShiftIt)
 - [GrandPerspective](http://grandperspectiv.sourceforge.net/)
 - [Colloquy](http://colloquy.info/downloads.html)
 - GeekTool
 - coconutBattery
-- Karabiner (previously KeyRemap4Macbook)
+- Karabiner (previously KeyRemap4Macbook) + set Left Control to Delete when pressed alone
 - Temperature Monitor
 - Packet Peeper
+- <del>Awareness</del> has mysteriously vanished. dejal's Time Out?
 
 ## Windows
 

@@ -160,6 +160,8 @@ And the sandboxes:
   If you want "midpoints" to install parts of the dependencies, consider `haskell-src-exts` then `hlint` then `ghc-mod`.
 - **wreq-box**: `wreq` (snappy high-level HTTP awesomeness with lenses) && `haskeline` (pretty much solely for `getPassword`)
 
+  Midpoints: `semigroupoids`, then `lens`. I should really rigorously time this at some point.
+
   Things this pulls in:
 
   - `cryptohash` and `base16-bytestring` (and `base64-bytestring`), so I think this can also be my messing-with-cryptography box
