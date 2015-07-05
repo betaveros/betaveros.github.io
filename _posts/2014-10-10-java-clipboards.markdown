@@ -18,6 +18,17 @@ Okay, now step by step. This is the low-level method.
 3. Check if `content` can be read as the kind of object you want with `(content != null) && content.isDataFlavorSupported(someFlavor)`
 4. If it does, get the object with `content.getTransferData(someFlavor)` [^2].
 
+If you just want a quick-and-dirty function:
+
+{% highlight java %}
+static String getClipboard()
+        throws java.awt.datatransfer.UnsupportedFlavorException, IOException {
+    return (String) java.awt.Toolkit.getDefaultToolkit()
+        .getSystemClipboard()
+        .getData(java.awt.datatransfer.DataFlavor.stringFlavor);
+}
+{% endhighlight %}
+
 For designing a Swing component, however, there are more integrated ways. This also allows drag-and-drop as well as cut-copy-paste, the conventional UI ideas. For many components (ex. `JTextField`) the mechanisms are pretty much in place, and you can call `setDragEnabled(true)` on them and be done. Further customizations are possible, particularly for complex things `JList, JTable, JTree`; I'll just skip them today. The first thing is defining/subclassing a `TransferHandler`, which will be asked to handle all of this stuff by Swing internals:
 
 {% highlight java %}
