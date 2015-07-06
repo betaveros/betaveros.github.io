@@ -136,24 +136,28 @@ let g:syntastic_haskell_hdevtools_args = s:get_cabal_sandbox_g_option() . " -g-W
 
 Note that `ghc-mod` and `hdevtools` actually kind of fill the same niche, so I think you only need one of them. Pick whichever one you get working. `hdevtools`'s advantage is its client-server architecture means it can keep a background process alive and reload more quickly.
 
-### My Sandboxes
+## My Sandboxes
 
 Link: [Haskell Best Practices for Avoiding "Cabal Hell"](http://softwaresimply.blogspot.tw/2014/07/haskell-best-practices-for-avoiding.html)
 
-Paranoid triple-checking preparatory checklist:
+### Preparatory Checklist
+
+For paranoid triple-checking, before you install anything:
 
 - Is the `cabal` version new enough? (or `cabal install cabal-install`)
 - Have you `cabal update`d sufficiently recently?
 - **Did you actually run `cabal sandbox init`**? (although if you put `require-sandbox: True` the computer will remember this for you)
 
-Okay. Useful commands:
+### Installation Troubleshooting
+
+Useful commands:
 
 - `cabal get`?
-- `cabal sandbox add-source`, if you need to make cabal install from a repo in a sandbox not yet uploaded to hackage
-- `--allow-newer`
+- `cabal sandbox add-source path/to/folder/with/module`, if you need to make cabal install from a local folder, instead of from something uploaded to hackage. In the most common case, this means you find a git repo, clone it, and put the path of the cloned folder. Maybe you need it because the old maintainer disappeared and you need a third-party fix, or maybe you just happen to be messing with it in the interim between when a fix is committed and when it's uploaded, or maybe you want to fix it yourself.
+- `cabal install some-package --allow-newer` to give upper bounds the middle finger and try to install anyway
 - `--dry-run` to see what cabal will try to install
 
-And the sandboxes:
+### Actually, Sandboxes
 
 - **ghc-mod-box**: `ghc-mod` (big package! pulls in `hlint`) && `hdevtools` && `hoogle`, for editor integration and command-line tools.
 
