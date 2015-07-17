@@ -16,6 +16,13 @@ rustc -C prefer-dynamic
 .meter-text { white-space: pre-wrap; }
 {% endhighlight %}
 
+{% highlight sh %}
+# requires ImageMagick
+function img() {
+    identify -format '<img src="%f" width="%w" height="%h" />' $1
+}
+{% endhighlight %}
+
 {% highlight vim %}
 :%s/\%xa0/ /ge
 :%s/\%u2019/'/ge
