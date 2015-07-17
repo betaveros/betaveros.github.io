@@ -110,6 +110,12 @@ function cabalize() {
 
 Now all that's necessary is to make aliases for `cabal exec ghc` or `cabal exec runhaskell`.
 
+Alternatively, if you want a shell script or alias or whatever for a specific setup for `ghci`:
+
+{% highlight sh %}
+ghci -package-db=/path/to/sandbox/whatever-packages.conf.d -ghci-script=/path/to/ghci/script/whatever.ghci
+{% endhighlight %}
+
 ### Vim interface haxx
 
 Incohesive and undocumented. Use at your own risk.
