@@ -51,6 +51,7 @@ Be aware of **homebrew** options.
 - Temperature Monitor
 - Packet Peeper
 - <del>Awareness</del> has mysteriously vanished. dejal's Time Out?
+- The Unarchiver
 
 ## Windows
 
