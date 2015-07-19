@@ -179,9 +179,11 @@ Useful commands:
 
   I may also add `JuicyPixels` here, to generalize it to being the master web-interaction exploitation capture-the-flag box.
 
-- **eulerbox**: `data-memocombinators` && `base-unicode-symbols` && `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel? (Although I already have and in a certain sense it's part of the point of Project Euler))
+- **eulerbox**: `data-memocombinators` && `base-unicode-symbols` && `arithmoi` (hey, look, number-theoretic stuff, why reinvent the wheel? (Although I already have and in a certain sense it's part of the point of Project Euler)) && possibly `hspec-expectations`
 
   <del>*As of time of writing*, `arithmoi` appears to have an overly harsh upper bound on `random`. There are even two pull request [#5](https://bitbucket.org/dafis/arithmoi/pull-request/5/bump-random-upper-version-bounds/diff) [#6](https://bitbucket.org/dafis/arithmoi/pull-request/6/allow-random-11/diff) trying to rectify this, but they're three months old and haven't been pulled, sadly. In the meantime, there is a nice [bugfix fork](https://github.com/mietek/arithmoi) that you can `git pull` and `cabal install` from.</del> (resolved!)
+
+  `hspec-expectations` puts combinators like `shouldBe` in `Test.Hspec.Expectations` for drop-dead simple testing when you need it. This depends on `HUnit` but that's somehow already in the sandbox.
 - **`idris`** (dependent typing FTW)
 
 I guess `hspec` (colorful tests FTW) should go in a project-local sandbox.
