@@ -1,0 +1,133 @@
+<html>
+    <head>
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+
+<script type="text/javascript">
+var timer = 0;
+var clicks = 0;
+var rate = 1;
+var harvest = 0;
+function updates(){
+    $("#timer").html("" + timer);
+    $("#clicks").html("" + clicks);
+    $("#rate").html("" + rate * 10);
+    $("#harvest").html("" + harvest);
+    $("#rateprice").html("" + ccp());
+    if (ccp() <= clicks){
+        $("#ratebutton").addClass("ok");
+    } else {
+        $("#ratebutton").removeClass("ok");
+    }
+    $("#harvestprice").html("" + chp());
+    if (chp() <= clicks){
+        $("#harvestbutton").addClass("ok");
+    } else {
+        $("#harvestbutton").removeClass("ok");
+    }
+}
+function incTimer(){
+    timer++;
+    clicks += harvest;
+    updates();
+}
+function incClicks(){
+    clicks += rate * 10;
+    updates();
+}
+function ccp(){
+    return rate * rate * 10;
+}
+function chp(){
+    return (harvest * harvest + 1) * 5;
+}
+function buyRate(){
+    if (clicks >= ccp()){
+        clicks -= ccp();
+        rate += 1;
+        updates();
+    }
+}
+function buyHarvest(){
+    if (clicks >= chp()){
+        clicks -= chp();
+        harvest += 1;
+        updates();
+    }
+}
+$(document).ready(function(){
+    setInterval("incTimer()", 100);
+});
+</script>
+<style>
+td {min-width: 150px; text-align: right;}
+#timer {
+    font-family: "Consolas";
+    font-size: 200%;
+    color: #009;
+}
+#clicks {
+    font-family: "Consolas";
+    font-size: 200%;
+    color: #900;
+}
+#rate {
+    font-family: "Consolas";
+    font-size: 200%;
+    color: #090;
+}
+#harvest {
+    font-family: "Consolas";
+    font-size: 200%;
+    color: #990;
+}
+#ratebutton {
+    width: 800px;
+    font-family: "Verdana";
+    font-size: 300%;
+    background-color: #336;
+    color: #ccf;
+    border: 10px outset #669;
+}
+#ratebutton.ok {
+    border: 10px outset #6F9;
+}
+#rateprice, #harvestprice {
+    font-size: 150%;
+}
+#harvestbutton {
+    width: 800px;
+    font-family: "Verdana";
+    font-size: 300%;
+    background-color: #663;
+    color: #ffc;
+    border: 10px outset #996;
+}
+#harvestbutton.ok {
+    border: 10px outset #9F6;
+}
+#clickbutton {
+    width: 800px;
+    font-family: "Verdana";
+    font-size: 600%;
+    background-color: #633;
+    color: #fcc;
+    border: 20px outset #966;
+}
+</style>
+    </head>
+    <body>
+    <em>Apparently</em> I made this on October 7, 2010. I am not changing it except to add this note, change the reference to jQuery (it used to refer to <code>jquery-1.4.2.min.js</code>), and make the newlines Unix-style so that git is happy. It's so obnoxious that it assumes you have the fonts Consolas and Verdana with no fallback. The <a href="clicker.html">non-"warp" version</a> (whatever that means) is also available.
+    <table>
+        <tr><td>Seconds</td><td>Clicks</td><td>Rate</td><td>Harvest</td></tr>
+        <tr><td><span id="timer">!</span></td>
+            <td><span id="clicks">0</span></td>
+            <td><span id="rate">1</span></td>
+            <td><span id="harvest">0</span></td></tr>
+    </table>
+    <button onClick="buyRate();" id="ratebutton">Increase Rate (Price: <span id="rateprice">10</span>)</button>
+    <br />
+    <button onClick="buyHarvest();" id="harvestbutton">Increase Harvest (Price: <span id="harvestprice">10</span>)</button>
+    <br />
+    <button onClick="incClicks();" id="clickbutton">Clicker</button>
+    </body>
+</html>
