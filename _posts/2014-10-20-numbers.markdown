@@ -56,19 +56,84 @@ To verify implementations: there are <abbr title='(m: "bizarre choice", because 
 <div class="panel-heading"><h3 class="panel-title">Primes in Decimal</h3></div>
 <div class="panel-body">
 <ul>
-<li>1881881</li>
-<li>99990001</li>
-<li>140000041</li>
-<li>987654323</li>
-<li>999299999</li>
-<li>999992999</li>
-<li>999999001</li>
-<li>999999929</li>
-<li>1000000007</li>
-<li>1000000009</li>
-<li>1000000021</li>
-<li>1234567891</li>
-<li>2000000011</li>
+<li><strong>1881881</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>3</sup> &times; 5 &times; 7 &times; 11 &times; 13 &times; 47</li>
+<li>smallest primitive root: 6</li>
+</ul>
+</li>
+<li><strong>99990001</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>4</sup> &times; 3<sup>2</sup> &times; 5<sup>4</sup> &times; 11 &times; 101</li>
+<li>smallest primitive root: 13</li>
+</ul>
+</li>
+<li><strong>140000041</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>3</sup> &times; 3<sup>2</sup> &times; 5 &times; 157 &times; 2477</li>
+<li>smallest primitive root: 28</li>
+</ul>
+</li>
+<li><strong>987654323</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 701 &times; 704461</li>
+<li>smallest primitive root: 2</li>
+</ul>
+</li>
+<li><strong>999299999</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 23 &times; 21723913</li>
+<li>smallest primitive root: 11</li>
+</ul>
+</li>
+<li><strong>999992999</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 499996499</li>
+<li>smallest primitive root: 11</li>
+</ul>
+</li>
+<li><strong>999999001</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>3</sup> &times; 3<sup>3</sup> &times; 5<sup>3</sup> &times; 7 &times; 11 &times; 13 &times; 37</li>
+<li>smallest primitive root: 17</li>
+</ul>
+</li>
+<li><strong>999999929</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>3</sup> &times; 124999991</li>
+<li>smallest primitive root: 3</li>
+</ul>
+</li>
+<li><strong>1000000007</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 500000003</li>
+<li>smallest primitive root: 5</li>
+</ul>
+</li>
+<li><strong>1000000009</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>3</sup> &times; 3<sup>2</sup> &times; 7 &times; 109<sup>2</sup> &times; 167</li>
+<li>smallest primitive root: 13</li>
+</ul>
+</li>
+<li><strong>1000000021</strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 3 &times; 5 &times; 19 &times; 739 &times; 1187</li>
+<li>smallest primitive root: 2</li>
+</ul>
+</li>
+<li><strong>1234567891</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 3<sup>2</sup> &times; 5 &times; 3607 &times; 3803</li>
+<li>smallest primitive root: 3</li>
+</ul>
+</li>
+<li><strong>2000000011</strong>
+<ul>
+<li>n &minus; 1 factorization: 2 &times; 3 &times; 5 &times; 66666667</li>
+<li>smallest primitive root: 2</li>
+</ul>
+</li>
 </ul>
 </div></div></div>
 <div class="col-md-6">
@@ -76,13 +141,48 @@ To verify implementations: there are <abbr title='(m: "bizarre choice", because 
 <div class="panel-heading"><h3 class="panel-title">Primes in Hexadecimal</h3></div>
 <div class="panel-body">
 <ul>
-<li><code>0xdefaced</code></li>
-<li><code>0xfacade5</code></li>
-<li><code>0x37beefed</code></li>
-<li><code>0x3c0ffee1</code></li>
-<li><code>0x3de1f1ed</code></li>
-<li><code>0x3efface5</code></li>
-<li><code>0x5eedbed5</code></li>
+<li><strong><code>0xdefaced</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 3<sup>2</sup> &times; 5 &times; 1298951</li>
+<li>smallest primitive root: 6</li>
+</ul>
+</li>
+<li><strong><code>0xfacade5</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 3 &times; 21914579</li>
+<li>smallest primitive root: 6</li>
+</ul>
+</li>
+<li><strong><code>0x37beefed</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 3 &times; 5 &times; 1373 &times; 11353</li>
+<li>smallest primitive root: 6</li>
+</ul>
+</li>
+<li><strong><code>0x3c0ffee1</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>5</sup> &times; 7 &times; 2113 &times; 2129</li>
+<li>smallest primitive root: 3</li>
+</ul>
+</li>
+<li><strong><code>0x3de1f1ed</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 11 &times; 23595857</li>
+<li>smallest primitive root: 3</li>
+</ul>
+</li>
+<li><strong><code>0x3efface5</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 3<sup>2</sup> &times; 37 &times; 47 &times; 16883</li>
+<li>smallest primitive root: 2</li>
+</ul>
+</li>
+<li><strong><code>0x5eedbed5</code></strong>
+<ul>
+<li>n &minus; 1 factorization: 2<sup>2</sup> &times; 7 &times; 53 &times; 199 &times; 5393</li>
+<li>smallest primitive root: 10</li>
+</ul>
+</li>
 </ul>
 </div></div></div>
 <div class="clearfix"></div>
