@@ -2,16 +2,20 @@
 ---
 suitIndex = (c) -> switch c
 	when "C" then 0
+	when "♣" then 0
 	when "D" then 1
+	when "♢" then 1
 	when "H" then 2
+	when "♡" then 2
 	when "S" then 3
+	when "♠" then 3
 
 replacer = (dec) -> (match, rank, suit, offset, string) ->
 	si = suitIndex suit
 	dec.suit[si][0] + rank + "♣♢♡♠"[si] + dec.suit[si][1]
 
 multireplacer = (dec) -> (match) ->
-	cont = match.replace(/\b([A2-9TJQK]|10)([CDHS])/g, replacer(dec))
+	cont = match.replace(/\b([A2-9TJQK]|10)([CDHS♣♢♡♠])/g, replacer(dec))
 	dec.start + cont + dec.end
 
 bbCodeDec = (size, colors) ->
@@ -24,7 +28,7 @@ bbCodeDec = (size, colors) ->
 			else ["", ""])
 
 pokerReplace = (dec, s) ->
-	s.replace(/\b([A2-9TJQK]|10)[CDHS]( ([A2-9TJQK]|10)[CDHS])*\b/g, multireplacer(dec))
+	s.replace(/\b([A2-9TJQK]|10)[CDHS♣♢♡♠]( ([A2-9TJQK]|10)[CDHS♣♢♡♠])*(?!\w)/g, multireplacer(dec))
 
 getColors = ->
 	switch $('input:radio[name=colorgrp]:checked').val()
