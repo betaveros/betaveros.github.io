@@ -184,6 +184,7 @@ Custom: Whatever
 ␣	__
 ⌣	uu
 ə	ee
+ℓ	ll
 ‼	!!
 ⁇	??
 ⁈	?!
