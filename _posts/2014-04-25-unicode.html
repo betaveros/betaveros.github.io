@@ -49,6 +49,16 @@ title: Unicode
 <tr><td><th colspan='5'>Superscripts, subscripts</th></td></tr>
 <tr><td>⁰</td><td>8304</td><td>2070</td><td><code>0S</code></td><td><code>0123456789+-=()n</code></td></tr>
 <tr><td>₀</td><td>8320</td><td>2080</td><td><code>0s</code></td><td><code>0123456789+-=()</code></td></tr>
+<tr><td><th colspan='5'>Custom: Superscripts</th></td></tr>
+<tr><td>¹</td><td>185</td><td><span class='text-muted'>00</span>B9</td><td><code>11</code></td><td>Somehow this already works in Vim even though I didn't set it; I'm putting it here so I can copy it with others for other purposes</td></tr>
+<tr><td>²</td><td>178</td><td><span class='text-muted'>00</span>B2</td><td><code>22</code></td><td>ditto</td></tr>
+<tr><td>³</td><td>179</td><td><span class='text-muted'>00</span>B3</td><td><code>33</code></td><td>ditto</td></tr>
+<tr><td>⁴</td><td>8308</td><td>2074</td><td><code>44</code></td><td>not ditto, this and the below don't work by default</td></tr>
+<tr><td>⁵</td><td>8309</td><td>2075</td><td><code>55</code></td><td></td></tr>
+<tr><td>⁶</td><td>8310</td><td>2076</td><td><code>66</code></td><td></td></tr>
+<tr><td>⁷</td><td>8311</td><td>2077</td><td><code>77</code></td><td></td></tr>
+<tr><td>⁸</td><td>8312</td><td>2078</td><td><code>88</code></td><td></td></tr>
+<tr><td>⁹</td><td>8313</td><td>2079</td><td><code>99</code></td><td></td></tr>
 <tr><td><th colspan='5'>Geometry</th></td></tr>
 <tr><td>∠</td><td>8736</td><td>2220</td><td><code>V-</code></td><td>angle sign</td></tr>
 <tr><td>△</td><td>9651</td><td>25B3</td><td><code>uT</code></td><td>triangle (white up-pointing i.e. useful for math)</td></tr>
@@ -205,6 +215,7 @@ title: Unicode
 <tr><td>℘</td><td>8472</td><td>2118</td><td><code>wp</code></td><td>Weierstrass p, officially SCRIPT CAPITAL P, LaTeX \wp</td></tr>
 <tr><td>�</td><td>65533</td><td>FFFD</td><td><code>^?</code></td><td></td></tr>
 <tr><td>ʘ</td><td>664</td><td><span class='text-muted'>0</span>298</td><td><code>O.</code></td><td>Bilabial click</td></tr>
+<tr><td>⌖</td><td>8982</td><td>2316</td><td><code>AT</code></td><td>Position indicator</td></tr>
 <tr><td><th colspan='5'>Arrows</th></td></tr>
 <tr><td>←</td><td>8592</td><td>2190</td><td><code>&lt;-</code></td><td></td></tr>
 <tr><td>↑</td><td>8593</td><td>2191</td><td><code>-!</code></td><td></td></tr>
@@ -249,10 +260,69 @@ title: Unicode
 </table>
 
 {% highlight vim %}
-digraph !# 8802 (+ 8713 +) 8716 (/ 8836 /) 8837 @+ 8853 @- 8854 @x 8855
-digraph @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 @\| 10678 3< 8920 3> 8921
-digraph NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 FF 120125 KK 120130 ^_ 9651
-digraph \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 uu 8995 ee 601 ll 8467
-digraph !! 8252 ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230 RE 8476
-digraph IM 8465 wp 8472 ^? 65533 O. 664 ao 12576
+digraph !# 8802 11 185 22 178 33 179 44 8308 55 8309 66 8310 77 8311
+digraph 88 8312 99 8313 (+ 8713 +) 8716 (/ 8836 /) 8837 @+ 8853 @- 8854
+digraph @x 8855 @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 @\| 10678 3< 8920
+digraph 3> 8921 NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 FF 120125 KK 120130
+digraph ^_ 9651 \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 uu 8995 ee 601
+digraph ll 8467 !! 8252 ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230
+digraph RE 8476 IM 8465 wp 8472 ^? 65533 O. 664 AT 8982 ao 12576
+{% endhighlight %}
+
+{% highlight vim %}
+!# 8802
+11 185
+22 178
+33 179
+44 8308
+55 8309
+66 8310
+77 8311
+88 8312
+99 8313
+(+ 8713
++) 8716
+(/ 8836
+/) 8837
+@+ 8853
+@- 8854
+@x 8855
+@/ 8856
+@. 8857
+@o 8858
+@* 8859
+@= 8860
+@| 10678
+3< 8920
+3> 8921
+NN 8469
+QQ 8474
+RR 8477
+ZZ 8484
+CC 8450
+FF 120125
+KK 120130
+^_ 9651
+|> 9655
+_v 9661
+<| 9665
+oo 3232
+__ 9251
+uu 8995
+ee 601
+ll 8467
+!! 8252
+?? 8263
+?! 8264
+!? 8265
+?| 8253
+<3 9829
+,3 8230
+RE 8476
+IM 8465
+wp 8472
+^? 65533
+O. 664
+AT 8982
+ao 12576
 {% endhighlight %}

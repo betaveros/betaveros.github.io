@@ -26,32 +26,32 @@ vimEscape c = [c]
 
 paddedHex :: Int -> String
 paddedHex n = let
-		hex = printf "%X" n
-		padding = if length hex < 4 then "<span class='text-muted'>" ++ (replicate (4 - length hex) '0') ++ "</span>" else ""
-	in padding ++ hex
+        hex = printf "%X" n
+        padding = if length hex < 4 then "<span class='text-muted'>" ++ (replicate (4 - length hex) '0') ++ "</span>" else ""
+    in padding ++ hex
 
 row :: (Char, Maybe String, String) -> String
 row (c,ks,desc) = let n = ord c in tr $
-	[ [c]
-	, show n
-	, paddedHex n
-	, maybe "" (codeTag . concatMap escape) ks
-	, desc
-	]
+    [ [c]
+    , show n
+    , paddedHex n
+    , maybe "" (codeTag . concatMap escape) ks
+    , desc
+    ]
 thRow s = tr ["<th colspan='5'>" ++ s ++ "</th>"]
 
 type CharMake x = WriterT (String,[String]) (State Bool) x
 
 tellData :: (Char, Maybe String, String) -> CharMake ()
 tellData tup@(c, Just ks, _) = do
-	isCustom <- lift get
-	tell (row tup, if isCustom then [ks ++ " " ++ show (ord c)] else [])
+    isCustom <- lift get
+    tell (row tup, if isCustom then [ks ++ " " ++ show (ord c)] else [])
 tellData tup@_ = tell (row tup, [])
 
 tellHeader :: String -> CharMake ()
 tellHeader s = do
-	tell (thRow s, [])
-	lift . put $ "Custom:" `isPrefixOf` s
+    tell (thRow s, [])
+    lift . put $ "Custom:" `isPrefixOf` s
 
 pr :: [String] -> CharMake ()
 pr []            = return ()
@@ -65,13 +65,13 @@ selfUrl = "https://github.com/betaveros/betaveros.github.io/blob/master/_posts/u
 
 header :: String
 header = unlines
-	[ "---"
-	, "layout: default"
-	, "category: code"
-	, "title: Unicode"
-	, "---"
-	, "<p><a href='" ++ selfUrl ++ "'>Peek behind the scenes</a></p>"
-	]
+    [ "---"
+    , "layout: default"
+    , "category: code"
+    , "title: Unicode"
+    , "---"
+    , "<p><a href='" ++ selfUrl ++ "'>Peek behind the scenes</a></p>"
+    ]
 
 table :: String -> String
 table x = "<table class='table table-condensed table-hover'>\n" ++ x ++ "</table>\n"
@@ -79,10 +79,14 @@ table x = "<table class='table table-condensed table-hover'>\n" ++ x ++ "</table
 splitTabs = filter ((/= '\t') . head) . groupBy ((==) `on` (== '\t'))
 
 main = do
-	dat <- map splitTabs . lines <$> getContents
-	let (tableContent, digraphContent) = evalState (execWriterT (mapM pr dat)) False
-	putStrLn header
-	putStrLn $ table tableContent
-	putStrLn "{% highlight vim %}"
-	forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
-	putStrLn "{% endhighlight %}"
+    dat <- map splitTabs . lines <$> getContents
+    let (tableContent, digraphContent) = evalState (execWriterT (mapM pr dat)) False
+    putStrLn header
+    putStrLn $ table tableContent
+    putStrLn "{% highlight vim %}"
+    forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
+    putStrLn "{% endhighlight %}"
+    putStrLn ""
+    putStrLn "{% highlight vim %}"
+    forM_ digraphContent putStrLn
+    putStrLn "{% endhighlight %}"

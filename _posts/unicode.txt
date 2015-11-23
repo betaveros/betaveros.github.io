@@ -41,6 +41,16 @@ Custom: Inequality
 Superscripts, subscripts
 ⁰	0S	<code>0123456789+-=()n</code>
 ₀	0s	<code>0123456789+-=()</code>
+Custom: Superscripts
+¹	11	Somehow this already works in Vim even though I didn't set it; I'm putting it here so I can copy it with others for other purposes
+²	22	ditto
+³	33	ditto
+⁴	44	not ditto, this and the below don't work by default
+⁵	55
+⁶	66
+⁷	77
+⁸	88
+⁹	99
 Geometry
 ∠	V-	angle sign
 △	uT	triangle (white up-pointing i.e. useful for math)
@@ -197,6 +207,7 @@ Custom: Whatever
 ℘	wp	Weierstrass p, officially SCRIPT CAPITAL P, LaTeX \wp
 �	^?
 ʘ	O.	Bilabial click
+⌖	AT	Position indicator
 Arrows
 ←	<-
 ↑	-!
