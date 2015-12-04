@@ -27,11 +27,11 @@ vimEscape c = [c]
 paddedHex :: Int -> String
 paddedHex n = let
         hex = printf "%X" n
-        padding = if length hex < 4 then "<span class='text-muted'>" ++ (replicate (4 - length hex) '0') ++ "</span>" else ""
+        padding = if length hex < 4 then "<span class='text-muted'>" ++ replicate (4 - length hex) '0' ++ "</span>" else ""
     in padding ++ hex
 
 row :: (Char, Maybe String, String) -> String
-row (c,ks,desc) = let n = ord c in tr $
+row (c,ks,desc) = let n = ord c in tr
     [ [c]
     , show n
     , paddedHex n
@@ -45,7 +45,7 @@ type CharMake x = WriterT (String,[String]) (State Bool) x
 tellData :: (Char, Maybe String, String) -> CharMake ()
 tellData tup@(c, Just ks, _) = do
     isCustom <- lift get
-    tell (row tup, if isCustom then [ks ++ " " ++ show (ord c)] else [])
+    tell (row tup, [ks ++ " " ++ show (ord c) | isCustom])
 tellData tup@_ = tell (row tup, [])
 
 tellHeader :: String -> CharMake ()
@@ -76,8 +76,10 @@ header = unlines
 table :: String -> String
 table x = "<table class='table table-condensed table-hover'>\n" ++ x ++ "</table>\n"
 
+splitTabs :: String -> [String]
 splitTabs = filter ((/= '\t') . head) . groupBy ((==) `on` (== '\t'))
 
+main :: IO ()
 main = do
     dat <- map splitTabs . lines <$> getContents
     let (tableContent, digraphContent) = evalState (execWriterT (mapM pr dat)) False
