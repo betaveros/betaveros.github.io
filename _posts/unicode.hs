@@ -10,19 +10,26 @@ import Data.Function
 import Text.Printf
 import Data.Maybe
 import Data.List.Split
+import System.Environment
 
 td s = "<td>" ++ s ++ "</td>"
 codeTag s = "<code>" ++ s ++ "</code>"
 preTag s = "<pre>" ++ s ++ "</pre>"
 tr ss = "<tr>" ++ concatMap td ss ++ "</tr>\n"
 
+escape :: Char -> String
 escape '<' = "&lt;"
 escape '>' = "&gt;"
 escape '&' = "&amp;"
 escape c = [c]
 
+vimEscape :: Char -> String
 vimEscape '|' = "\\|"
 vimEscape c = [c]
+
+sqEscape :: Char -> String
+sqEscape '\'' = "\\'"
+sqEscape c = [c]
 
 paddedHex :: Int -> String
 paddedHex n = let
@@ -79,16 +86,24 @@ table x = "<table class='table table-condensed table-hover'>\n" ++ x ++ "</table
 splitTabs :: String -> [String]
 splitTabs = filter ((/= '\t') . head) . groupBy ((==) `on` (== '\t'))
 
+printVimCommands :: [String] -> IO ()
+printVimCommands digraphContent =
+    forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
+
+printHTML :: String -> [String] -> IO ()
+printHTML tableContent digraphContent = do
+    putStrLn header
+    putStrLn $ table tableContent
+    putStrLn "{% highlight vim %}"
+    printVimCommands digraphContent
+    putStrLn "{% endhighlight %}"
+
 main :: IO ()
 main = do
     dat <- map splitTabs . lines <$> getContents
     let (tableContent, digraphContent) = evalState (execWriterT (mapM pr dat)) False
-    putStrLn header
-    putStrLn $ table tableContent
-    putStrLn "{% highlight vim %}"
-    forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
-    putStrLn "{% endhighlight %}"
-    putStrLn ""
-    putStrLn "{% highlight vim %}"
-    forM_ digraphContent putStrLn
-    putStrLn "{% endhighlight %}"
+    args <- getArgs
+    case args of
+        [] -> printHTML tableContent digraphContent
+        ["vim"] -> printVimCommands digraphContent
+        ["dc"] -> forM_ digraphContent putStrLn
