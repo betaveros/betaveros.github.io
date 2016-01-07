@@ -239,6 +239,9 @@ Arrows
 ⤚
 ⤛
 ⤜
+Custom: Stacked Arrows
+⇄	RL
+⇆	LR
 Bopomofo
 ㄅ	b4	etc. (pinyin + 4)
 ㄓ	zh	etc.

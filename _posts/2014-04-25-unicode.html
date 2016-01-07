@@ -233,9 +233,7 @@ title: Unicode
 <tr><td>↙</td><td>8601</td><td>2199</td><td></td><td></td></tr>
 <tr><td>↩</td><td>8617</td><td>21A9</td><td></td><td></td></tr>
 <tr><td>↪</td><td>8618</td><td>21AA</td><td></td><td></td></tr>
-<tr><td>⇄</td><td>8644</td><td>21C4</td><td></td><td></td></tr>
 <tr><td>⇅</td><td>8645</td><td>21C5</td><td></td><td></td></tr>
-<tr><td>⇆</td><td>8646</td><td>21C6</td><td></td><td></td></tr>
 <tr><td>⇇</td><td>8647</td><td>21C7</td><td></td><td></td></tr>
 <tr><td>⇈</td><td>8648</td><td>21C8</td><td></td><td></td></tr>
 <tr><td>⇉</td><td>8649</td><td>21C9</td><td></td><td></td></tr>
@@ -247,6 +245,9 @@ title: Unicode
 <tr><td>⤚</td><td>10522</td><td>291A</td><td></td><td></td></tr>
 <tr><td>⤛</td><td>10523</td><td>291B</td><td></td><td></td></tr>
 <tr><td>⤜</td><td>10524</td><td>291C</td><td></td><td></td></tr>
+<tr><td><th colspan='5'>Custom: Stacked Arrows</th></td></tr>
+<tr><td>⇄</td><td>8644</td><td>21C4</td><td><code>RL</code></td><td></td></tr>
+<tr><td>⇆</td><td>8646</td><td>21C6</td><td><code>LR</code></td><td></td></tr>
 <tr><td><th colspan='5'>Bopomofo</th></td></tr>
 <tr><td>ㄅ</td><td>12549</td><td>3105</td><td><code>b4</code></td><td>etc. (pinyin + 4)</td></tr>
 <tr><td>ㄓ</td><td>12563</td><td>3113</td><td><code>zh</code></td><td>etc.</td></tr>
@@ -267,64 +268,6 @@ digraph @x 8855 @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 @\| 10678 3< 8920
 digraph 3> 8921 NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 FF 120125 KK 120130
 digraph ^_ 9651 \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 uu 8995 ee 601
 digraph ll 8467 !! 8252 ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230
-digraph RE 8476 IM 8465 wp 8472 ^? 65533 O. 664 AT 8982 )) 8255 ao 12576
-{% endhighlight %}
-
-{% highlight vim %}
-!# 8802
-11 185
-22 178
-33 179
-44 8308
-55 8309
-66 8310
-77 8311
-88 8312
-99 8313
-(+ 8713
-+) 8716
-(/ 8836
-/) 8837
-@+ 8853
-@- 8854
-@x 8855
-@/ 8856
-@. 8857
-@o 8858
-@* 8859
-@= 8860
-@| 10678
-3< 8920
-3> 8921
-NN 8469
-QQ 8474
-RR 8477
-ZZ 8484
-CC 8450
-FF 120125
-KK 120130
-^_ 9651
-|> 9655
-_v 9661
-<| 9665
-oo 3232
-__ 9251
-uu 8995
-ee 601
-ll 8467
-!! 8252
-?? 8263
-?! 8264
-!? 8265
-?| 8253
-<3 9829
-,3 8230
-RE 8476
-IM 8465
-wp 8472
-^? 65533
-O. 664
-AT 8982
-)) 8255
-ao 12576
+digraph RE 8476 IM 8465 wp 8472 ^? 65533 O. 664 AT 8982 )) 8255 RL 8644
+digraph LR 8646 ao 12576
 {% endhighlight %}
