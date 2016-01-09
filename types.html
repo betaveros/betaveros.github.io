@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="/js/jquery-1.11.1.min.js"></script>
+		<title>Pokémon Types</title>
+		<style>
+.Normal { background-color: #A8A878; }
+.Fighting { background-color: #C03028; }
+.Flying { background-color: #A890F0; }
+.Poison { background-color: #A040A0; }
+.Ground { background-color: #E0C068; }
+.Rock { background-color: #B8A038; }
+.Bug { background-color: #A8B820; }
+.Ghost { background-color: #705898; }
+.Steel { background-color: #B8B8D0; }
+.Fire { background-color: #F08030; }
+.Water { background-color: #6890F0; }
+.Grass { background-color: #78C850; }
+.Electric { background-color: #F8D030; }
+.Psychic { background-color: #F85888; }
+.Ice { background-color: #98D8D8; }
+.Dragon { background-color: #7038F8; }
+.Dark { background-color: #705848; }
+.Fairy { background-color: #EE99AC; }
+
+.zero { background-color: black; color: white; }
+.one  { background-color: white; color: black; }
+.two  { background-color:  #090; color: white; }
+.half { background-color:  #F00; color: white; }
+
+td, th { text-align: center; min-width: 4em; font-size: 75%; font-weight: normal; }
+		</style>
+	<script type="text/javascript">
+var types = "Normal Fighting Flying Poison Ground Rock Bug Ghost Steel Fire Water Grass Electric Psychic Ice Dragon Dark Fairy".split(" ");
+
+var effectivenesses = "11111-10-111111111 21--12-021111-212- 12111-21-112-11111 111---1-0112111112 110212-1221-211111 1-21-121-211112111 1---111---1212112- 0111111211111211-1 11111211---1-12112 11111-212--2112-11 1111221112--111-11 11--22-1--2-111-11 11210111112--11-11 12121111-1111-1101 11212111---211-211 11111111-111111210 1-11111211111211-- 121-1111--11111221".split(" ");
+
+function randomPermutation(n){
+	var arr = [];
+	for (var i = 0; i < n; i++) arr.append(i);
+	for (var i = n - 1; i > 0; i--) {
+		var j = Math.floor(Math.random()*(i+1));
+		var t = arr[i];
+		arr[i] = arr[j];
+		arr[j] = t;
+	}
+    return arr;
+}
+
+function makeHeader(type) {
+	var elt = $(document.createElement("th"));
+	elt.text(type);
+	elt.addClass(type);
+	return elt;
+}
+function makeCell(c) {
+	var elt = $(document.createElement('td'));
+	switch (c) {
+		case '0': elt.text('0×'); elt.addClass('zero'); break;
+		case '1': elt.text('1×'); elt.addClass('one'); break;
+		case '2': elt.text('2×'); elt.addClass('two'); break;
+		case '-': elt.text('½×'); elt.addClass('half'); break;
+	}
+	return elt;
+}
+
+$(document).ready(function() {
+	var table = $(document.createElement('table'));
+	var thr = $(document.createElement('tr'));
+	var corner = $(document.createElement('td'));
+	corner.html('Defend→<br />↓Attack');
+	thr.append(corner);
+	for (var i = 0; i < types.length; i++) {
+		thr.append(makeHeader(types[i]));
+	}
+	table.append(thr);
+	for (var i = 0; i < types.length; i++) {
+		var tr = $(document.createElement('tr'));
+		tr.append(makeHeader(types[i]));
+		for (var j = 0; j < types.length; j++) {
+			tr.append(makeCell(effectivenesses[i].charAt(j)));
+		}
+		table.append(tr);
+	}
+	$('body').append(table);
+});
+	</script>
+	</head>
+	<body>
+	</body>
+</html>
