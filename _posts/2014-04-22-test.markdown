@@ -17,6 +17,11 @@ rustc -C prefer-dynamic
 {% endhighlight %}
 
 {% highlight sh %}
+launchctl stop com.apple.pboard
+launchctl start com.apple.pboard
+{% endhighlight %}
+
+{% highlight sh %}
 # requires ImageMagick
 function img() {
     identify -format '<img src="%f" width="%w" height="%h" />' $1
