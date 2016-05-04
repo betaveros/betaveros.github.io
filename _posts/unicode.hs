@@ -47,12 +47,13 @@ row (c,ks,desc) = let n = ord c in tr
     ]
 thRow s = tr ["<th colspan='5'>" ++ s ++ "</th>"]
 
-type CharMake x = WriterT (String,[String]) (State Bool) x
+type DigraphInfo = (String, Int)
+type CharMake x = WriterT (String,[DigraphInfo]) (State Bool) x
 
 tellData :: (Char, Maybe String, String) -> CharMake ()
 tellData tup@(c, Just ks, _) = do
     isCustom <- lift get
-    tell (row tup, [ks ++ " " ++ show (ord c) | isCustom])
+    tell (row tup, [(ks, ord c) | isCustom])
 tellData tup@_ = tell (row tup, [])
 
 tellHeader :: String -> CharMake ()
@@ -86,11 +87,24 @@ table x = "<table class='table table-condensed table-hover'>\n" ++ x ++ "</table
 splitTabs :: String -> [String]
 splitTabs = filter ((/= '\t') . head) . groupBy ((==) `on` (== '\t'))
 
-printVimCommands :: [String] -> IO ()
-printVimCommands digraphContent =
-    forM_ (chunksOf 8 digraphContent) $ putStrLn . ("digraph " ++) . unwords . map (concatMap vimEscape)
+digraphInfoToPureString :: DigraphInfo -> String
+digraphInfoToPureString (s, n) = concat [s, " ", show n]
 
-printHTML :: String -> [String] -> IO ()
+digraphInfoToPythonEntry :: DigraphInfo -> String
+digraphInfoToPythonEntry (s, n) =
+    concat ["'", concatMap sqEscape s, "': ", show n, ","]
+
+digraphInfoToPerlEntry :: DigraphInfo -> String
+digraphInfoToPerlEntry (s, n) =
+    concat ["'", concatMap sqEscape s, "' => \"\\N{U+", printf "%X" n, "}\","]
+
+printVimCommands :: [DigraphInfo] -> IO ()
+printVimCommands digraphContent =
+    forM_ (chunksOf 8 digraphContent) $
+        putStrLn . ("digraph " ++) . unwords .
+        map (concatMap vimEscape . digraphInfoToPureString)
+
+printHTML :: String -> [DigraphInfo] -> IO ()
 printHTML tableContent digraphContent = do
     putStrLn header
     putStrLn $ table tableContent
@@ -106,4 +120,7 @@ main = do
     case args of
         [] -> printHTML tableContent digraphContent
         ["vim"] -> printVimCommands digraphContent
-        ["dc"] -> forM_ digraphContent putStrLn
+        ["dc"] -> forM_ digraphContent (putStrLn . digraphInfoToPureString)
+        ["py"] -> forM_ digraphContent (putStrLn . digraphInfoToPythonEntry)
+        ["pl"] -> forM_ digraphContent (putStrLn . digraphInfoToPerlEntry)
+        _ -> error "Could not understand argument"
