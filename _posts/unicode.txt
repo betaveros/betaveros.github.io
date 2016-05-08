@@ -74,6 +74,10 @@ Custom: More Relations
 ∌	+)
 ⊄	(/
 ⊅	/)
+⊈	($
+⊉	)$
+⊊	(!	<code>(!</code> is the default digraph for {
+⊋	!)	<code>!)</code> is the default digraph for }
 ⊕	@+
 ⊖	@-
 ⊗	@x

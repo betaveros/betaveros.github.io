@@ -82,6 +82,10 @@ title: Unicode
 <tr><td>∌</td><td>8716</td><td>220C</td><td><code>+)</code></td><td></td></tr>
 <tr><td>⊄</td><td>8836</td><td>2284</td><td><code>(/</code></td><td></td></tr>
 <tr><td>⊅</td><td>8837</td><td>2285</td><td><code>/)</code></td><td></td></tr>
+<tr><td>⊈</td><td>8840</td><td>2288</td><td><code>($</code></td><td></td></tr>
+<tr><td>⊉</td><td>8841</td><td>2289</td><td><code>)$</code></td><td></td></tr>
+<tr><td>⊊</td><td>8842</td><td>228A</td><td><code>(!</code></td><td><code>(!</code> is the default digraph for {</td></tr>
+<tr><td>⊋</td><td>8843</td><td>228B</td><td><code>!)</code></td><td><code>!)</code> is the default digraph for }</td></tr>
 <tr><td>⊕</td><td>8853</td><td>2295</td><td><code>@+</code></td><td></td></tr>
 <tr><td>⊖</td><td>8854</td><td>2296</td><td><code>@-</code></td><td></td></tr>
 <tr><td>⊗</td><td>8855</td><td>2297</td><td><code>@x</code></td><td></td></tr>
@@ -233,7 +237,9 @@ title: Unicode
 <tr><td>↙</td><td>8601</td><td>2199</td><td></td><td></td></tr>
 <tr><td>↩</td><td>8617</td><td>21A9</td><td></td><td></td></tr>
 <tr><td>↪</td><td>8618</td><td>21AA</td><td></td><td></td></tr>
+<tr><td>⇄</td><td>8644</td><td>21C4</td><td></td><td></td></tr>
 <tr><td>⇅</td><td>8645</td><td>21C5</td><td></td><td></td></tr>
+<tr><td>⇆</td><td>8646</td><td>21C6</td><td></td><td></td></tr>
 <tr><td>⇇</td><td>8647</td><td>21C7</td><td></td><td></td></tr>
 <tr><td>⇈</td><td>8648</td><td>21C8</td><td></td><td></td></tr>
 <tr><td>⇉</td><td>8649</td><td>21C9</td><td></td><td></td></tr>
@@ -263,11 +269,11 @@ title: Unicode
 
 {% highlight vim %}
 digraph !# 8802 11 185 22 178 33 179 44 8308 55 8309 66 8310 77 8311
-digraph 88 8312 99 8313 (+ 8713 +) 8716 (/ 8836 /) 8837 @+ 8853 @- 8854
-digraph @x 8855 @/ 8856 @. 8857 @o 8858 @* 8859 @= 8860 @\| 10678 3< 8920
-digraph 3> 8921 NN 8469 QQ 8474 RR 8477 ZZ 8484 CC 8450 FF 120125 KK 120130
-digraph ^_ 9651 \|> 9655 _v 9661 <\| 9665 oo 3232 __ 9251 uu 8995 ee 601
-digraph ll 8467 !! 8252 ?? 8263 ?! 8264 !? 8265 ?\| 8253 <3 9829 ,3 8230
-digraph RE 8476 IM 8465 wp 8472 ^? 65533 O. 664 AT 8982 )) 8255 RL 8644
-digraph LR 8646 ao 12576
+digraph 88 8312 99 8313 (+ 8713 +) 8716 (/ 8836 /) 8837 ($ 8840 )$ 8841
+digraph (! 8842 !) 8843 @+ 8853 @- 8854 @x 8855 @/ 8856 @. 8857 @o 8858
+digraph @* 8859 @= 8860 @\| 10678 3< 8920 3> 8921 NN 8469 QQ 8474 RR 8477
+digraph ZZ 8484 CC 8450 FF 120125 KK 120130 ^_ 9651 \|> 9655 _v 9661 <\| 9665
+digraph oo 3232 __ 9251 uu 8995 ee 601 ll 8467 !! 8252 ?? 8263 ?! 8264
+digraph !? 8265 ?\| 8253 <3 9829 ,3 8230 RE 8476 IM 8465 wp 8472 ^? 65533
+digraph O. 664 AT 8982 )) 8255 RL 8644 LR 8646 ao 12576
 {% endhighlight %}
