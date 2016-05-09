@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Capture</title>
+		<style>#out { white-space: pre;}</style>
+	<script type="text/javascript">
+	function init() {
+		document.onkeydown = handleArrowKeys;
+	}
+	function handleArrowKeys(evt) {
+		evt = evt || ((window.event) ? event : null);
+		if (evt) {
+			document.getElementById("out").textContent += evt.keyCode + "\n";
+			evt.preventDefault();
+		}
+	}
+	</script>
+	</head>
+	<body onLoad="init();">
+		Capturing every onkeydown event and doing .preventDefault():
+		<div id="out"></div>
+	</body>
+
+</html>
