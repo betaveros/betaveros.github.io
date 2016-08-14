@@ -114,33 +114,35 @@ main = do
     print $ evalState (listTraversal increaseSeventh x) 0
 {% endhighlight %}
 
-    on run {input, parameters}
-        tell application "Firefox" to activate
-        tell application "System Events"
-            keystroke "|"
-            delay 0.15
-            key code 125
-            key code 123
-            delay 0.15
-            keystroke "|"
-            delay 0.15
-            key code 125
-            key code 123
-            delay 0.15
-            keystroke "|"
-            delay 0.15
-            key code 125
-            key code 123
-            delay 0.15
-            keystroke "|"
-            delay 0.15
-            key code 125
-            key code 123
-            delay 0.15
-            keystroke "|"
-            delay 0.15
-            key code 125
-            key code 123
-        end tell
-        return input
-    end run
+{% highlight applescript %}
+on run {input, parameters}
+    tell application "Firefox" to activate
+    tell application "System Events"
+        keystroke "|"
+        delay 0.15
+        key code 125
+        key code 123
+        delay 0.15
+        keystroke "|"
+        delay 0.15
+        key code 125
+        key code 123
+        delay 0.15
+        keystroke "|"
+        delay 0.15
+        key code 125
+        key code 123
+        delay 0.15
+        keystroke "|"
+        delay 0.15
+        key code 125
+        key code 123
+        delay 0.15
+        keystroke "|"
+        delay 0.15
+        key code 125
+        key code 123
+    end tell
+    return input
+end run
+{% endhighlight %}
