@@ -5,31 +5,46 @@
 		<script src="/js/jquery-1.11.1.min.js"></script>
 		<title>Pokémon Types</title>
 		<style>
-.Normal { background-color: #A8A878; }
-.Fighting { background-color: #C03028; }
-.Flying { background-color: #A890F0; }
-.Poison { background-color: #A040A0; }
-.Ground { background-color: #E0C068; }
-.Rock { background-color: #B8A038; }
-.Bug { background-color: #A8B820; }
-.Ghost { background-color: #705898; }
-.Steel { background-color: #B8B8D0; }
-.Fire { background-color: #F08030; }
-.Water { background-color: #6890F0; }
-.Grass { background-color: #78C850; }
-.Electric { background-color: #F8D030; }
-.Psychic { background-color: #F85888; }
-.Ice { background-color: #98D8D8; }
-.Dragon { background-color: #7038F8; }
-.Dark { background-color: #705848; }
-.Fairy { background-color: #EE99AC; }
+.colored .Normal { background-color: #A8A878; }
+.colored .Fighting { background-color: #C03028; }
+.colored .Flying { background-color: #A890F0; }
+.colored .Poison { background-color: #A040A0; }
+.colored .Ground { background-color: #E0C068; }
+.colored .Rock { background-color: #B8A038; }
+.colored .Bug { background-color: #A8B820; }
+.colored .Ghost { background-color: #705898; }
+.colored .Steel { background-color: #B8B8D0; }
+.colored .Fire { background-color: #F08030; }
+.colored .Water { background-color: #6890F0; }
+.colored .Grass { background-color: #78C850; }
+.colored .Electric { background-color: #F8D030; }
+.colored .Psychic { background-color: #F85888; }
+.colored .Ice { background-color: #98D8D8; }
+.colored .Dragon { background-color: #7038F8; }
+.colored .Dark { background-color: #705848; }
+.colored .Fairy { background-color: #EE99AC; }
 
 .zero { background-color: black; color: white; }
 .one  { background-color: white; color: black; }
-.two  { background-color:  #090; color: white; }
-.half { background-color:  #F00; color: white; }
+.two  { background-color:  #ddd; }
+.half { background-color:  #aaa; }
+.zero:after, .one:after, .two:after, .half:after { content: "×"; font-size: 60%; }
+.colored .two  { background-color:  #090; color: white; }
+.colored .half { background-color:  #c00; color: white; }
+/* .colored .hi.zero { background-color: black; } */
+.colored .hi.one { background-color: #ffc; }
+.colored .hi.two { background-color: #0c0; }
+.colored .hi.half { background-color: #f00; }
+.colored .mu.zero { background-color: #444; }
+.colored .mu.one { background-color: #999; }
+.colored .mu.two { background-color: #666; }
+.colored .mu.half { background-color: #777; }
 
-td, th { text-align: center; min-width: 4em; font-size: 75%; font-weight: normal; }
+table { border-collapse: collapse; }
+td, th { text-align: center; font-size: 75%; font-weight: normal; overflow: hidden; border: 1px solid black; height: 25px; }
+td { font-size: 120%; }
+.top { transform: rotate(90deg); width: 25px !important; }
+.tth { height: 8em; }
 		</style>
 	<script type="text/javascript">
 var types = "Normal Fighting Flying Poison Ground Rock Bug Ghost Steel Fire Water Grass Electric Psychic Ice Dragon Dark Fairy".split(" ");
@@ -54,34 +69,83 @@ function makeHeader(type) {
 	elt.addClass(type);
 	return elt;
 }
+function makeTopHeader(type) {
+	var elt = $(document.createElement('th'));
+	elt.addClass(type);
+	elt.addClass('tth');
+	var inner = $(document.createElement('div'));
+	inner.text(type);
+	inner.addClass('top');
+	elt.append(inner);
+	return elt;
+}
 function makeCell(c) {
 	var elt = $(document.createElement('td'));
 	switch (c) {
-		case '0': elt.text('0×'); elt.addClass('zero'); break;
-		case '1': elt.text('1×'); elt.addClass('one'); break;
-		case '2': elt.text('2×'); elt.addClass('two'); break;
-		case '-': elt.text('½×'); elt.addClass('half'); break;
+		case '0': elt.text('0'); elt.addClass('zero'); break;
+		case '1': elt.text('1'); elt.addClass('one'); break;
+		case '2': elt.text('2'); elt.addClass('two'); break;
+		case '-': elt.text('½'); elt.addClass('half'); break;
 	}
 	return elt;
 }
 
 $(document).ready(function() {
 	var table = $(document.createElement('table'));
+	table.addClass('colored');
 	var thr = $(document.createElement('tr'));
 	var corner = $(document.createElement('td'));
+	var cellArray = [];
+
+	function highlightCells(r, c) {
+		return function() {
+			for (var i = 0; i < cellArray.length; i++) {
+				var cellRow = cellArray[i];
+				for (var j = 0; j < cellRow.length; j++) {
+					if (i == r || j == c) {
+						cellRow[j].addClass('hi');
+						cellRow[j].removeClass('mu');
+					} else {
+						cellRow[j].removeClass('hi');
+						cellRow[j].addClass('mu');
+					}
+				}
+			}
+		};
+	}
+	function resetCells() {
+		for (var i = 0; i < cellArray.length; i++) {
+			var cellRow = cellArray[i];
+			for (var j = 0; j < cellRow.length; j++) {
+				cellRow[j].removeClass('mu');
+				cellRow[j].removeClass('hi');
+			}
+		}
+	}
+
 	corner.html('Defend→<br />↓Attack');
+	corner.click(resetCells);
 	thr.append(corner);
 	for (var i = 0; i < types.length; i++) {
-		thr.append(makeHeader(types[i]));
+		var h = makeTopHeader(types[i]);
+		h.click(highlightCells(-1, i));
+		thr.append(h);
 	}
 	table.append(thr);
 	for (var i = 0; i < types.length; i++) {
 		var tr = $(document.createElement('tr'));
-		tr.append(makeHeader(types[i]));
+		var h = makeHeader(types[i]);
+		h.click(highlightCells(i, -1));
+		tr.append(h);
+		var cellRow = [];
 		for (var j = 0; j < types.length; j++) {
-			tr.append(makeCell(effectivenesses[i].charAt(j)));
+			var cell = makeCell(effectivenesses[i].charAt(j));
+			tr.append(cell);
+			cellRow.push(cell);
+			cell.click(highlightCells(i, j));
 		}
 		table.append(tr);
+		cellArray.push(cellRow);
 	}
 	$('body').append(table);
 });
