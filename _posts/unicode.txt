@@ -213,6 +213,7 @@ Custom: Whatever
 ʘ	O.	Bilabial click
 ⌖	AT	Position indicator
 ‿	))	Undertie
+⠀	B 	Blank Braille pattern
 Arrows
 ←	<-
 ↑	-!
