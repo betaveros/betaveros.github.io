@@ -194,6 +194,7 @@ Whatever
 ¯	'm	macron
 ツ	Tu	katakana
 Custom: Whatever
+•	Bt	Many other dot-like things exist (.M, Sb, Sn) but I think the semantic meaning of this is important
 ಠ	oo
 ␣	__
 ⌣	uu
