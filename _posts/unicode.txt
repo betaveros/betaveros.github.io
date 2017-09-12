@@ -215,6 +215,7 @@ Custom: Whatever
 ⌖	AT	Position indicator
 ‿	))	Undertie
 ⠀	B 	Blank Braille pattern
+ˆ	^^	Circumflex accent
 Arrows
 ←	<-
 ↑	-!
