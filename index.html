@@ -1,87 +1,63 @@
----
-layout: default
-category: home
-title: Home
----
-<p class="master">Hi. I'm Brian, online handle <strong>betaveros</strong>. This is my GitHub page, where I keep temporally and narratively incohesive random HTML files for myself (and possibly others) to reference in times of need.</p>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>betaveros.github.io</title>
+	<link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,400italic,500' rel='stylesheet' type='text/css'>
+	<style>
+/* generic */
+body {
+	font-family: "Fira Sans",Ubuntu,"Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 14pt;
+	line-height: 1.36;
+	background-color: #322;
+	margin: 0;
+}
+code { font-family: "Fira Mono",monospace; }
+a:link { color: #a00; }
+a:hover { color: #c00; }
+a:visited { color: #703; }
+a:visited:hover { color: #a03; }
 
-<div class="row">
-<div class="col-md-6">
-<div class="list-group">
-	<a href="https://betaveros.wordpress.com/" class="list-group-item list-group-item-info">
-		<img src="/img/wpicon.gif" alt="WordPress icon" class="pull-right"/>
-		<span class="master"><strong>BetaWorldProblems</strong>, my WordPress blog</span> (where actual deep textual posts go, as well as the occasional logic puzzle)
-		<span class="clearfix"></span>
-	</a>
-	<a href="https://twitter.com/betaveros" class="list-group-item">
-		<img src="/img/twittericon.gif" alt="Twitter icon" class="pull-right"/>
-		<span class="master"><strong>@betaveros</strong>, me on Twitter</span> (spoiler: i am not a very good twitterer)
-	</a>
-	<a href="http://www.artofproblemsolving.com/Forum/blog.php?u=25458" class="list-group-item">
-		<img src="/img/aopsicon.gif" alt="AoPS icon" class="pull-right"/>
-		<span class="master"><strong>math_exploration</strong>, my Art of Problem Solving blog</span> (mostly math posts that nobody reads and frivolous observations about AoPS and the community itself)
-		<span class="clearfix"></span>
-	</a>
-	<a href="https://github.com/betaveros" class="list-group-item">
-		<img src="/img/giticon.gif" alt="GitHub icon" class="pull-right"/>
-		<span class="master"><strong>my GitHub</strong></span>
-		<span class="clearfix"></span>
-	</a>
-	<a href="https://gist.github.com/betaveros" class="list-group-item">
-		my Gists
-	</a>
-	<a href="https://dl.dropboxusercontent.com/u/5295912/til.html" class="list-group-item">
-		<span class="master">my log of <strong>TIL</strong>s</span>
-	</a>
-	<a href="https://betaveros.blogspot.com/" class="list-group-item">
-		betaveros.stash, my nearly-obsolete Blogspot blog
-	</a>
-</div>
-</div>
-<div class="col-md-6">
-<p class="master">When I have a blob of text that doesn't require full control of HTML to render to my satisfaction, it goes elsewhere, because I don't have that much time to burn and I wish to avoid <a href="http://qntm.org/design">"the last and most criminal mistake in designing a website"</a>. If I ever get any evidence that any significant number of Serious People™ with Serious Intentions™ read my blog or site, perhaps I will stop relying exclusively on the free parts of freemium services and create a Serious Website™ where everything is hosted together with a unified theme. Until then...</p>
-</div>
-</div>
+.wrap {
+	max-width: 48em; margin-left: auto; margin-right: auto; padding: 0.5em 1em;
+	background-color: #eee;
+	color: black;
+}
+	</style>
 
-<div class="col-md-6">
-<div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">Here</h3></div>
-<div class="panel-body">
-<ul class="master">
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-    </li>
-  {% endfor %}
-</ul>
-</div></div></div>
-
-<div class="col-md-6">
-<div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">GitHub Projects with Pages</h3></div>
-<div class="panel-body">
-<ul class="master">
-<li><a href="hyperpolymorph/">hyperpolymorph</a> (based on <a href="https://github.com/clarkgrubb/hyperpolyglot">clarkgrubb/hyperpolyglot</a>, <a href="http://hyperpolyglot.org/">hyperpolyglot.org</a>)</li>
-<li><a href="VisualSort/">VisualSort</a> (forked from <a href="https://github.com/thedufer/VisualSort">thedufer/VisualSort</a>)</li>
-<li><a href="2014-algo/">2014-algo</a></li>
-<li><a href="cs/"><code>cs/</code>, my cheat sheet</a></li>
-</ul>
-</div></div></div>
-
-<div class="col-md-6">
-<div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">???</h3></div>
-<div class="panel-body">
-<ul class="master">
-<li><a href="scroll.html">Parallax scrolling experiment</a></li>
-<li><a href="bars.html">bars.html</a></li>
-<li><a href="avatar.html">avatar.html</a></li>
-<li><a href="icosahedron.html">icosahedron.html</a></li>
-<li><a href="bars-college.html">bars-college.html</a></li>
-<li><a href="clicker.html">clicker.html</a> (resurrected from 2010)</li>
-<li><a href="capture.html">capture.html</a> (silly key-capturer demo)</li>
-</ul>
-</div></div></div>
-
-<div class="clearfix"></div>
-<p>Powered by <a href="https://pages.github.com/">GitHub Pages</a> and not-so-vanilla <a href="http://getbootstrap.com/">Twitter Bootstrap</a>, in case it's not obvious.</p>
+	<link rel="canonical" href="https://betaveros.github.io/">
+</head>
+	<body>
+		<main class="wrap">
+		<p>Hi, I'm betaveros. This used to be one of many vaguely comparable home pages I had made, but now I have a domain name and all and my home page is pretty clearly <a href="https://beta.vero.site/">beta.vero.site</a>, so instead here are some things on GitHub Pages.</p>
+		<ul>
+			<li><a href="extra-aoc-stats/">extra Advent of Code stats</a></li>
+			<li><a href="hyperpolymorph/">hyperpolymorph</a> (based on <a href="https://github.com/clarkgrubb/hyperpolyglot">clarkgrubb/hyperpolyglot</a>, <a href="http://hyperpolyglot.org/">hyperpolyglot.org</a>)</li>
+			<li><a href="VisualSort/">VisualSort</a> (forked from <a href="https://github.com/thedufer/VisualSort">thedufer/VisualSort</a>)</li>
+			<li><a href="2014-algo/">2014-algo</a></li>
+			<li><a href="cs/"><code>cs/</code>, my cheat sheet</a></li>
+		</ul>
+		<p>Moderately significant/interesting GitHub projects:</p>
+		<ul>
+			<li><a href="https://github.com/betaveros/bcodex">bcodex</a> (or as a <a href="bcodex/">JS web app</a>)</li>
+			<li><a href="https://github.com/betaveros/paradoc">Paradoc</a></li>
+			<li><a href="https://github.com/betaveros/castlefall">Castlefall</a></li>
+			<li><a href="https://github.com/betaveros/gridderface">Gridderface</a></li>
+			<li><a href="https://github.com/betaveros/xxb">xxb</a></li>
+		</ul>
+		<p>Other miscellaneous HTML pages:</p>
+		<ul>
+			<li><a href="scroll.html">Parallax scrolling experiment</a></li>
+			<li><a href="bars.html">bars.html</a></li>
+			<li><a href="avatar.html">avatar.html</a></li>
+			<li><a href="icosahedron.html">icosahedron.html</a></li>
+			<li><a href="bars-college.html">bars-college.html</a></li>
+			<li><a href="clicker.html">clicker.html</a> (resurrected from 2010)</li>
+			<li><a href="capture.html">capture.html</a> (silly key-capturer demo)</li>
+		</ul>
+		</main>
+	</body>
+</html>
