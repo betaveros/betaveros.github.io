@@ -59,7 +59,7 @@
 </head>
 <body>
     <div>
-        You can type digraphs in this area (Ctrl-K + two characters).
+        You can type digraphs in this area (Ctrl-K or <input id="digraph-trigger" placeholder="custom?" size="8"> + two characters).
         <span id="status">(Normal mode)</span>
     </div>
     <textarea id="digraphTextarea"></textarea>
@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const textarea = document.getElementById('digraphTextarea');
     const status = document.getElementById('status');
+    const trigger = document.getElementById('digraph-trigger');
     let isDigraphMode = false;
     let buffer = '';
 
@@ -155,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     textarea.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'k') {
+        if (e.ctrlKey && e.key === 'k' || (!isDigraphMode && trigger.value && e.key === trigger.value)) {
             e.preventDefault();
             isDigraphMode = true;
             buffer = '';
