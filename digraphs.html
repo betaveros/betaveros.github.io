@@ -1,0 +1,215 @@
+<html>
+<head>
+<style>
+  table {
+    border-collapse: collapse;
+  }
+  textarea {
+    width: 100%;
+    min-height: 10em;
+  }
+  th, td {
+    border: 1px solid black;
+    padding: 5px;
+    font-family: monospace;
+    text-align: center;
+    transition: background-color 0.2s;
+  }
+  th {
+    background-color: #f8f8f8;
+  }
+  tr:first-child {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  tr:first-child td:first-child {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+  }
+  td.char {
+    background-color: #9ff;
+    cursor: pointer;
+  }
+  td.custom {
+    background-color: #cf9;
+    cursor: pointer;
+  }
+  td.mirror {
+    opacity: 0.8;
+    background-color: #f99;
+    cursor: pointer;
+  }
+  td.custom-mirror {
+    opacity: 0.8;
+    background-color: #ff9;
+    cursor: pointer;
+  }
+  td.copied {
+    background-color: #9f9;
+  }
+</style>
+</head>
+<body>
+    <div>
+        You can type digraphs in this area (Ctrl-K + two characters).
+        <span id="status">(Normal mode)</span>
+    </div>
+    <textarea id="digraphTextarea"></textarea>
+    <div>
+        Click on a cell to copy it to clipboard.
+    </div>
+</body>
+<script>
+function generateDigraphTable(digraphMap, digraphMap2) {
+    const chars = Array.from({length: 94}, (_, i) => String.fromCharCode(i + 33));
+    const table = document.createElement('table');
+    const headerRow = table.insertRow();
+    const topLeftCell = headerRow.insertCell();
+
+    chars.forEach(char => {
+        const th = document.createElement('th');
+        th.textContent = char;
+        headerRow.appendChild(th);
+    });
+    chars.forEach(firstChar => {
+        const row = table.insertRow();
+        const rowHeader = document.createElement('th');
+        rowHeader.textContent = firstChar;
+        row.appendChild(rowHeader);
+
+        chars.forEach(secondChar => {
+            const cell = row.insertCell();
+            let digraph = firstChar + secondChar;
+            let unicodeInfo = digraphMap.get(digraph);
+            let cls = "char";
+
+            if (unicodeInfo && digraphMap2.get(digraph)) {
+                console.warn(digraph);
+            }
+            if (!unicodeInfo) {
+                unicodeInfo = digraphMap2.get(digraph);
+                cls = "custom";
+            }
+            if (!unicodeInfo) {
+                digraph = secondChar + firstChar;
+                unicodeInfo = digraphMap.get(digraph);
+                cls = "mirror";
+            }
+            if (!unicodeInfo) {
+                unicodeInfo = digraphMap2.get(digraph);
+                cls = "custom-mirror";
+            }
+
+            if (unicodeInfo) {
+                cell.className = cls;
+                cell.textContent = unicodeInfo.char;
+                cell.title = `${digraph}: ${unicodeInfo.name}`;
+
+                cell.addEventListener('click', () => {
+                    navigator.clipboard.writeText(unicodeInfo.char).then(() => {
+                        cell.classList.add('copied');
+                        setTimeout(() => {
+                            cell.classList.remove('copied');
+                        }, 200);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
+                });
+            }
+        });
+    });
+
+    return table;
+}
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const resp1 = await fetch('./digraphs.json');
+    const data1 = await resp1.json();
+    const resp2 = await fetch('./digraphs-custom.json');
+    const data2 = await resp2.json();
+
+    // fromCodePoint works above U+10000. fromCharCode doesn't!
+    const digraphMap = new Map(data1.map(([digraph, codePoint, name]) => [digraph, { char: String.fromCodePoint(codePoint), name }]));
+    const digraphMap2 = new Map(data2.map(([digraph, codePoint, name]) => [digraph, { char: String.fromCodePoint(codePoint), name }]));
+
+    const tableContainer = generateDigraphTable(digraphMap, digraphMap2);
+    document.body.appendChild(tableContainer);
+
+    const textarea = document.getElementById('digraphTextarea');
+    const status = document.getElementById('status');
+    let isDigraphMode = false;
+    let buffer = '';
+
+    textarea.addEventListener('compositionstart', (e) => {
+        isDigraphMode = false;
+        updateStatus();
+    });
+
+    textarea.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();
+            isDigraphMode = true;
+            buffer = '';
+            updateStatus();
+            return;
+        }
+
+        if (isDigraphMode) {
+            if (e.key.length === 1
+                    && e.key.charCodeAt(0) >= 32
+                    && e.key.charCodeAt(0) < 127) {
+                buffer += e.key;
+                processBuffer();
+                e.preventDefault();
+            } else if (e.key === 'Backspace') {
+                buffer = buffer.slice(0, -1);
+                e.preventDefault();
+            } else if (e.key === 'Escape') {
+                isDigraphMode = false;
+                buffer = '';
+                e.preventDefault();
+            }
+
+            updateStatus();
+        }
+    });
+
+    function processBuffer() {
+        if (buffer.length === 2) {
+            let unicodeInfo = digraphMap.get(buffer);
+            if (!unicodeInfo) unicodeInfo = digraphMap2.get(buffer);
+            if (!unicodeInfo) unicodeInfo = digraphMap.get(buffer[1] + buffer[0]);
+            if (!unicodeInfo) unicodeInfo = digraphMap2.get(buffer[1] + buffer[0]);
+            const res = unicodeInfo?.char || buffer;
+            insertAtCursor(textarea, res);
+            isDigraphMode = false;
+            buffer = '';
+        }
+    }
+
+    function insertAtCursor(element, text) {
+        const start = element.selectionStart;
+        const end = element.selectionEnd;
+        const value = element.value;
+        element.value = value.slice(0, start) + text + value.slice(end);
+        element.selectionStart = element.selectionEnd = start + text.length;
+    }
+
+    function updateStatus() {
+        status.textContent = isDigraphMode
+            ? `(Digraph mode: ${buffer})`
+            : '(Normal mode)';
+    }
+});
+
+</script>
+</body>
