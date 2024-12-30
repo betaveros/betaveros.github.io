@@ -75,7 +75,7 @@ def get_name(x):
 with open('digraphs.tsv') as infile:
     with open('digraphs.json', 'w') as outfile:
         parts = [line.strip().split("\t") for line in infile]
-        json.dump([[digraph, int(s), get_name(chr(int(s)))] for digraph, s in parts], outfile)
+        json.dump([[digraph, int(s, 16), get_name(chr(int(s, 16)))] for digraph, s in parts], outfile)
 with open('digraphs-custom.tsv') as infile:
     with open('digraphs-custom.json', 'w') as outfile:
         parts = [line.strip().split("\t") for line in infile]
