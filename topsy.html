@@ -1,0 +1,131 @@
+<style>
+main {
+	max-width: 44rem;
+	margin: 2rem auto;
+	font-family: sans-serif;
+}
+#topsy {
+	font-family: monospace;
+	margin: 0 auto;
+	border-collapse: collapse;
+}
+#topsy * { text-align: center; }
+.cell { border: 1px solid gray; }
+</style>
+<main>
+<h2>Topsy-Turvy</h2>
+<p>I wrote this puzzle in 2023 as part of a larger puzzle set, but am putting it here on its own as a demonstration of a "generalized dropquote", and because several of the other puzzles are not solvable outside the original context. — betaveros</p>
+<table id="topsy">
+	<tr><td><button id="topccw">↶</button></td><td colspan="4"><div style="transform: rotate(180deg); width: 9em; margin: 0 auto" id="topr0">8???6?</div></td><td><button id="topcw">↷</button></td></tr>
+	<tr><td rowspan="4"><div style="transform: rotate(90deg); width: 9em; margin: 0 auto" id="topr3">???37</div></td>
+		<td class="cell">E/P/H/R</td><td class="cell">E/O/E/S</td><td class="cell">G/O/R/T</td><td class="cell">S/S/S/U</td>
+		<td rowspan="4"><div style="transform: rotate(270deg); width: 9em; margin: 0 auto" id="topr1">24?????????</div></td></tr>
+	<tr><td class="cell">I/L/K/O</td><td class="cell">A/O/N/M</td><td class="cell">A/E/T/W</td><td class="cell">E/H/P/K</td></tr>
+	<tr><td class="cell">I/I/O/N</td><td class="cell">E/L/H/H</td><td class="cell">A/S/D/S</td><td class="cell">E/I/S/L</td></tr>
+	<tr><td class="cell">A/S/S/L</td><td class="cell">C/I/G/L</td><td class="cell">O/S/O/T</td><td class="cell">I/P/R/T</td></tr>
+	<tr><td></td><td colspan="4"><div id="topr2" style="width: 9em: margin: 0 auto">?1??5????</div></td><td></td></tr>
+</table>
+</main>
+
+<script type="text/javascript">
+	let outerTds = document.querySelectorAll("#topsy td");
+	let tdss = [];
+	let sss = [document.getElementById("topr0"), document.getElementById("topr1"), document.getElementById("topr2"), document.getElementById("topr3")];
+	for (let i = 0; i < outerTds.length; i++) {
+		if (outerTds[i].textContent.length === 7) {
+			console.log(outerTds[i].textContent);
+			let outer = outerTds[i].textContent;
+			let table = document.createElement('table');
+			let tds = [null,null,null,null];
+			for (let r = 0; r < 3; r++) {
+				let tr = document.createElement('tr');
+				for (let c = 0; c < 3; c++) {
+					let td = document.createElement('td');
+					switch (r) {
+						case 0:
+							switch (c) {
+								case 0: {
+									let button = document.createElement('button');
+									button.addEventListener('click', function() {
+										let tmp = tds[0].textContent;
+										tds[0].textContent = tds[1].textContent;
+										tds[1].textContent = tds[2].textContent;
+										tds[2].textContent = tds[3].textContent;
+										tds[3].textContent = tmp;
+									});
+									button.textContent = '↶';
+									td.appendChild(button);
+									break;
+								}
+								case 1: td.textContent = outer[0]; td.style.transform = "rotate(180deg)"; tds[0] = td; break;
+								case 2: {
+									let button = document.createElement('button');
+									button.addEventListener('click', function() {
+										let tmp = tds[3].textContent;
+										tds[3].textContent = tds[2].textContent;
+										tds[2].textContent = tds[1].textContent;
+										tds[1].textContent = tds[0].textContent;
+										tds[0].textContent = tmp;
+									});
+									button.textContent = '↷';
+									td.appendChild(button);
+									break;
+								}
+							}
+							break;
+						case 1:
+							switch (c) {
+								case 0: td.textContent = outer[6]; td.style.transform = "rotate(90deg)"; tds[3] = td; break;
+								case 2: td.textContent = outer[2]; td.style.transform = "rotate(270deg)"; tds[1] = td; break;
+							}
+							break;
+						case 2:
+							if (c === 1) { td.textContent = outer[4]; tds[2] = td; }
+							break;
+					}
+					tr.appendChild(td);
+				}
+				table.appendChild(tr);
+			}
+			outerTds[i].textContent = "";
+			outerTds[i].appendChild(table);
+			tdss.push(tds);
+		}
+	}
+	let orbits = [[0,3,15,12],[1,7,14,8],[2,11,13,4],[5,6,10,9]];
+document.getElementById('topccw').addEventListener('click', function () {
+	orbits.forEach(function (orbit) {
+		for (let i = 0; i < 4; i++) {
+			let tmp = tdss[orbit[0]][(i+0)%4].textContent;
+			tdss[orbit[0]][(i+0)%4].textContent = tdss[orbit[1]][(i+1)%4].textContent;
+			tdss[orbit[1]][(i+1)%4].textContent = tdss[orbit[2]][(i+2)%4].textContent;
+			tdss[orbit[2]][(i+2)%4].textContent = tdss[orbit[3]][(i+3)%4].textContent;
+			tdss[orbit[3]][(i+3)%4].textContent = tmp;
+		}
+	});
+
+	let tmp = sss[0].textContent;
+	sss[0].textContent = sss[1].textContent;
+	sss[1].textContent = sss[2].textContent;
+	sss[2].textContent = sss[3].textContent;
+	sss[3].textContent = tmp;
+});
+document.getElementById('topcw').addEventListener('click', function () {
+	orbits.forEach(function (orbit) {
+		for (let i = 0; i < 4; i++) {
+			let tmp = tdss[orbit[3]][(i+3)%4].textContent;
+			tdss[orbit[3]][(i+3)%4].textContent = tdss[orbit[2]][(i+2)%4].textContent;
+			tdss[orbit[2]][(i+2)%4].textContent = tdss[orbit[1]][(i+1)%4].textContent;
+			tdss[orbit[1]][(i+1)%4].textContent = tdss[orbit[0]][(i+0)%4].textContent;
+			tdss[orbit[0]][(i+0)%4].textContent = tmp;
+		}
+	});
+
+	let tmp = sss[3].textContent;
+	sss[3].textContent = sss[2].textContent;
+	sss[2].textContent = sss[1].textContent;
+	sss[1].textContent = sss[0].textContent;
+	sss[0].textContent = tmp;
+});
+</script>
+
