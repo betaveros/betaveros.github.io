@@ -155,8 +155,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateStatus();
     });
 
+    textarea.addEventListener('beforeinput', function(e) {
+        // android mobile doesn't provide e.key in keydown
+        if (isDigraphMode) {
+            if (e.data.length === 1
+                    && e.data.charCodeAt(0) >= 32
+                    && e.data.charCodeAt(0) < 127) {
+                e.preventDefault();
+                buffer += e.data;
+                processBuffer();
+                updateStatus();
+            }
+        } else if (trigger.value && e.data === trigger.value) {
+            e.preventDefault();
+            isDigraphMode = true;
+            buffer = '';
+            updateStatus();
+        }
+    });
+
     textarea.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'k' || (!isDigraphMode && trigger.value && e.key === trigger.value)) {
+        if (e.ctrlKey && e.key === 'k') {
             e.preventDefault();
             isDigraphMode = true;
             buffer = '';
@@ -165,13 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (isDigraphMode) {
-            if (e.key.length === 1
-                    && e.key.charCodeAt(0) >= 32
-                    && e.key.charCodeAt(0) < 127) {
-                buffer += e.key;
-                processBuffer();
-                e.preventDefault();
-            } else if (e.key === 'Backspace') {
+            if (e.key === 'Backspace') {
                 buffer = buffer.slice(0, -1);
                 e.preventDefault();
             } else if (e.key === 'Escape') {
@@ -185,7 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function processBuffer() {
-        if (buffer.length === 2) {
+        if (buffer.length >= 2) {
+            buffer = buffer.slice(0, 2);
             let unicodeInfo = digraphMap.get(buffer);
             if (!unicodeInfo) unicodeInfo = digraphMap2.get(buffer);
             if (!unicodeInfo) unicodeInfo = digraphMap.get(buffer[1] + buffer[0]);
