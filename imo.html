@@ -42,6 +42,14 @@
             font-size: 8px;
             line-height: 1;
         }
+        .chart-toggle {
+            font-size: 10px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .chart-toggle input[type="checkbox"] {
+            margin-right: 3px;
+        }
     </style>
 </head>
 <body>
@@ -56,8 +64,8 @@
                 <th class="compact-col sortable" title="Year" data-column="year">Year<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Number of Contestants" data-column="total">#<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Gold Medal Percentage" data-column="goldPct">G%<span class="sort-indicator"></span></th>
-                <th class="compact-col sortable" title="Silver Medal Percentage" data-column="silverPct">S%<span class="sort-indicator"></span></th>
-                <th class="compact-col sortable" title="Bronze Medal Percentage" data-column="bronzePct">B%<span class="sort-indicator"></span></th>
+                <th class="compact-col sortable" title="Silver Medal Percentage" data-column="silverPct">≥S%<span class="sort-indicator"></span></th>
+                <th class="compact-col sortable" title="Bronze Medal Percentage" data-column="bronzePct">≥B%<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Honourable Mention Percentage" data-column="hmPct">HM%<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="No Award Percentage" data-column="nonePct">N%<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Gold Medal Cutoff Score" data-column="goldCutoff">G<span class="sort-indicator"></span></th>
@@ -69,7 +77,10 @@
                 <th class="compact-col sortable" title="Standard Deviation" data-column="stdDev">σ<span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Minimum Score" data-column="min"><small>Min</small><span class="sort-indicator"></span></th>
                 <th class="compact-col sortable" title="Maximum Score" data-column="max"><small>Max</small><span class="sort-indicator"></span></th>
-                <th class="chart-cell" title="Score Distribution by Medal Type">Score Distribution</th>
+                <th class="chart-cell" title="Score Distribution by Medal Type">
+                    Score Distribution
+                    <label class="chart-toggle"><input type="checkbox" id="stackedToggle" onchange="toggleChartType()"> Stacked</label>
+                </th>
             </tr>
         </thead>
         <tbody id="stats-body">
@@ -89,13 +100,20 @@
                 document.getElementById('loading').innerHTML = 'Error loading data: ' + error;
             });
 
+        function parseMedal(medal) {
+            if (medal === "Special prize") return "None";
+            let c = medal.indexOf(",");
+            if (c >= 0) medal = medal.slice(0, c);
+            return medal || "None";
+        }
+
         // Process data for a single year
         function processYearData(data) {
             return data.map(d => ({
                 id: d[0],
                 scores: d[1],
                 total: d[1].reduce((a, b) => a + b, 0),
-                medal: d[2] || 'None'
+                medal: parseMedal(d[2])
             }));
         }
 
@@ -143,8 +161,8 @@
                 total,
                 gold, silver, bronze, hm, none,
                 goldPct: (gold/total*100).toFixed(1),
-                silverPct: (silver/total*100).toFixed(1),
-                bronzePct: (bronze/total*100).toFixed(1),
+                silverPct: ((gold+silver)/total*100).toFixed(1),
+                bronzePct: ((gold+silver+bronze)/total*100).toFixed(1),
                 hmPct: (hm/total*100).toFixed(1),
                 nonePct: (none/total*100).toFixed(1),
                 goldCutoff, silverCutoff, bronzeCutoff,
@@ -164,15 +182,22 @@
 
             for (let score = 0; score <= maxScore; score++) {
                 const contestants = scoreGroups.get(score) || [];
-                const medalGroups = d3.group(contestants, d => d.medal || 'None');
+                const medalGroups = d3.group(contestants, d => d.medal);
 
                 const medalData = {
                     'Gold medal': medalGroups.get('Gold medal')?.length || 0,
                     'Silver medal': medalGroups.get('Silver medal')?.length || 0,
                     'Bronze medal': medalGroups.get('Bronze medal')?.length || 0,
                     'Honourable mention': medalGroups.get('Honourable mention')?.length || 0,
-                    'None': (medalGroups.get('None')?.length || 0) + (medalGroups.get('')?.length || 0)
+                    'None': medalGroups.get('None')?.length || 0,
                 };
+
+                let eq = medalData['Gold medal'] +
+                 medalData['Silver medal'] +
+                 medalData['Bronze medal'] +
+                 medalData['Honourable mention'] +
+                 medalData['None'] === contestants.length;
+                if (!eq) console.warn(medalGroups);
 
                 histogramData.push({
                     score: score,
@@ -311,9 +336,172 @@
                 });
         }
 
+        function createStackedChart(histogramData, cellId, stats, year) {
+            const margin = {top: 0, right: 5, bottom: 15, left: 25};
+            const width = 480 - margin.left - margin.right;
+            const height = 25 - margin.top - margin.bottom;
+
+            const svg = d3.select(`#${cellId}`)
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const totalContestants = histogramData.reduce((sum, d) => sum + d.count, 0);
+
+            // Create segments ordered by score (contestants arranged left to right by their scores)
+            const segments = [];
+            let runningTotal = 0;
+
+            const maxScore = getMaxScore(year);
+            const sortedHistogramData = histogramData
+                .filter(d => d.count > 0)
+                .sort((a, b) => a.score - b.score);
+
+            sortedHistogramData.forEach(scoreData => {
+                // Within each score, order by medal hierarchy
+                const medalOrder = ['None', 'Honourable mention', 'Bronze medal', 'Silver medal', 'Gold medal'];
+
+                medalOrder.forEach(medalType => {
+                    const count = scoreData.medals[medalType];
+                    if (count > 0) {
+                        segments.push({
+                            score: scoreData.score,
+                            medalType: medalType,
+                            count: count,
+                            x0: runningTotal,
+                            x1: runningTotal + count
+                        });
+                        runningTotal += count;
+                    }
+                });
+            });
+
+            const x = d3.scaleLinear()
+                .domain([0, totalContestants])
+                .range([0, width]);
+
+            const barHeight = height;
+            const barY = (height - barHeight) / 2;
+
+            g.selectAll(".stacked-segment")
+                .data(segments)
+                .enter().append("rect")
+                .attr("class", d => {
+                    switch(d.medalType) {
+                        case 'Gold medal': return 'stacked-segment medal-gold';
+                        case 'Silver medal': return 'stacked-segment medal-silver';
+                        case 'Bronze medal': return 'stacked-segment medal-bronze';
+                        case 'Honourable mention': return 'stacked-segment medal-hm';
+                        default: return 'stacked-segment medal-none';
+                    }
+                })
+                .attr("x", d => x(d.x0))
+                .attr("y", barY)
+                .attr("width", (d, i) => {
+                    return x(d.x1) - x(d.x0);
+                })
+                .attr("height", barHeight)
+                .append("title")
+                .text(d => `Score ${d.score}, ${d.medalType}: ${d.count}`);
+
+            const standardTicks = [];
+            for (let i = 0; i <= maxScore; i += 7) {
+                standardTicks.push(i);
+            }
+            if (standardTicks[standardTicks.length - 1] !== maxScore) {
+                standardTicks.push(maxScore);
+            }
+
+            const cutoffTicks = [stats.goldCutoff, stats.silverCutoff, stats.bronzeCutoff].filter(c => c !== null);
+            const allTicks = [...new Set([...standardTicks, ...cutoffTicks])].sort((a, b) => a - b);
+
+            // each tick at the START of its score region
+            // (actually both ways are awkward since each contestant is "exactly on" a score
+            // but this one is more intuitive to me)
+            const tickPositions = allTicks.map(score => {
+                let cumulative = 0;
+                for (let s = 0; s < score; s++) {
+                    const scoreData = histogramData.find(d => d.score === s);
+                    if (scoreData) {
+                        cumulative += scoreData.count;
+                    }
+                }
+                return { score: score, position: cumulative };
+            });
+
+            // Add tick marks with overlap prevention
+            const minLabelSpacing = 13; // pixels
+
+            // First pass: add all tick lines
+            tickPositions.forEach(({ score, position }) => {
+                const xPos = x(position);
+
+                // Determine if this is a medal cutoff tick
+                const isGoldCutoff = score == stats.goldCutoff;
+                const isSilverCutoff = score == stats.silverCutoff;
+                const isBronzeCutoff = score == stats.bronzeCutoff;
+                const isMedalCutoff = isGoldCutoff || isSilverCutoff || isBronzeCutoff;
+
+                // Set color and width based on tick type
+                const tickColor = isGoldCutoff ? "#CC9900" :
+                                 isSilverCutoff ? "#666666" :
+                                 isBronzeCutoff ? "#996633" : "#000";
+                const tickWidth = isMedalCutoff ? 2 : 1;
+
+                // Add tick line
+                g.append("line")
+                    .attr("x1", xPos)
+                    .attr("x2", xPos)
+                    .attr("y1", barY)
+                    .attr("y2", barY + barHeight + 3)
+                    .attr("stroke", tickColor)
+                    .attr("stroke-width", tickWidth);
+            });
+
+            // Second pass: prevent overlaps right to left by pushing ticks left
+            const labelPositions = [];
+            [...tickPositions].reverse().forEach(({ score, position }) => {
+                const xPos = x(position);
+                let adjustedX = xPos;
+
+                for (let existingPos of labelPositions) {
+                    if (Math.abs(adjustedX - existingPos) < minLabelSpacing) {
+                        // Move to the left of the existing label
+                        adjustedX = existingPos - minLabelSpacing;
+                    }
+                }
+
+                adjustedX = Math.max(adjustedX, 5);
+
+                labelPositions.push(adjustedX);
+
+                // Add tick label at adjusted position
+                g.append("text")
+                    .attr("x", adjustedX)
+                    .attr("y", barY + barHeight + 15)
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "10px")
+                    .style("fill", score == stats.goldCutoff ? "#CC9900" :
+                                   score == stats.silverCutoff ? "#666666" :
+                                   score == stats.bronzeCutoff ? "#996633" : "#000000")
+                    .style("font-weight", (score == stats.goldCutoff || score == stats.silverCutoff || score == stats.bronzeCutoff) ? "bold" : "normal")
+                    .text(score);
+            });
+        }
+
+        // Toggle between chart types
+        function toggleChartType() {
+            isStackedView = document.getElementById('stackedToggle').checked;
+            renderTable();
+        }
+
         // Global data storage for sorting
         let tableData = [];
         let currentSort = { column: 'year', direction: 'desc' };
+        let isStackedView = false;
 
         // Process all years and create table
         function processAllYears(allYearData) {
@@ -324,6 +512,9 @@
                 const histogramData = createHistogramData(processedData, year);
                 return { year, stats, histogramData };
             });
+
+            // Read initial checkbox state
+            isStackedView = document.getElementById('stackedToggle').checked;
 
             sortTable('year', 'desc');
             renderTable();
@@ -359,7 +550,11 @@
                     <td id="${cellId}" class="chart-cell"></td>
                 `;
 
-                createMiniChart(histogramData, cellId, stats, year);
+                if (isStackedView) {
+                    createStackedChart(histogramData, cellId, stats, year);
+                } else {
+                    createMiniChart(histogramData, cellId, stats, year);
+                }
             });
         }
 
