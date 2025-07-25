@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicode Inspector</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            resize: vertical;
+        }
+
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .output {
+	    white-space: pre-wrap;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background: white;
+            min-height: 100px;
+            font-family: monospace;
+            line-height: 1.4;
+        }
+
+        .char-block {
+            display: inline-block;
+            margin: 2px;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+            vertical-align: top;
+            text-align: center;
+            min-width: 40px;
+        }
+
+        .char-display {
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .char-code {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .char-name {
+            font-size: 9px;
+            color: #888;
+            margin-top: 1px;
+        }
+
+        .whitespace {
+            background: #e8e8e8;
+            color: #999;
+        }
+
+        .control {
+            background: #ffe8e8;
+            color: #666;
+        }
+
+        .char-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: monospace;
+        }
+
+        .char-table th, .char-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .char-table th {
+            background: #f0f0f0;
+        }
+
+        .char-table .char-col {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            width: 60px;
+        }
+
+        .char-table .code-col {
+            font-family: monospace;
+            width: 120px;
+        }
+
+        ruby {
+            margin: 0 1px;
+        }
+        rt {
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Unicode Inspector</h1>
+
+    <textarea id="textInput" placeholder="Paste or type text here to inspect Unicode characters..."></textarea>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Hex <input type="checkbox" id="showHex" checked></label>
+        </div>
+        <div class="control-group">
+            <label>Dec <input type="checkbox" id="showDecimal"></label>
+        </div>
+        <div class="control-group">
+            <label for="showName">Name <input type="checkbox" id="showName" disabled></label>
+        </div>
+        <div class="control-group">
+            <button id="loadUnicodeData">Load Unicode Names</button>
+            <span id="loadStatus"></span>
+        </div>
+        <div class="control-group">
+            <label for="displayMode">Display:</label>
+            <select id="displayMode">
+                <option value="blocks">Blocks</option>
+                <option value="table">Table</option>
+                <option value="ruby">Ruby</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>ASCII: <input type="checkbox" id="formatAscii" checked></label>
+            <label>␣: <input type="checkbox" id="formatSpace" checked></label>
+            <label>↵: <input type="checkbox" id="formatNewline" checked></label>
+            <label>⇥/...: <input type="checkbox" id="formatOther" checked></label>
+        </div>
+    </div>
+
+    <div id="output" class="output"></div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const output = document.getElementById('output');
+        const showHex = document.getElementById('showHex');
+        const showDecimal = document.getElementById('showDecimal');
+        const showName = document.getElementById('showName');
+        const displayMode = document.getElementById('displayMode');
+        const formatAscii = document.getElementById('formatAscii');
+        const formatSpace = document.getElementById('formatSpace');
+        const formatNewline = document.getElementById('formatNewline');
+        const formatOther = document.getElementById('formatOther');
+        const loadUnicodeData = document.getElementById('loadUnicodeData');
+        const loadStatus = document.getElementById('loadStatus');
+
+        let unicodeNames = {};
+
+        function htmlEscape(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function getDisplayChar(char, codePoint) {
+            if (codePoint === 0x0020) return '␣';
+            if (codePoint === 0x0009) return '⇥';
+            if (codePoint === 0x000A) return '↵\n';
+            if (codePoint === 0x000D) return '↵\n';
+            if (codePoint === 0x00A0) return '⍽';
+            if (codePoint < 32 || (codePoint >= 127 && codePoint < 160)) return '◯';
+            if (codePoint === 0x200B) return '⚬';
+            return char;
+        }
+
+        function shouldAnnotate(codePoint) {
+            if (codePoint === 32) return formatSpace.checked;
+            if (codePoint === 10 || codePoint === 13) return formatNewline.checked;
+            if (codePoint > 32 && codePoint <= 126) return formatAscii.checked;
+            if (codePoint === 0x0009 || codePoint === 0x00A0 || codePoint === 0x200B || (codePoint >= 127 && codePoint < 160)) return formatOther.checked;
+            return true;
+        }
+
+        function formatCodeInfo(codePoint) {
+            let codeInfo = '';
+            if (showHex.checked) {
+                codeInfo += `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}`;
+            }
+            if (showDecimal.checked) {
+                if (codeInfo) codeInfo += ' ';
+                codeInfo += `(${codePoint})`;
+            }
+            return codeInfo;
+        }
+
+        function inspectText() {
+            const text = textInput.value;
+            const chars = Array.from(text);
+            const mode = displayMode.value;
+            if (mode === 'table') {
+                inspectAsTable(chars);
+            } else if (mode === 'ruby') {
+                inspectAsRuby(chars);
+            } else {
+                inspectAsBlocks(chars);
+            }
+        }
+
+        function inspectAsBlocks(chars) {
+            let html = '';
+
+            chars.forEach(char => {
+                const codePoint = char.codePointAt(0);
+                let displayChar = char;
+                const charName = unicodeNames[codePoint]; // not always available
+
+                let className = 'char-block';
+                if (codePoint === 32 || codePoint === 0x00A0) {
+                    className += ' whitespace';
+                } else if (codePoint < 32 || (codePoint >= 127 && codePoint < 160)) {
+                    className += ' control';
+                }
+
+                html += `<div class="${className}">`;
+                html += `<div class="char-display">${htmlEscape(displayChar)}</div>`;
+
+                if (shouldAnnotate(codePoint)) {
+		    displayChar = getDisplayChar(char, codePoint);
+                    const codeInfo = formatCodeInfo(codePoint);
+                    if (codeInfo) {
+                        html += `<div class="char-code">${codeInfo}</div>`;
+                    }
+
+                    if (showName.checked && charName) {
+                        html += `<div class="char-name">${charName}</div>`;
+                    }
+                }
+
+                html += '</div>';
+            });
+
+            output.innerHTML = html;
+        }
+
+        async function loadUnicodeDatabase() {
+            try {
+                loadStatus.textContent = 'Loading...';
+                loadUnicodeData.disabled = true;
+
+                const response = await fetch('UnicodeData.txt');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.text();
+                loadStatus.textContent = 'Parsing...';
+
+                // Parse UnicodeData.txt format
+                const lines = data.split('\n');
+                let count = 0;
+
+                for (const line of lines) {
+                    if (line.trim()) {
+                        const parts = line.split(';');
+                        if (parts.length >= 2) {
+                            const codePoint = parseInt(parts[0], 16);
+                            const name = parts[1];
+                            if (name && name !== '<control>') {
+                                unicodeNames[codePoint] = name;
+                                count++;
+                            }
+                        }
+                    }
+                }
+
+                loadStatus.textContent = `Loaded ${count} character names`;
+                showName.disabled = false;
+
+                // Refresh display if names are currently shown
+                if (showName.checked) {
+                    inspectText();
+                }
+
+            } catch (error) {
+                loadStatus.textContent = `Error: ${error.message}`;
+                loadUnicodeData.disabled = false;
+            }
+        }
+
+        function inspectAsTable(chars) {
+            let html = '<table class="char-table">';
+            html += '<tr><th>Char</th><th>Code</th>';
+            if (showName.checked) html += '<th>Name</th>';
+            html += '</tr>';
+
+            chars.forEach(char => {
+                const codePoint = char.codePointAt(0);
+                const displayChar = getDisplayChar(char, codePoint);
+                const charName = unicodeNames[codePoint]; // not always available
+
+                html += '<tr>';
+                html += `<td class="char-col">${htmlEscape(displayChar)}</td>`;
+
+                if (shouldAnnotate(codePoint)) {
+                    html += `<td class="code-col">${formatCodeInfo(codePoint)}</td>`;
+                } else {
+                    html += '<td class="code-col"></td>';
+                }
+
+                if (showName.checked) {
+                    html += `<td>${charName}</td>`;
+                }
+
+                html += '</tr>';
+            });
+
+            html += '</table>';
+            output.innerHTML = html;
+        }
+
+        function inspectAsRuby(chars) {
+            let html = '';
+
+            chars.forEach(char => {
+                const codePoint = char.codePointAt(0);
+                let displayChar = char;
+                const charName = unicodeNames[codePoint];
+
+                if (shouldAnnotate(codePoint)) {
+		    displayChar = getDisplayChar(char, codePoint);
+                    const codeInfo = formatCodeInfo(codePoint);
+                    let annotation = codeInfo;
+                    if (showName.checked && charName) {
+                        if (annotation) annotation += ' ';
+                        annotation += charName;
+                    }
+
+                    if (annotation) {
+                        html += `<ruby>${htmlEscape(displayChar)}<rt>${annotation}</rt></ruby>`;
+                    } else {
+                        html += htmlEscape(displayChar);
+                    }
+                } else {
+                    html += htmlEscape(displayChar);
+                }
+            });
+
+            output.innerHTML = html;
+        }
+
+        textInput.addEventListener('input', inspectText);
+        showHex.addEventListener('change', inspectText);
+        showDecimal.addEventListener('change', inspectText);
+        showName.addEventListener('change', inspectText);
+        displayMode.addEventListener('change', inspectText);
+        formatAscii.addEventListener('change', inspectText);
+        formatSpace.addEventListener('change', inspectText);
+        formatNewline.addEventListener('change', inspectText);
+        formatOther.addEventListener('change', inspectText);
+        loadUnicodeData.addEventListener('click', loadUnicodeDatabase);
+
+        inspectText();
+    </script>
+</body>
+</html>

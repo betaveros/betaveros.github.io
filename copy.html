@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicode Character Copier</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fafafa;
+            color: #333;
+        }
+
+        .character-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .char-button {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .char-button:hover {
+            border-color: #999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .char-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            background: #f5f5f5;
+        }
+
+        .char-button.copied {
+            background: #f0f0f0;
+            border-color: #aaa;
+        }
+
+        .character {
+            font-size: 28px;
+            color: #333;
+            display: block;
+        }
+
+        .char-name {
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="character-grid">
+            <div class="char-button">
+                <span class="character">−</span>
+                <div class="char-name">Minus</div>
+            </div>
+
+            <div class="char-button">
+                <span class="character">–</span>
+                <div class="char-name">En Dash</div>
+            </div>
+
+            <div class="char-button">
+                <span class="character">—</span>
+                <div class="char-name">Em Dash</div>
+            </div>
+
+            <div class="char-button">
+                <span class="character">&ldquo;</span>
+                <div class="char-name">Open Quote</div>
+            </div>
+
+            <div class="char-button">
+                <span class="character">”</span>
+                <div class="char-name">Close Quote</div>
+            </div>
+            <div class="char-button"><span class="character">×</span></div>
+            <div class="char-button"><span class="character">±</span></div>
+            <div class="char-button"><span class="character">←</span></div>
+            <div class="char-button"><span class="character">↑</span></div>
+            <div class="char-button"><span class="character">→</span></div>
+            <div class="char-button"><span class="character">↓</span></div>
+            <div class="char-button"><span class="character">⇪</span></div>
+            <div class="char-button"><span class="character">ℓ</span></div>
+            <div class="char-button"><span class="character">✈</span></div>
+            <div class="char-button"><span class="character">❤</span></div>
+            <div class="char-button"><span class="character">ಠ_ಠ</span></div>
+
+            <div class="char-button"><span class="character">🐉</span></div>
+            <div class="char-button"><span class="character">🔥</span></div>
+            <div class="char-button"><span class="character">✈️</span></div>
+            <div class="char-button"><span class="character">👍</span></div>
+            <div class="char-button"><span class="character">👋</span></div>
+            <div class="char-button"><span class="character">🙏</span></div>
+            <div class="char-button"><span class="character">🎉</span></div>
+            <div class="char-button"><span class="character">💥</span></div>
+            <div class="char-button"><span class="character">🤔</span></div>
+            <div class="char-button"><span class="character">🙃</span></div>
+            <div class="char-button"><span class="character">😤</span></div>
+            <div class="char-button"><span class="character">😭</span></div>
+            <div class="char-button"><span class="character">🥳</span></div>
+            <div class="char-button"><span class="character">🤷</span></div>
+            <div class="char-button"><span class="character">💀</span></div>
+            <div class="char-button"><span class="character">⛔</span></div>
+            <div class="char-button"><span class="character">🚫</span></div>
+            <div class="char-button"><span class="character">❌</span></div>
+            <div class="char-button"><span class="character">⚠️ </span></div>
+            <div class="char-button"><span class="character">✅</span></div>
+            <div class="char-button"><span class="character">✔️</span></div>
+            <div class="char-button"><span class="character">➕</span></div>
+            <div class="char-button"><span class="character">⭕</span></div>
+            <div class="char-button"><span class="character">🔴</span></div>
+            <div class="char-button"><span class="character">🟠</span></div>
+            <div class="char-button"><span class="character">🟡</span></div>
+            <div class="char-button"><span class="character">🟢</span></div>
+            <div class="char-button"><span class="character">🔵</span></div>
+            <div class="char-button"><span class="character">🟣</span></div>
+            <div class="char-button"><span class="character">🟤</span></div>
+            <div class="char-button"><span class="character">⚫</span></div>
+            <div class="char-button"><span class="character">⚪</span></div>
+            <div class="char-button"><span class="character">🟥</span></div>
+            <div class="char-button"><span class="character">🟧</span></div>
+            <div class="char-button"><span class="character">🟨</span></div>
+            <div class="char-button"><span class="character">🟩</span></div>
+            <div class="char-button"><span class="character">🟦</span></div>
+            <div class="char-button"><span class="character">🟪</span></div>
+            <div class="char-button"><span class="character">🟫</span></div>
+            <div class="char-button"><span class="character">⬛</span></div>
+            <div class="char-button"><span class="character">⬜</span></div>
+            <div class="char-button"><span class="character">❤️ </span></div>
+            <div class="char-button"><span class="character">🩷</span></div>
+            <div class="char-button"><span class="character">🧡</span></div>
+            <div class="char-button"><span class="character">💛</span></div>
+            <div class="char-button"><span class="character">💚</span></div>
+            <div class="char-button"><span class="character">💙</span></div>
+            <div class="char-button"><span class="character">🩵</span></div>
+            <div class="char-button"><span class="character">💜</span></div>
+            <div class="char-button"><span class="character">🤎</span></div>
+            <div class="char-button"><span class="character">🖤</span></div>
+            <div class="char-button"><span class="character">🩶</span></div>
+            <div class="char-button"><span class="character">🤍</span></div>
+        </div>
+    <script>
+        document.querySelectorAll('.char-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const charData = this.querySelector('.character').textContent;
+
+                navigator.clipboard.writeText(charData).then(() => {
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.classList.remove('copied');
+                    }, 800);
+                }).catch(err => console.error('Failed to copy: ', err));
+            });
+        });
+    </script>
+</body>
+</html>
