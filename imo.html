@@ -58,6 +58,8 @@
 
     <div class="loading" id="loading">Loading data...</div>
 
+    <div id="scatterplot" style="display: none; margin-bottom: 20px; text-align: center"></div>
+
     <table id="stats-table" style="display: none; margin-top: 10px">
         <thead>
             <tr>
@@ -88,11 +90,27 @@
     </table>
 
     <script>
+        // Color scheme
+        const COLORS = {
+            gold: '#FFCC00',
+            silver: '#CCCCCC',
+            bronze: '#CC9966',
+            hm: '#FF3399',
+            none: '#99CCFF',
+            goldCutoff: '#806100',
+            silverCutoff: '#666666',
+            bronzeCutoff: '#885c2c',
+            gridLine: '#aaa',
+            yearLine: '#ccc',
+            yearLineHighlight: '#333'
+        };
+
         // Load data from JSON file
         fetch('imo.json')
             .then(response => response.json())
             .then(allYearData => {
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('scatterplot').style.display = 'block';
                 document.getElementById('stats-table').style.display = 'table';
                 processAllYears(allYearData);
             })
@@ -160,16 +178,16 @@
             return {
                 total,
                 gold, silver, bronze, hm, none,
-                goldPct: (gold/total*100).toFixed(1),
-                silverPct: ((gold+silver)/total*100).toFixed(1),
-                bronzePct: ((gold+silver+bronze)/total*100).toFixed(1),
-                hmPct: (hm/total*100).toFixed(1),
-                nonePct: (none/total*100).toFixed(1),
+                goldPct: gold/total,
+                silverPct: (gold+silver)/total,
+                bronzePct: (gold+silver+bronze)/total,
+                hmPct: hm/total,
+                nonePct: none/total,
                 goldCutoff, silverCutoff, bronzeCutoff,
-                mean: mean.toFixed(1),
-                median: median.toFixed(1),
+                mean,
+                median,
                 mode,
-                stdDev: stdDev.toFixed(1),
+                stdDev,
                 min, max
             };
         }
@@ -269,9 +287,9 @@
 
             // Add dashed vertical lines for cutoffs (behind bars)
             const cutoffData = [
-                { score: stats.goldCutoff, color: "#CC9900" },
-                { score: stats.silverCutoff, color: "#666666" },
-                { score: stats.bronzeCutoff, color: "#996633" }
+                { score: stats.goldCutoff, color: COLORS.goldCutoff },
+                { score: stats.silverCutoff, color: COLORS.silverCutoff },
+                { score: stats.bronzeCutoff, color: COLORS.bronzeCutoff }
             ].filter(d => d.score !== null);
 
             cutoffData.forEach(({ score, color }) => {
@@ -325,9 +343,9 @@
 
             xAxis.selectAll("text")
                 .style("fill", d => {
-                    if (d == stats.goldCutoff) return "#CC9900";
-                    if (d == stats.silverCutoff) return "#666666";
-                    if (d == stats.bronzeCutoff) return "#996633";
+                    if (d == stats.goldCutoff) return COLORS.goldCutoff;
+                    if (d == stats.silverCutoff) return COLORS.silverCutoff;
+                    if (d == stats.bronzeCutoff) return COLORS.bronzeCutoff;
                     return "#000000";
                 })
                 .style("font-weight", d => {
@@ -446,9 +464,9 @@
                 const isMedalCutoff = isGoldCutoff || isSilverCutoff || isBronzeCutoff;
 
                 // Set color and width based on tick type
-                const tickColor = isGoldCutoff ? "#CC9900" :
-                                 isSilverCutoff ? "#666666" :
-                                 isBronzeCutoff ? "#996633" : "#000";
+                const tickColor = isGoldCutoff ? COLORS.goldCutoff :
+                                 isSilverCutoff ? COLORS.silverCutoff :
+                                 isBronzeCutoff ? COLORS.bronzeCutoff : "#000";
                 const tickWidth = isMedalCutoff ? 2 : 1;
 
                 // Add tick line
@@ -474,7 +492,7 @@
                     }
                 }
 
-                adjustedX = Math.max(adjustedX, 5);
+                adjustedX = Math.max(adjustedX, 0);
 
                 labelPositions.push(adjustedX);
 
@@ -484,9 +502,9 @@
                     .attr("y", barY + barHeight + 15)
                     .attr("text-anchor", "middle")
                     .attr("font-size", "10px")
-                    .style("fill", score == stats.goldCutoff ? "#CC9900" :
-                                   score == stats.silverCutoff ? "#666666" :
-                                   score == stats.bronzeCutoff ? "#996633" : "#000000")
+                    .style("fill", score == stats.goldCutoff ? COLORS.goldCutoff :
+                                   score == stats.silverCutoff ? COLORS.silverCutoff :
+                                   score == stats.bronzeCutoff ? COLORS.bronzeCutoff : "#000000")
                     .style("font-weight", (score == stats.goldCutoff || score == stats.silverCutoff || score == stats.bronzeCutoff) ? "bold" : "normal")
                     .text(score);
             });
@@ -503,6 +521,236 @@
         let currentSort = { column: 'year', direction: 'desc' };
         let isStackedView = false;
 
+        // Create scatterplot of medal cutoffs
+        function createScatterplot(tableData) {
+            const margin = {top: 20, right: 20, bottom: 40, left: 60};
+            const width = 800 - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#scatterplot")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Filter data for years 1981+ and extract cutoff points
+            const cutoffData = [];
+            tableData.forEach(({ year, stats, histogramData }) => {
+                if (year >= 1981) {
+                    const totalContestants = histogramData.reduce((sum, d) => sum + d.count, 0);
+
+                    // Calculate percentile for each cutoff (fraction scoring strictly below cutoff)
+                    if (stats.goldCutoff !== null) {
+                        let belowGold = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.goldCutoff) {
+                                belowGold += d.count;
+                            }
+                        });
+                        cutoffData.push({
+                            year: year,
+                            absoluteScore: stats.goldCutoff,
+                            percentile: belowGold / totalContestants,
+                            medalType: 'Gold'
+                        });
+                    }
+
+                    if (stats.silverCutoff !== null) {
+                        let belowSilver = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.silverCutoff) {
+                                belowSilver += d.count;
+                            }
+                        });
+                        cutoffData.push({
+                            year: year,
+                            absoluteScore: stats.silverCutoff,
+                            percentile: belowSilver / totalContestants,
+                            medalType: 'Silver'
+                        });
+                    }
+
+                    if (stats.bronzeCutoff !== null) {
+                        let belowBronze = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.bronzeCutoff) {
+                                belowBronze += d.count;
+                            }
+                        });
+                        cutoffData.push({
+                            year: year,
+                            absoluteScore: stats.bronzeCutoff,
+                            percentile: belowBronze / totalContestants,
+                            medalType: 'Bronze'
+                        });
+                    }
+                }
+            });
+
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain([7, 42])
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain(d3.extent(cutoffData, d => d.percentile))
+                .range([height, 0])
+                .nice();
+
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).tickValues([7, 14, 21, 28, 35, 42]))
+                .append("text")
+                .attr("x", width / 2)
+                .attr("y", 35)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Absolute Score");
+
+            g.append("g")
+                .call(d3.axisLeft(yScale))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -40)
+                .attr("x", -height / 2)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Percentile");
+
+            // Add vertical grid lines at X-axis ticks
+            const xTicks = [7, 14, 21, 28, 35, 42];
+            xTicks.forEach(tick => {
+                g.append("line")
+                    .attr("x1", xScale(tick))
+                    .attr("x2", xScale(tick))
+                    .attr("y1", 0)
+                    .attr("y2", height)
+                    .attr("stroke", COLORS.gridLine)
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "3,3")
+                    .attr("stroke-opacity", 0.7);
+            });
+
+            // Add ideal cutoff reference lines
+            const idealCutoffs = [
+                { percentile: 1/2, label: "\u201cIdeal\u201d Bronze", color: COLORS.bronzeCutoff },
+                { percentile: 3/4, label: "\u201cIdeal\u201d Silver", color: COLORS.silverCutoff },
+                { percentile: 11/12, label: "\u201cIdeal\u201d Gold", color: COLORS.goldCutoff }
+            ];
+
+            idealCutoffs.forEach(({ percentile, label, color }) => {
+                g.append("line")
+                    .attr("x1", 0)
+                    .attr("x2", width)
+                    .attr("y1", yScale(percentile))
+                    .attr("y2", yScale(percentile))
+                    .attr("stroke", color)
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "3,3")
+                    .attr("stroke-opacity", 0.7);
+
+                // Add label above the line
+                g.append("text")
+                    .attr("x", 5)
+                    .attr("y", yScale(percentile))
+                    .attr("dy", "-0.3em")
+                    .attr("text-anchor", "start")
+                    .attr("font-size", "10px")
+                    .attr("fill", color)
+                    .text(label);
+            });
+
+            // Add title
+            g.append("text")
+                .attr("x", width / 2)
+                .attr("y", -5)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("Medal Cutoffs: Absolute Score vs Percentile (1981+)");
+
+            // Group data by year for connecting lines
+            const yearGroups = d3.group(cutoffData, d => d.year);
+
+            // Add connecting lines for each year
+            yearGroups.forEach((yearData, year) => {
+                // Sort by medal type order (Bronze -> Silver -> Gold)
+                const sortedData = yearData.sort((a, b) => {
+                    const order = { 'Bronze': 0, 'Silver': 1, 'Gold': 2 };
+                    return order[a.medalType] - order[b.medalType];
+                });
+
+                if (sortedData.length > 1) {
+                    const lineGenerator = d3.line()
+                        .x(d => xScale(d.absoluteScore) + (d.percentile * 137 % 1 - 0.5) * 8)
+                        .y(d => yScale(d.percentile));
+
+                    g.append("path")
+                        .datum(sortedData)
+                        .attr("class", `year-line year-${year}`)
+                        .attr("fill", "none")
+                        .attr("stroke", COLORS.yearLine)
+                        .attr("stroke-width", 1)
+                        .attr("stroke-opacity", 0.3)
+                        .attr("d", lineGenerator);
+                }
+            });
+
+            // Add points with slight horizontal jitter
+            g.selectAll(".cutoff-point")
+                .data(cutoffData)
+                .enter().append("circle")
+                .attr("class", d => `cutoff-point year-${d.year}`)
+                .attr("cx", d => xScale(d.absoluteScore) + (d.percentile * 137 % 1 - 0.5) * 8)
+                .attr("cy", d => yScale(d.percentile))
+                .attr("r", 2.5)
+                .attr("fill", d => {
+                    switch(d.medalType) {
+                        case 'Gold': return COLORS.gold;
+                        case 'Silver': return COLORS.silver;
+                        case 'Bronze': return COLORS.bronze;
+                        default: return '#000';
+                    }
+                })
+                .attr("stroke", "#000")
+                .attr("stroke-width", 0.5)
+                .on("mouseenter", function(event, d) {
+                    // Highlight all points and line for this year
+                    g.selectAll(`.year-${d.year}`)
+                        .classed("highlighted", true);
+
+                    // Make line more prominent
+                    g.selectAll(`.year-line.year-${d.year}`)
+                        .attr("stroke", COLORS.yearLineHighlight)
+                        .attr("stroke-width", 2)
+                        .attr("stroke-opacity", 0.8);
+
+                    // Make points larger
+                    g.selectAll(`.cutoff-point.year-${d.year}`)
+                        .attr("stroke-width", 2);
+                })
+                .on("mouseleave", function(event, d) {
+                    // Reset all points and line for this year
+                    g.selectAll(`.year-${d.year}`)
+                        .classed("highlighted", false);
+
+                    // Reset line
+                    g.selectAll(`.year-line.year-${d.year}`)
+                        .attr("stroke", COLORS.yearLine)
+                        .attr("stroke-width", 1)
+                        .attr("stroke-opacity", 0.3);
+
+                    // Reset points
+                    g.selectAll(`.cutoff-point.year-${d.year}`)
+                        .attr("r", 2.5)
+                        .attr("stroke-width", 0.5);
+                })
+                .append("title")
+                .text(d => `${d.year} ${d.medalType}: score ${d.absoluteScore}, ${(d.percentile*100).toFixed(1)}% below`);
+        }
+
         // Process all years and create table
         function processAllYears(allYearData) {
             // Store data for sorting
@@ -513,6 +761,9 @@
                 return { year, stats, histogramData };
             });
 
+            // Create scatterplot
+            createScatterplot(tableData);
+
             // Read initial checkbox state
             isStackedView = document.getElementById('stackedToggle').checked;
 
@@ -520,6 +771,14 @@
             renderTable();
             setupSorting();
             updateSortIndicators();
+        }
+
+        function toFixed1Html(f) {
+            return f.toFixed(1).replace('.', '<span class="small-percent">.') + "</span>";
+        }
+
+        function toPercentHtml(f) {
+            return (f * 100).toFixed(1).replace('.', '<span class="small-percent">.') + "%</span>";
         }
 
         function renderTable() {
@@ -533,18 +792,18 @@
                 row.innerHTML = `
                     <td>${year}</td>
                     <td class="stat-cell">${stats.total}</td>
-                    <td class="stat-cell bg-gold">${stats.goldPct}<span class="small-percent">%</span></td>
-                    <td class="stat-cell bg-silver">${stats.silverPct}<span class="small-percent">%</span></td>
-                    <td class="stat-cell bg-bronze">${stats.bronzePct}<span class="small-percent">%</span></td>
-                    <td class="stat-cell bg-hm${year < 1987 ? ' disabled' : ''}">${year >= 1987 ? stats.hmPct + '<span class="small-percent">%</span>' : ''}</td>
-                    <td class="stat-cell bg-none">${stats.nonePct}<span class="small-percent">%</span></td>
+                    <td class="stat-cell bg-gold">${toPercentHtml(stats.goldPct)}</td>
+                    <td class="stat-cell bg-silver">${toPercentHtml(stats.silverPct)}</td>
+                    <td class="stat-cell bg-bronze">${toPercentHtml(stats.bronzePct)}</td>
+                    <td class="stat-cell bg-hm${year < 1988 ? ' disabled' : ''}">${year >= 1988 ? toPercentHtml(stats.hmPct) : ''}</td>
+                    <td class="stat-cell bg-none">${toPercentHtml(stats.nonePct)}</td>
                     <td class="stat-cell bg-gold">${stats.goldCutoff || '–'}</td>
                     <td class="stat-cell bg-silver">${stats.silverCutoff || '–'}</td>
                     <td class="stat-cell bg-bronze">${stats.bronzeCutoff || '–'}</td>
-                    <td class="stat-cell">${stats.mean}</td>
-                    <td class="stat-cell">${stats.median}</td>
+                    <td class="stat-cell">${toFixed1Html(stats.mean)}</td>
+                    <td class="stat-cell">${toFixed1Html(stats.median)}</td>
                     <td class="stat-cell">${stats.mode}</td>
-                    <td class="stat-cell">${stats.stdDev}</td>
+                    <td class="stat-cell">${toFixed1Html(stats.stdDev)}</td>
                     <td class="stat-cell">${stats.min}</td>
                     <td class="stat-cell">${stats.max}</td>
                     <td id="${cellId}" class="chart-cell"></td>
