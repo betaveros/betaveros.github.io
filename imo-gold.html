@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>IMO Gold Medal Statistics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; font-variant-numeric: tabular-nums; }
+        main { max-width: 800px; margin: 0 auto; }
+        h1 { font-weight: normal; margin: 0; }
+        aside { font-size: 12px; display: inline; }
+
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 0 3px; text-align: center; font-size: 12px; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; z-index: 10; }
+        .loading { text-align: center; padding: 20px; }
+        .stat-cell { text-align: right; font-variant-numeric: tabular-nums; }
+        .bg-gold { background-color: #FFCC00; }
+        .bg-silver { background-color: #CCCCCC; }
+        .bg-bronze { background-color: #CC9966; }
+        .bg-hm { background-color: #FF3399; color: white; }
+        .bg-none { background-color: #99CCFF; }
+
+        .medal-gold { fill: #FFCC00; }
+        .medal-silver { fill: #CCCCCC; }
+        .medal-bronze { fill: #CC9966; }
+        .medal-hm { fill: #FF3399; }
+        .medal-none { fill: #99CCFF; }
+
+        .sortable { cursor: pointer; user-select: none; position: relative; }
+        .sortable:hover { background-color: #e6e6e6; }
+        .sort-indicator {
+            position: absolute;
+            opacity: 0.5;
+            top: 0;
+            right: 2px;
+            font-size: 8px;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>IMO Gold Medal Statistics <aside>betaveros (with heavy Claude assistance)</aside></h1>
+
+    <div class="loading" id="loading">Loading data...</div>
+
+    <table id="stats-table" style="display: none; margin-top: 10px">
+        <thead>
+            <tr>
+                <th class="sortable" title="Year" data-column="year">Year<span class="sort-indicator"></span></th>
+                <th class="sortable" title="Gold Medal Percentage" data-column="goldPct">G%<span class="sort-indicator"></span></th>
+                <th class="sortable" title="Gold Medal Cutoff Score" data-column="goldCutoff">G<span class="sort-indicator"></span></th>
+                <th title="Score Distribution">Score Distribution</th>
+            </tr>
+        </thead>
+        <tbody id="stats-body">
+        </tbody>
+    </table>
+</main>
+
+<script>
+        const COLORS = {
+            gold: '#FFCC00',
+            silver: '#CCCCCC',
+            bronze: '#CC9966',
+            hm: '#FF3399',
+            none: '#99CCFF',
+            goldCutoff: '#806100',
+            silverCutoff: '#666666',
+            bronzeCutoff: '#885c2c'
+        };
+
+        function parseMedal(medal) {
+            if (medal === "Special prize") return "None";
+            let c = medal.indexOf(",");
+            if (c >= 0) medal = medal.slice(0, c);
+            return medal || "None";
+        }
+
+        function processYearData(data) {
+            return data.map(d => ({
+                id: d[0],
+                scores: d[1],
+                total: d[1].reduce((a, b) => a + b, 0),
+                medal: parseMedal(d[2])
+            }));
+        }
+
+        function calculateStats(processedData) {
+            const total = processedData.length;
+            const scores = processedData.map(d => d.total);
+
+            // Medal counts
+            const gold = processedData.filter(d => d.medal === 'Gold medal').length;
+            const silver = processedData.filter(d => d.medal === 'Silver medal').length;
+            const bronze = processedData.filter(d => d.medal === 'Bronze medal').length;
+            const goldPct = (gold / total * 100);
+
+            // Medal cutoffs
+            const goldScores = processedData.filter(d => d.medal === 'Gold medal').map(d => d.total);
+            const silverScores = processedData.filter(d => d.medal === 'Silver medal').map(d => d.total);
+            const bronzeScores = processedData.filter(d => d.medal === 'Bronze medal').map(d => d.total);
+
+            const goldCutoff = goldScores.length > 0 ? Math.min(...goldScores) : null;
+            const silverCutoff = silverScores.length > 0 ? Math.min(...silverScores) : null;
+            const bronzeCutoff = bronzeScores.length > 0 ? Math.min(...bronzeScores) : null;
+
+            return { total, gold, goldPct, goldCutoff, silverCutoff, bronzeCutoff };
+        }
+
+        function getMaxScore(year) {
+            if (year >= 1980) return 42;
+            if (year === 1971 || year === 1967 || year === 1964) return 42;
+            if (year === 1962) return 46;
+            if (year === 1960) return 44;
+            return 40;
+        }
+
+        function createHistogramData(processedData, year) {
+            const scoreGroups = d3.group(processedData, d => d.total);
+            const medalCounts = new Map();
+
+            // Initialize all scores to 0 counts
+            for (let score = 0; score <= 42; score++) {
+                medalCounts.set(score, { 'Gold medal': 0, 'Silver medal': 0, 'Bronze medal': 0, 'Honourable mention': 0, 'None': 0 });
+            }
+
+            // Fill in actual counts
+            scoreGroups.forEach((contestants, score) => {
+                const counts = { 'Gold medal': 0, 'Silver medal': 0, 'Bronze medal': 0, 'Honourable mention': 0, 'None': 0 };
+                contestants.forEach(contestant => {
+                    counts[contestant.medal] = (counts[contestant.medal] || 0) + 1;
+                });
+                medalCounts.set(score, counts);
+            });
+
+            return Array.from(medalCounts, ([score, medals]) => ({
+                score,
+                count: Object.values(medals).reduce((a, b) => a + b, 0),
+                medals
+            })).filter(d => d.count > 0);
+        }
+
+        function createStackedChart(histogramData, cellId, stats, year) {
+            const margin = {top: 0, right: 5, bottom: 15, left: 25};
+            const width = 480 - margin.left - margin.right;
+            const height = 25 - margin.top - margin.bottom;
+
+            const svg = d3.select(`#${cellId}`)
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const totalContestants = histogramData.reduce((sum, d) => sum + d.count, 0);
+
+            // Create segments ordered by score (contestants arranged left to right by their scores)
+            const segments = [];
+            let runningTotal = 0;
+
+            const maxScore = getMaxScore(year);
+            const sortedHistogramData = histogramData
+                .filter(d => d.count > 0)
+                .sort((a, b) => a.score - b.score);
+
+            sortedHistogramData.forEach(scoreData => {
+                // Within each score, order by medal hierarchy
+                const medalOrder = ['None', 'Honourable mention', 'Bronze medal', 'Silver medal', 'Gold medal'];
+
+                medalOrder.forEach(medalType => {
+                    const count = scoreData.medals[medalType];
+                    if (count > 0) {
+                        segments.push({
+                            score: scoreData.score,
+                            medalType: medalType,
+                            count: count,
+                            x0: runningTotal,
+                            x1: runningTotal + count
+                        });
+                        runningTotal += count;
+                    }
+                });
+            });
+
+            const x = d3.scaleLinear()
+                .domain([0, totalContestants])
+                .range([0, width]);
+
+            const barHeight = height;
+            const barY = (height - barHeight) / 2;
+
+            g.selectAll(".stacked-segment")
+                .data(segments)
+                .enter().append("rect")
+                .attr("class", d => {
+                    switch(d.medalType) {
+                        case 'Gold medal': return 'stacked-segment medal-gold';
+                        case 'Silver medal': return 'stacked-segment medal-silver';
+                        case 'Bronze medal': return 'stacked-segment medal-bronze';
+                        case 'Honourable mention': return 'stacked-segment medal-hm';
+                        default: return 'stacked-segment medal-none';
+                    }
+                })
+                .attr("x", d => x(d.x0))
+                .attr("y", barY)
+                .attr("width", (d, i) => {
+                    return x(d.x1) - x(d.x0);
+                })
+                .attr("height", barHeight)
+                .append("title")
+                .text(d => `Score ${d.score}, ${d.medalType}: ${d.count}`);
+
+            const standardTicks = [];
+            for (let i = 0; i <= maxScore; i += 7) {
+                standardTicks.push(i);
+            }
+            if (standardTicks[standardTicks.length - 1] !== maxScore) {
+                standardTicks.push(maxScore);
+            }
+
+            const cutoffTicks = [stats.goldCutoff, stats.silverCutoff, stats.bronzeCutoff].filter(c => c !== null);
+            const allTicks = [...new Set([...standardTicks, ...cutoffTicks])].sort((a, b) => a - b);
+
+            // each tick at the START of its score region
+            const tickPositions = allTicks.map(score => {
+                let cumulative = 0;
+                for (let s = 0; s < score; s++) {
+                    const scoreData = histogramData.find(d => d.score === s);
+                    if (scoreData) {
+                        cumulative += scoreData.count;
+                    }
+                }
+                return { score: score, position: cumulative };
+            });
+
+            // Add tick marks with overlap prevention
+            const minLabelSpacing = 13; // pixels
+
+            // First pass: add all tick lines
+            tickPositions.forEach(({ score, position }) => {
+                const xPos = x(position);
+
+                // Determine if this is a medal cutoff tick
+                const isGoldCutoff = score == stats.goldCutoff;
+                const isSilverCutoff = score == stats.silverCutoff;
+                const isBronzeCutoff = score == stats.bronzeCutoff;
+                const isMedalCutoff = isGoldCutoff || isSilverCutoff || isBronzeCutoff;
+
+                // Set color and width based on tick type
+                const tickColor = isGoldCutoff ? COLORS.goldCutoff :
+                                 isSilverCutoff ? COLORS.silverCutoff :
+                                 isBronzeCutoff ? COLORS.bronzeCutoff : "#000";
+                const tickWidth = isMedalCutoff ? 2 : 1;
+
+                // Add tick line
+                g.append("line")
+                    .attr("x1", xPos)
+                    .attr("x2", xPos)
+                    .attr("y1", barY)
+                    .attr("y2", barY + barHeight + 3)
+                    .attr("stroke", tickColor)
+                    .attr("stroke-width", tickWidth);
+            });
+
+            // Second pass: prevent overlaps right to left by pushing ticks left
+            const labelPositions = [];
+            [...tickPositions].reverse().forEach(({ score, position }) => {
+                const xPos = x(position);
+                let adjustedX = xPos;
+
+                for (let existingPos of labelPositions) {
+                    if (Math.abs(adjustedX - existingPos) < minLabelSpacing) {
+                        // Move to the left of the existing label
+                        adjustedX = existingPos - minLabelSpacing;
+                    }
+                }
+
+                adjustedX = Math.max(adjustedX, 0);
+
+                labelPositions.push(adjustedX);
+
+                // Add tick label at adjusted position
+                g.append("text")
+                    .attr("x", adjustedX)
+                    .attr("y", barY + barHeight + 15)
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "10px")
+                    .style("fill", score == stats.goldCutoff ? COLORS.goldCutoff :
+                                   score == stats.silverCutoff ? COLORS.silverCutoff :
+                                   score == stats.bronzeCutoff ? COLORS.bronzeCutoff : "#000000")
+                    .style("font-weight", (score == stats.goldCutoff || score == stats.silverCutoff || score == stats.bronzeCutoff) ? "bold" : "normal")
+                    .text(score);
+            });
+        }
+
+        // Global data storage for sorting
+        let tableData = [];
+        let currentSort = { column: 'year', direction: 'desc' };
+
+        function sortTable(column, direction = null) {
+            if (direction === null) {
+                if (currentSort.column === column) {
+                    direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    direction = column === 'year' ? 'desc' : 'desc';
+                }
+            }
+
+            currentSort = { column, direction };
+
+            tableData.sort((a, b) => {
+                let aValue, bValue;
+
+                if (column === 'year') {
+                    aValue = a.year;
+                    bValue = b.year;
+                } else if (column === 'goldCutoff') {
+                    aValue = a.stats[column] || 999; // Put null values at end
+                    bValue = b.stats[column] || 999;
+                } else {
+                    aValue = a.stats[column];
+                    bValue = b.stats[column];
+                }
+
+                if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    return direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    aValue = String(aValue);
+                    bValue = String(bValue);
+                    if (direction === 'asc') {
+                        return aValue.localeCompare(bValue);
+                    } else {
+                        return bValue.localeCompare(aValue);
+                    }
+                }
+            });
+
+            renderTable();
+            updateSortIndicators();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('stats-body');
+            tbody.innerHTML = '';
+
+            tableData.forEach(({ year, stats, histogramData }) => {
+                const row = document.createElement('tr');
+
+                // Year
+                const yearCell = document.createElement('td');
+                yearCell.textContent = year;
+                yearCell.className = 'stat-cell';
+                row.appendChild(yearCell);
+
+                // Gold percentage
+                const goldPctCell = document.createElement('td');
+                goldPctCell.innerHTML = stats.goldPct.toFixed(1).replace('.', '<span class="small-percent">.') + '%</span>';
+                goldPctCell.className = 'stat-cell bg-gold';
+                row.appendChild(goldPctCell);
+
+                // Gold cutoff
+                const goldCell = document.createElement('td');
+                goldCell.textContent = stats.goldCutoff !== null ? stats.goldCutoff : '-';
+                goldCell.className = 'stat-cell bg-gold';
+                row.appendChild(goldCell);
+
+                // Stacked chart
+                const chartCell = document.createElement('td');
+                const cellId = `chart-${year}`;
+                chartCell.innerHTML = `<div id="${cellId}"></div>`;
+                row.appendChild(chartCell);
+
+                tbody.appendChild(row);
+
+                // Create the chart after the cell is added to DOM
+                createStackedChart(histogramData, cellId, stats, year);
+            });
+        }
+
+        function updateSortIndicators() {
+            const headers = document.querySelectorAll('.sortable');
+            headers.forEach(header => {
+                const indicator = header.querySelector('.sort-indicator');
+                const column = header.getAttribute('data-column');
+
+                if (column === currentSort.column) {
+                    indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+                } else {
+                    indicator.textContent = '';
+                }
+            });
+        }
+
+        function setupSorting() {
+            const sortableHeaders = document.querySelectorAll('.sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-column');
+                    sortTable(column);
+                });
+            });
+        }
+
+        function processAllYears(allYearData) {
+            tableData = allYearData.map(([year, data]) => {
+                const processedData = processYearData(data);
+                const stats = calculateStats(processedData);
+                const histogramData = createHistogramData(processedData, year);
+                return { year, stats, histogramData };
+            });
+
+            sortTable('year', 'desc');
+            renderTable();
+            setupSorting();
+            updateSortIndicators();
+        }
+
+        // Load data from JSON file
+        fetch('imo.json')
+            .then(response => response.json())
+            .then(allYearData => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('stats-table').style.display = 'table';
+                processAllYears(allYearData);
+            })
+            .catch(error => {
+                document.getElementById('loading').innerHTML = 'Error loading data: ' + error;
+            });
+</script>
+</body>
+</html>

@@ -32,8 +32,12 @@
         .bg-hm { background-color: #FF3399; color: white; }
         .bg-hm.disabled { opacity: 0.3; }
         .bg-none { background-color: #99CCFF; }
-        .sortable { cursor: pointer; user-select: none; position: relative; }
+        .sortable { cursor: pointer; user-select: none; }
         .sortable:hover { background-color: #e6e6e6; }
+        .problem-sortable { cursor: pointer; user-select: none; }
+        .problem-sortable:hover { background-color: #e6e6e6; }
+        .problem-table-narrow { width: 60px; text-align: center; }
+        .problem-table-chart { text-align: center; }
         .sort-indicator {
             position: absolute;
             opacity: 0.5;
@@ -59,6 +63,10 @@
     <div class="loading" id="loading">Loading data...</div>
 
     <div id="scatterplot" style="display: none; margin-bottom: 20px; text-align: center"></div>
+
+    <div id="problem-scores-scatterplot" style="display: none; margin-bottom: 20px; text-align: center"></div>
+
+    <div id="bee-swarm-plot" style="display: none; margin-bottom: 20px; text-align: center"></div>
 
     <table id="stats-table" style="display: none; margin-top: 10px">
         <thead>
@@ -89,6 +97,29 @@
         </tbody>
     </table>
 
+    <table id="problem-stats-table" style="display: none; margin-top: 20px">
+        <thead>
+            <tr>
+                <th colspan="4" style="text-align: center; padding: 10px; font-size: 14px; position: static">
+                    Individual Problem Statistics (1982+)
+                </th>
+            </tr>
+            <tr>
+                <th class="problem-sortable problem-table-narrow" data-column="year">Year<span class="sort-indicator"></span></th>
+                <th class="problem-sortable problem-table-narrow" data-column="problem">Prob.<span class="sort-indicator"></span></th>
+                <th class="problem-sortable problem-table-narrow" data-column="averageScore">Avg Score<span class="sort-indicator"></span></th>
+                <th class="problem-table-chart">
+                    Score Distribution<span class="sort-indicator"></span>
+                    <label class="chart-toggle">
+                        <input type="checkbox" id="problemStackedToggle"> Stacked bars
+                    </label>
+                </th>
+            </tr>
+        </thead>
+        <tbody id="problem-stats-body">
+        </tbody>
+    </table>
+
     <script>
         // Color scheme
         const COLORS = {
@@ -111,6 +142,9 @@
             .then(allYearData => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('scatterplot').style.display = 'block';
+                document.getElementById('problem-scores-scatterplot').style.display = 'block';
+                document.getElementById('bee-swarm-plot').style.display = 'block';
+                document.getElementById('problem-stats-table').style.display = 'table';
                 document.getElementById('stats-table').style.display = 'table';
                 processAllYears(allYearData);
             })
@@ -521,6 +555,11 @@
         let currentSort = { column: 'year', direction: 'desc' };
         let isStackedView = false;
 
+        // Problem table state
+        let problemStats = [];
+        let currentProblemSort = { column: 'year', direction: 'desc' };
+        let isProblemStackedView = false;
+
         // Create scatterplot of medal cutoffs
         function createScatterplot(tableData) {
             const margin = {top: 20, right: 20, bottom: 40, left: 60};
@@ -751,6 +790,682 @@
                 .text(d => `${d.year} ${d.medalType}: score ${d.absoluteScore}, ${(d.percentile*100).toFixed(1)}% below`);
         }
 
+        // Create scatterplot of problem scores over time
+        function createProblemScoresScatterplot(allYearData) {
+            const margin = {top: 40, right: 20, bottom: 60, left: 60};
+            const width = 800 - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#problem-scores-scatterplot")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Process data for years 1982+ with problem breakdowns
+            const problemData = [];
+            allYearData.forEach(([year, data]) => {
+                if (year >= 1982) {
+                    const processedData = processYearData(data);
+
+                    // Filter contestants with complete problem scores
+                    const completeScores = processedData.filter(d => {
+                        if (d.scores.length === 1) {
+                            return false; // Only total score available
+                        } else if (d.scores.length === 6) {
+                            return true; // Complete problem breakdown
+                        } else {
+                            console.error(`Unexpected scores length ${d.scores.length} for year ${year}`);
+                            return false;
+                        }
+                    });
+
+                    if (completeScores.length > 0) {
+                        // Calculate average score for each problem
+                        for (let problem = 1; problem <= 6; problem++) {
+                            const problemScores = completeScores.map(d => d.scores[problem - 1]);
+                            const averageScore = problemScores.reduce((sum, score) => sum + score, 0) / problemScores.length;
+
+                            problemData.push({
+                                year: year,
+                                problem: problem,
+                                averageScore: averageScore,
+                                yearProblem: year + (problem - 1) * 0.15 // Slight offset for visual clarity
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain(d3.extent(problemData, d => d.yearProblem))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, 7])
+                .range([height, 0]);
+
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale)
+                    .tickFormat(d => Math.floor(d)) // Show years only
+                    .ticks(10))
+                .append("text")
+                .attr("x", width / 2)
+                .attr("y", 45)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Year");
+
+            g.append("g")
+                .call(d3.axisLeft(yScale).tickValues([0, 1, 2, 3, 4, 5, 6, 7]))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -40)
+                .attr("x", -height / 2)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Average Score");
+
+            // Add grid lines
+            const yTicks = [0, 1, 2, 3, 4, 5, 6, 7];
+            yTicks.forEach(tick => {
+                g.append("line")
+                    .attr("x1", 0)
+                    .attr("x2", width)
+                    .attr("y1", yScale(tick))
+                    .attr("y2", yScale(tick))
+                    .attr("stroke", COLORS.gridLine)
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "3,3")
+                    .attr("stroke-opacity", 0.5);
+            });
+
+            // Add title
+            g.append("text")
+                .attr("x", width / 2)
+                .attr("y", -15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("IMO Problem Average Scores (1982+)");
+
+            // Create stacked bars based on medal cutoff levels
+            const years = [...new Set(problemData.map(d => d.year))].sort((a, b) => a - b);
+            const barWidth = width / years.length * 0.9;
+
+            years.forEach(year => {
+                const yearProblemData = problemData.filter(d => d.year === year);
+                // highest to lowest average score:
+                const averageScores = yearProblemData.map(d => d.averageScore);
+                averageScores.sort((a, b) => b - a);
+                averageScores.unshift(0);
+
+                const cutoffToAverageScore = d3.scaleLinear([0, 7, 14, 21, 28, 35, 42], averageScores);
+                //function cutoffToAverageScore(cutoff) {
+                //    let problems = Math.ceil(cutoff / 7);
+                //    return averageScores[problems];
+                //}
+
+                const x = xScale(year);
+                const barX = x;
+
+                if (yearProblemData.length > 0) {
+                    // Get the stats for medal cutoffs
+                    const yearData = allYearData.find(([y, data]) => y === year);
+                    if (yearData) {
+                        const processedData = processYearData(yearData[1]);
+                        const stats = calculateStats(processedData);
+
+                        // Convert cutoffs to average score scale (0-7)
+                        const maxPossibleScore = 42; // IMO problems are worth 7 points each, 6 problems
+                        const goldLevel = cutoffToAverageScore(stats.goldCutoff);
+                        const silverLevel = cutoffToAverageScore(stats.silverCutoff);
+                        const bronzeLevel = cutoffToAverageScore(stats.bronzeCutoff);
+
+                        // Create 4 stacked bars - gold on bottom, none on top
+
+                        // Gold bar (bottom) - from gold cutoff level down to 0
+                        const goldHeight = yScale(0) - yScale(goldLevel);
+                        if (goldHeight > 0) {
+                            g.append("rect")
+                                .attr("x", barX)
+                                .attr("y", yScale(goldLevel))
+                                .attr("width", barWidth)
+                                .attr("height", goldHeight)
+                                .attr("fill", COLORS.gold)
+                                .attr("opacity", 0.3);
+                        }
+
+                        // Silver bar - from silver level down to gold level
+                        const silverHeight = yScale(goldLevel) - yScale(silverLevel);
+                        if (silverHeight > 0) {
+                            g.append("rect")
+                                .attr("x", barX)
+                                .attr("y", yScale(silverLevel))
+                                .attr("width", barWidth)
+                                .attr("height", silverHeight)
+                                .attr("fill", COLORS.silver)
+                                .attr("opacity", 0.3);
+                        }
+
+                        // Bronze bar - from bronze level down to silver level
+                        const bronzeHeight = yScale(silverLevel) - yScale(bronzeLevel);
+                        if (bronzeHeight > 0) {
+                            g.append("rect")
+                                .attr("x", barX)
+                                .attr("y", yScale(bronzeLevel))
+                                .attr("width", barWidth)
+                                .attr("height", bronzeHeight)
+                                .attr("fill", COLORS.bronze)
+                                .attr("opacity", 0.3);
+                        }
+
+                        // None bar (top) - from 7 down to bronze level
+                        const noneHeight = yScale(bronzeLevel) - yScale(7);
+                        if (noneHeight > 0) {
+                            g.append("rect")
+                                .attr("x", barX)
+                                .attr("y", yScale(7))
+                                .attr("width", barWidth)
+                                .attr("height", noneHeight)
+                                .attr("fill", COLORS.none)
+                                .attr("opacity", 0.3);
+                        }
+                    }
+                }
+            });
+
+            // Color scale for problems
+            // questionably subsetting d3's colors to get pairs that are still distinct
+            const problemColors = [
+                d3.schemeCategory10[0],
+                d3.schemeCategory10[1],
+                d3.schemeCategory10[3],
+                d3.schemeCategory10[2],
+                d3.schemeCategory10[8],
+                d3.schemeCategory10[4],
+            ];
+
+            // Add points for each problem
+            g.selectAll(".problem-point")
+                .data(problemData)
+                .enter().append("circle")
+                .attr("class", d => `problem-point problem-${d.problem}`)
+                .attr("cx", d => xScale(d.yearProblem))
+                .attr("cy", d => yScale(d.averageScore))
+                .attr("r", 2.5)
+                .attr("fill", d => problemColors[d.problem - 1])
+                .attr("stroke", "#000")
+                .attr("stroke-width", 0.5)
+                .append("title")
+                .text(d => `${d.year} Problem ${d.problem}: ${d.averageScore.toFixed(2)} avg`);
+
+            // Add legend
+            const legend = g.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(20, 20)`);
+
+            for (let i = 0; i < 6; i++) {
+                const legendRow = legend.append("g")
+                    .attr("transform", `translate(${i * 90}, 0)`);
+
+                legendRow.append("circle")
+                    .attr("r", 4)
+                    .attr("fill", problemColors[i])
+                    .attr("stroke", "#000")
+                    .attr("stroke-width", 0.5);
+
+                legendRow.append("text")
+                    .attr("x", 10)
+                    .attr("y", 0)
+                    .attr("dy", "0.35em")
+                    .style("font-size", "12px")
+                    .text(`Problem ${i+1}`);
+            }
+        }
+
+        // Create bee swarm plot of problem difficulties
+        function createBeeSwarmPlot(allYearData) {
+            const margin = {top: 40, right: 20, bottom: 40, left: 60};
+            const width = 800 - margin.left - margin.right;
+            const height = 270 - margin.top - margin.bottom; // 67.5% of original 400px
+
+            const svg = d3.select("#bee-swarm-plot")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Process data for years 1982+ with problem breakdowns (same as scatterplot)
+            const problemData = [];
+            allYearData.forEach(([year, data]) => {
+                if (year >= 1982) {
+                    const processedData = processYearData(data);
+                    const completeScores = processedData.filter(d => {
+                        if (d.scores.length === 1) {
+                            return false; // Only total score available
+                        } else if (d.scores.length === 6) {
+                            return true; // Complete problem breakdown
+                        } else {
+                            console.error(`Unexpected scores length ${d.scores.length} for year ${year}`);
+                            return false;
+                        }
+                    });
+
+                    if (completeScores.length > 0) {
+                        // Calculate average score for each problem
+                        for (let problem = 1; problem <= 6; problem++) {
+                            const problemScores = completeScores.map(d => d.scores[problem - 1]);
+                            const averageScore = problemScores.reduce((sum, score) => sum + score, 0) / problemScores.length;
+
+                            problemData.push({
+                                year: year,
+                                problem: problem,
+                                averageScore: averageScore,
+                                id: `${year}-P${problem}`
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain([0, 7])
+                .range([0, width]);
+
+            // Create bee swarm positions
+            const radius = 4;
+            const positions = calculateBeeSwarmPositions(problemData, xScale, radius);
+
+            // Create y-scale for upward-only stacking
+            const maxY = d3.max(positions, d => d.y);
+            const compactHeight = Math.min(height * 0.7, maxY * 1.2); // Use at most 70% of height
+
+            const yScale = d3.scaleLinear()
+                .domain([0, maxY])
+                .range([height - 5, height - compactHeight - 5]);
+
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale))
+                .append("text")
+                .attr("x", width / 2)
+                .attr("y", 35)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Average Score");
+
+            // No y-axis - it's meaningless for a bee swarm plot
+
+            // Add title
+            g.append("text")
+                .attr("x", width / 2)
+                .attr("y", -15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("IMO Problem Difficulty Distribution (1982+)");
+
+            // Color scale for problems (same as scatterplot)
+            const problemColors = [
+                d3.schemeCategory10[0],
+                d3.schemeCategory10[1],
+                d3.schemeCategory10[3],
+                d3.schemeCategory10[2],
+                d3.schemeCategory10[8],
+                d3.schemeCategory10[4],
+            ];
+
+            // Add points
+            g.selectAll(".bee-point")
+                .data(positions)
+                .enter().append("circle")
+                .attr("class", "bee-point")
+                .attr("cx", d => d.x)
+                .attr("cy", d => yScale(d.y))
+                .attr("r", radius)
+                .attr("fill", d => problemColors[d.problem - 1])
+                .attr("stroke", d => (d.year === 2025 && (d.problem === 3 || d.problem === 6)) ? "#000" : "#000")
+                .attr("stroke-width", d => (d.year === 2025 && (d.problem === 3 || d.problem === 6)) ? 2 : 0.5)
+                .append("title")
+                .text(d => `${d.year} Problem ${d.problem}: ${d.averageScore.toFixed(2)} avg`);
+
+            // Add annotations for 2025 Problem 3 and Problem 6
+            const annotatePoints = positions.filter(d => d.year === 2025 && (d.problem === 3 || d.problem === 6));
+
+            annotatePoints.forEach(d => {
+                const pointX = d.x;
+                const pointY = yScale(d.y);
+
+                // Position label above the point, but below the legend
+                const labelX = pointX;
+                const labelY = 50; // Lower position to avoid legend conflict
+
+                // Add annotation line (straight up to bottom of text box)
+                g.append("line")
+                    .attr("x1", pointX)
+                    .attr("y1", pointY - radius)
+                    .attr("x2", labelX)
+                    .attr("y2", labelY + 4) // Connect to bottom edge of text box
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "2,2");
+
+                // Add label background
+                const labelText = `2025 P${d.problem}`;
+                const labelWidth = labelText.length * 7; // Approximate width
+
+                g.append("rect")
+                    .attr("x", labelX - labelWidth/2 - 5)
+                    .attr("y", labelY - 12)
+                    .attr("width", labelWidth + 10)
+                    .attr("height", 16)
+                    .attr("fill", "white")
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 1)
+                    .attr("rx", 3);
+
+                // Add label text
+                g.append("text")
+                    .attr("x", labelX)
+                    .attr("y", labelY)
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "12px")
+                    .attr("font-weight", "bold")
+                    .attr("fill", "#333")
+                    .text(labelText);
+            });
+
+            // Add legend (same as scatterplot)
+            const legend = g.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(20, 20)`);
+
+            for (let i = 0; i < 6; i++) {
+                const legendRow = legend.append("g")
+                    .attr("transform", `translate(${i * 90}, 0)`);
+
+                legendRow.append("circle")
+                    .attr("r", 4)
+                    .attr("fill", problemColors[i])
+                    .attr("stroke", "#000")
+                    .attr("stroke-width", 0.5);
+
+                legendRow.append("text")
+                    .attr("x", 10)
+                    .attr("y", 0)
+                    .attr("dy", "0.35em")
+                    .style("font-size", "12px")
+                    .text(`Problem ${i+1}`);
+            }
+        }
+
+        // Calculate bee swarm positions to avoid overlap - only stacking upward
+        function calculateBeeSwarmPositions(data, xScale, radius) {
+            const positions = [];
+            const spacing = radius * 2.2; // Spacing between points
+
+            const sortedData = [...data].sort((a, b) => {
+                if ((a.problem - 1) % 3 !== (b.problem - 1) % 3) {
+                    return (b.problem - 1) % 3 - (a.problem - 1) % 3;
+                }
+                return a.averageScore - b.averageScore;
+            });
+
+            sortedData.forEach(d => {
+                const x = xScale(d.averageScore);
+                let y = 0;
+
+                // Try to place at y=0 first (on the x-axis)
+                if (!hasOverlap(x, y, positions, radius)) {
+                    positions.push({...d, x: x, y: y});
+                    return;
+                }
+
+                // If overlap, try stacking upward only
+                for (let level = 1; level <= 40; level++) {
+                    const testY = level * 0.5 * spacing;
+
+                    if (!hasOverlap(x, testY, positions, radius)) {
+                        positions.push({...d, x: x, y: testY});
+                        return;
+                    }
+                }
+
+                // Fallback: place at a high level
+                positions.push({...d, x: x, y: 20 * spacing});
+            });
+
+            return positions;
+        }
+
+        // Check if a position overlaps with existing points
+        function hasOverlap(x, y, positions, radius) {
+            const minDistance = radius * 2.2;
+            return positions.some(pos => {
+                const dx = x - pos.x;
+                const dy = y - pos.y;
+                return Math.sqrt(dx * dx + dy * dy) < minDistance;
+            });
+        }
+
+        // Process problem statistics for table
+        function processProblemStatistics(allYearData) {
+            const problemStats = [];
+
+            allYearData.forEach(([year, data]) => {
+                if (year >= 1982) {
+                    const processedData = processYearData(data);
+                    const completeScores = processedData.filter(d => d.scores.length === 6);
+
+                    if (completeScores.length > 0) {
+                        for (let problem = 1; problem <= 6; problem++) {
+                            const problemScores = completeScores.map(d => d.scores[problem - 1]);
+                            const averageScore = problemScores.reduce((sum, score) => sum + score, 0) / problemScores.length;
+
+                            // Calculate distribution (count of each score 0-7)
+                            const distribution = [0, 0, 0, 0, 0, 0, 0, 0]; // indices 0-7
+                            problemScores.forEach(score => {
+                                if (score >= 0 && score <= 7) {
+                                    distribution[score]++;
+                                }
+                            });
+
+                            problemStats.push({
+                                year: year,
+                                problem: problem,
+                                averageScore: averageScore,
+                                distribution: distribution,
+                                total: problemScores.length
+                            });
+                        }
+                    }
+                }
+            });
+
+            return problemStats;
+        }
+
+        // Create bar chart for problem score distribution
+        function createProblemChart(distribution, total, isStacked = false) {
+            const width = isStacked ? 300 : 140;
+            const height = isStacked ? 20 : 35;
+            const chartHeight = isStacked ? 20 : 20;
+            const maxCount = Math.max(...distribution);
+
+            const svg = d3.create("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .style("display", "block");
+
+            if (isStacked) {
+                // Stacked horizontal bar
+                let x = 0;
+                distribution.forEach((count, score) => {
+                    if (count > 0) {
+                        const segmentWidth = (count / total) * width;
+                        const color = d3.interpolateViridis(score / 7);
+
+                        svg.append("rect")
+                            .attr("x", x)
+                            .attr("y", 0)
+                            .attr("width", segmentWidth)
+                            .attr("height", chartHeight)
+                            .attr("fill", color)
+                            .append("title")
+                            .text(`Score ${score}: ${count} contestants (${(count/total*100).toFixed(1)}%)`);
+
+                        x += segmentWidth;
+                    }
+                });
+            } else {
+                // Regular histogram with gaps and labels
+                const barWidth = (width - 14) / 8; // Account for gaps
+                const gap = 2;
+
+                distribution.forEach((count, score) => {
+                    const barHeight = maxCount > 0 ? (count / maxCount) * chartHeight : 0;
+                    const color = d3.interpolateViridis(score / 7);
+                    const x = score * (barWidth + gap);
+
+                    svg.append("rect")
+                        .attr("x", x)
+                        .attr("y", chartHeight - barHeight)
+                        .attr("width", barWidth)
+                        .attr("height", barHeight)
+                        .attr("fill", color)
+                        .append("title")
+                        .text(`Score ${score}: ${count} contestants`);
+
+                    // Add X-axis labels
+                    svg.append("text")
+                        .attr("x", x + barWidth / 2)
+                        .attr("y", chartHeight + 12)
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "8px")
+                        .attr("fill", "#666")
+                        .text(score);
+                });
+            }
+
+            return svg.node();
+        }
+
+        // Sort problem statistics table
+        function sortProblemTable(column, direction = null) {
+            if (direction === null) {
+                // Toggle direction if same column
+                if (currentProblemSort.column === column) {
+                    direction = currentProblemSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    direction = column === 'averageScore' ? 'desc' : 'asc';
+                }
+            }
+
+            currentProblemSort = { column, direction };
+
+            problemStats.sort((a, b) => {
+                let aValue = a[column];
+                let bValue = b[column];
+
+                // Handle numeric vs string comparison
+                if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    return direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    aValue = String(aValue);
+                    bValue = String(bValue);
+                    if (direction === 'asc') {
+                        return aValue.localeCompare(bValue);
+                    } else {
+                        return bValue.localeCompare(aValue);
+                    }
+                }
+            });
+
+            renderProblemTable(problemStats, isProblemStackedView);
+            updateProblemSortIndicators();
+        }
+
+        // Update sort indicators for problem table
+        function updateProblemSortIndicators() {
+            const table = document.getElementById('problem-stats-table');
+            const headers = table.querySelectorAll('.problem-sortable');
+
+            headers.forEach(header => {
+                const indicator = header.querySelector('.sort-indicator');
+                const column = header.getAttribute('data-column');
+
+                if (column === currentProblemSort.column) {
+                    indicator.textContent = currentProblemSort.direction === 'asc' ? '▲' : '▼';
+                } else {
+                    indicator.textContent = '';
+                }
+            });
+        }
+
+        // Setup problem table sorting
+        function setupProblemSorting() {
+            const table = document.getElementById('problem-stats-table');
+            const sortableHeaders = table.querySelectorAll('.problem-sortable');
+
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-column');
+                    sortProblemTable(column);
+                });
+            });
+        }
+
+        // Render problem statistics table
+        function renderProblemTable(stats, isStacked = false) {
+            const tbody = document.getElementById('problem-stats-body');
+            tbody.innerHTML = '';
+
+            stats.forEach(stat => {
+                const row = document.createElement('tr');
+
+                const yearCell = document.createElement('td');
+                yearCell.textContent = stat.year;
+                yearCell.className = 'problem-table-narrow';
+                row.appendChild(yearCell);
+
+                const problemCell = document.createElement('td');
+                problemCell.textContent = stat.problem;
+                problemCell.className = 'problem-table-narrow';
+                switch ((stat.problem - 1) % 3) {
+                    case 0:
+                        problemCell.style.backgroundColor = d3.schemePaired[0];
+                        break;
+                    case 1:
+                        problemCell.style.backgroundColor = d3.schemePaired[10];
+                        break;
+                    case 2:
+                        problemCell.style.backgroundColor = d3.schemePaired[4];
+                        break;
+                }
+                row.appendChild(problemCell);
+
+                const avgCell = document.createElement('td');
+                avgCell.textContent = stat.averageScore.toFixed(2);
+                avgCell.className = 'problem-table-narrow';
+                row.appendChild(avgCell);
+
+                const chartCell = document.createElement('td');
+                chartCell.className = 'problem-table-chart';
+                chartCell.appendChild(createProblemChart(stat.distribution, stat.total, isStacked));
+                row.appendChild(chartCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
         // Process all years and create table
         function processAllYears(allYearData) {
             // Store data for sorting
@@ -761,16 +1476,30 @@
                 return { year, stats, histogramData };
             });
 
-            // Create scatterplot
+            // Create scatterplots
             createScatterplot(tableData);
+            createProblemScoresScatterplot(allYearData);
+            createBeeSwarmPlot(allYearData);
 
-            // Read initial checkbox state
+            // Process and render problem statistics table
+            problemStats = processProblemStatistics(allYearData);
+            sortProblemTable('year', 'desc');
+
+            // Read initial checkbox states
             isStackedView = document.getElementById('stackedToggle').checked;
+            isProblemStackedView = document.getElementById('problemStackedToggle').checked;
+
+            // Setup problem table toggle
+            document.getElementById('problemStackedToggle').addEventListener('change', function() {
+                isProblemStackedView = this.checked;
+                renderProblemTable(problemStats, isProblemStackedView);
+            });
 
             sortTable('year', 'desc');
             renderTable();
             setupSorting();
             updateSortIndicators();
+            setupProblemSorting();
         }
 
         function toFixed1Html(f) {
@@ -792,9 +1521,9 @@
                 row.innerHTML = `
                     <td>${year}</td>
                     <td class="stat-cell">${stats.total}</td>
-                    <td class="stat-cell bg-gold">${toPercentHtml(stats.goldPct)}</td>
-                    <td class="stat-cell bg-silver">${toPercentHtml(stats.silverPct)}</td>
-                    <td class="stat-cell bg-bronze">${toPercentHtml(stats.bronzePct)}</td>
+                    <td class="stat-cell bg-gold" title="${stats.gold} gold medals">${toPercentHtml(stats.goldPct)}</td>
+                    <td class="stat-cell bg-silver" title="${stats.silver} silver medals">${toPercentHtml(stats.silverPct)}</td>
+                    <td class="stat-cell bg-bronze" title="${stats.bronze} bronze medals">${toPercentHtml(stats.bronzePct)}</td>
                     <td class="stat-cell bg-hm${year < 1988 ? ' disabled' : ''}">${year >= 1988 ? toPercentHtml(stats.hmPct) : ''}</td>
                     <td class="stat-cell bg-none">${toPercentHtml(stats.nonePct)}</td>
                     <td class="stat-cell bg-gold">${stats.goldCutoff || '–'}</td>
