@@ -59,6 +59,10 @@
 </head>
 <body>
     <div>
+        Type one digraph here to copy: <input id="digraph-copier" size="5">
+        <span id="copy-status"></span>
+    </div>
+    <div>
         You can type digraphs in this area (Ctrl-K or <input id="digraph-trigger" placeholder="custom?" size="8"> + two characters).
         <span id="status">(Normal mode)</span>
     </div>
@@ -143,6 +147,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const tableContainer = generateDigraphTable(digraphMap, digraphMap2);
     document.body.appendChild(tableContainer);
+
+    const copier = document.getElementById('digraph-copier');
+    copier.addEventListener('input', function(e) {
+        if (copier.value.length >= 2) {
+            let buffer = copier.value.slice(copier.value.length - 2);
+            let unicodeInfo = digraphMap.get(buffer);
+            if (!unicodeInfo) unicodeInfo = digraphMap2.get(buffer);
+            if (!unicodeInfo) unicodeInfo = digraphMap.get(buffer[1] + buffer[0]);
+            if (!unicodeInfo) unicodeInfo = digraphMap2.get(buffer[1] + buffer[0]);
+            if (unicodeInfo?.char) {
+                let value = copier.value.slice(0, copier.value.length - 2) + unicodeInfo.char;
+                copier.value = value;
+                navigator.clipboard.writeText(value).then(() => {
+                    document.getElementById('copy-status').textContent = `copied ${buffer} \u2192 ${value}`;
+                }).catch(err => console.error('Failed to copy: ', err));
+            }
+        }
+    });
 
     const textarea = document.getElementById('digraphTextarea');
     const status = document.getElementById('status');
