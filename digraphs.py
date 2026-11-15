@@ -72,11 +72,17 @@ control_names = {
 def get_name(x):
     return control_names.get(ord(x)) or unicodedata.name(x)
 
+d: dict[str, str] = dict()
 with open('digraphs.tsv') as infile:
     with open('digraphs.json', 'w') as outfile:
         parts = [line.strip().split("\t") for line in infile]
         json.dump([[digraph, int(s, 16), get_name(chr(int(s, 16)))] for digraph, s in parts], outfile)
+        d |= {digraph: chr(int(s, 16)) for digraph, s in parts}
 with open('digraphs-custom.tsv') as infile:
     with open('digraphs-custom.json', 'w') as outfile:
         parts = [line.strip().split("\t") for line in infile]
         json.dump([[digraph, int(s), get_name(chr(int(s)))] for digraph, s in parts], outfile)
+        d |= {digraph: chr(int(s)) for digraph, s in parts}
+
+with open('digraphs-simple.json', 'w') as outfile:
+    json.dump(d, outfile)

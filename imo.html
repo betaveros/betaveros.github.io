@@ -68,6 +68,8 @@
 
     <div id="bee-swarm-plot" style="display: none; margin-bottom: 20px; text-align: center"></div>
 
+    <div id="medal-cutoff-bee-swarm" style="display: none; margin-bottom: 20px; text-align: center"></div>
+
     <table id="stats-table" style="display: none; margin-top: 10px">
         <thead>
             <tr>
@@ -144,6 +146,7 @@
                 document.getElementById('scatterplot').style.display = 'block';
                 document.getElementById('problem-scores-scatterplot').style.display = 'block';
                 document.getElementById('bee-swarm-plot').style.display = 'block';
+                document.getElementById('medal-cutoff-bee-swarm').style.display = 'block';
                 document.getElementById('problem-stats-table').style.display = 'table';
                 document.getElementById('stats-table').style.display = 'table';
                 processAllYears(allYearData);
@@ -1231,7 +1234,7 @@
 
                 // If overlap, try stacking upward only
                 for (let level = 1; level <= 40; level++) {
-                    const testY = level * 0.5 * spacing;
+                    const testY = level * spacing;
 
                     if (!hasOverlap(x, testY, positions, radius)) {
                         positions.push({...d, x: x, y: testY});
@@ -1254,6 +1257,194 @@
                 const dy = y - pos.y;
                 return Math.sqrt(dx * dx + dy * dy) < minDistance;
             });
+        }
+
+        // Create bee swarm plot for medal cutoff percentiles
+        function createMedalCutoffBeeSwarm(tableData) {
+            const margin = {top: 40, right: 20, bottom: 40, left: 60};
+            const width = 800 - margin.left - margin.right;
+            const height = 270 - margin.top - margin.bottom;
+
+            const svg = d3.select("#medal-cutoff-bee-swarm")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Extract percentile data for years 1981+
+            const percentileData = [];
+            tableData.forEach(({ year, stats, histogramData }) => {
+                if (year >= 1981) {
+                    const totalContestants = histogramData.reduce((sum, d) => sum + d.count, 0);
+
+                    // Calculate percentile for each cutoff (fraction scoring strictly below cutoff)
+                    if (stats.goldCutoff !== null) {
+                        let belowGold = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.goldCutoff) {
+                                belowGold += d.count;
+                            }
+                        });
+                        percentileData.push({
+                            year: year,
+                            percentile: belowGold / totalContestants,
+                            medalType: 'Gold',
+                            id: `${year}-Gold`
+                        });
+                    }
+
+                    if (stats.silverCutoff !== null) {
+                        let belowSilver = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.silverCutoff) {
+                                belowSilver += d.count;
+                            }
+                        });
+                        percentileData.push({
+                            year: year,
+                            percentile: belowSilver / totalContestants,
+                            medalType: 'Silver',
+                            id: `${year}-Silver`
+                        });
+                    }
+
+                    if (stats.bronzeCutoff !== null) {
+                        let belowBronze = 0;
+                        histogramData.forEach(d => {
+                            if (d.score < stats.bronzeCutoff) {
+                                belowBronze += d.count;
+                            }
+                        });
+                        percentileData.push({
+                            year: year,
+                            percentile: belowBronze / totalContestants,
+                            medalType: 'Bronze',
+                            id: `${year}-Bronze`
+                        });
+                    }
+                }
+            });
+
+            // Set up scales
+            const xScale = d3.scaleLinear()
+                .domain(d3.extent(percentileData, d => d.percentile))
+                .range([0, width])
+                .nice();
+
+            // Calculate bee swarm positions
+            const radius = 4;
+            const positions = calculateMedalBeeSwarmPositions(percentileData, xScale, radius);
+
+            // Create y-scale for upward-only stacking
+            const maxY = d3.max(positions, d => d.y);
+            const compactHeight = Math.min(height * 0.7, maxY * 1.2);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, maxY])
+                .range([height - 5, height - compactHeight - 5]);
+
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).tickFormat(d3.format(".0%")))
+                .append("text")
+                .attr("x", width / 2)
+                .attr("y", 35)
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .text("Percentile");
+
+            // Add title
+            g.append("text")
+                .attr("x", width / 2)
+                .attr("y", -15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("Medal Cutoff Percentile Distribution (1981+)");
+
+            // Add points
+            g.selectAll(".medal-bee-point")
+                .data(positions)
+                .enter().append("circle")
+                .attr("class", "medal-bee-point")
+                .attr("cx", d => d.x)
+                .attr("cy", d => yScale(d.y))
+                .attr("r", radius)
+                .attr("fill", d => {
+                    switch(d.medalType) {
+                        case 'Gold': return COLORS.gold;
+                        case 'Silver': return COLORS.silver;
+                        case 'Bronze': return COLORS.bronze;
+                        default: return '#000';
+                    }
+                })
+                .attr("stroke", "#000")
+                .attr("stroke-width", 0.5)
+                .append("title")
+                .text(d => `${d.year} ${d.medalType}: ${(d.percentile*100).toFixed(1)}% below cutoff`);
+
+            // Add legend
+            const legend = g.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(20, 20)`);
+
+            const medalTypes = ['Bronze', 'Silver', 'Gold'];
+            const medalColors = [COLORS.bronze, COLORS.silver, COLORS.gold];
+
+            medalTypes.forEach((medalType, i) => {
+                const legendRow = legend.append("g")
+                    .attr("transform", `translate(${i * 90}, 0)`);
+
+                legendRow.append("circle")
+                    .attr("r", 4)
+                    .attr("fill", medalColors[i])
+                    .attr("stroke", "#000")
+                    .attr("stroke-width", 0.5);
+
+                legendRow.append("text")
+                    .attr("x", 10)
+                    .attr("y", 0)
+                    .attr("dy", "0.35em")
+                    .style("font-size", "12px")
+                    .text(`${medalType} Medal`);
+            });
+        }
+
+        // Calculate bee swarm positions for medal cutoff percentiles
+        function calculateMedalBeeSwarmPositions(data, xScale, radius) {
+            const positions = [];
+            const spacing = radius * 2.2;
+
+            // Sort by percentile to place similar values together
+            const sortedData = [...data].sort((a, b) => a.percentile - b.percentile);
+
+            sortedData.forEach(d => {
+                const x = xScale(d.percentile);
+                let y = 0;
+
+                // Try to place at y=0 first (on the x-axis)
+                if (!hasOverlap(x, y, positions, radius)) {
+                    positions.push({...d, x: x, y: y});
+                    return;
+                }
+
+                // If overlap, try stacking upward only
+                for (let level = 1; level <= 40; level++) {
+                    const testY = level * 0.5 * spacing;
+
+                    if (!hasOverlap(x, testY, positions, radius)) {
+                        positions.push({...d, x: x, y: testY});
+                        return;
+                    }
+                }
+
+                // Fallback: place at a high level
+                positions.push({...d, x: x, y: 20 * spacing});
+            });
+
+            return positions;
         }
 
         // Process problem statistics for table
@@ -1480,6 +1671,7 @@
             createScatterplot(tableData);
             createProblemScoresScatterplot(allYearData);
             createBeeSwarmPlot(allYearData);
+            createMedalCutoffBeeSwarm(tableData);
 
             // Process and render problem statistics table
             problemStats = processProblemStatistics(allYearData);
