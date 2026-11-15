@@ -3,23 +3,28 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Capture</title>
-		<style>#out { white-space: pre;}</style>
-	<script type="text/javascript">
-	function init() {
-		document.onkeydown = handleArrowKeys;
-	}
-	function handleArrowKeys(evt) {
-		evt = evt || ((window.event) ? event : null);
-		if (evt) {
-			document.getElementById("out").textContent += evt.keyCode + "\n";
-			evt.preventDefault();
-		}
-	}
-	</script>
+		<style>body { font-family: sans-serif; } .false { opacity: 0.2; }</style>
 	</head>
-	<body onLoad="init();">
-		Capturing every onkeydown event and doing .preventDefault():
-		<div id="out"></div>
+	<body>
+		Capturing every keydown event and doing .preventDefault()
+		(you can look at a <a href="capture-old.html">many years old version</a> of this if you want for some reason)
+		<table id="out"><th>key</th><th>code</th><th>altKey</th><th>ctrlKey</th><th>metaKey</th><th>shiftKey</th><th>repeat</th><th>isComposing</th><th>location</th></table>
 	</body>
-
+	<script type="text/javascript">
+		window.addEventListener("DOMContentLoaded", function () {
+			const out = document.getElementById("out");
+			const keys = Array.from(out.querySelectorAll("th")).map(h => h.textContent)
+			document.addEventListener("keydown", function (event) {
+				event.preventDefault();
+				let row = document.createElement("tr");
+				for (let key of keys) {
+					let cell = document.createElement("td");
+					cell.textContent = event[key];
+					if (event[key] === false) cell.className = "false";
+					row.appendChild(cell);
+				}
+				out.appendChild(row);
+			});
+		});
+	</script>
 </html>
