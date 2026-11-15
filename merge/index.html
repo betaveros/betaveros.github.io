@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge PDFs</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font-family: sans-serif; background: Canvas; color: CanvasText; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 16px 0 4px; }
+  h1 { margin: 0 0 4px; font-size: 1.4em; font-weight: normal; }
+  header p { margin: 0; }
+  #empty { padding: 32px 0; }
+  #empty p { margin: 8px 0 0; }
+  body.has-pages #empty { display: none; }
+  body:not(.has-pages) #chips, body:not(.has-pages) #actions, body:not(.has-pages) #grid { display: none; }
+
+  #bar { position: sticky; top: 0; z-index: 20; background: Canvas; padding: 10px 0; }
+  #chips { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 8px; }
+  .chip { cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; padding: 2px 0; }
+  .chip.on .name { text-decoration: underline; text-underline-offset: 3px; }
+  .chip .name { display: inline-block; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+  .chip .n { opacity: .6; }
+  #actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #actions .spacer { flex: 1 1 0; }
+  #selActions { display: contents; }
+  #selActions[hidden] { display: none; }
+  #status { min-height: 1.3em; margin-top: 6px; font-size: .9em; opacity: .75; }
+
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 12px; padding-top: 4px; min-height: 200px; }
+  @media (max-width: 480px) { #grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } }
+  .tile { position: relative; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; touch-action: manipulation;
+          aspect-ratio: 3 / 4; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; box-sizing: border-box;
+          background: Canvas; box-shadow: 0 0 0 1px rgba(128,128,128,.5); font-size: .8em; text-align: center; }
+  .tile.sel { box-shadow: 0 0 0 3px CanvasText; }
+  .tile .src { max-width: 100%; overflow-wrap: anywhere; overflow: hidden;
+               display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 7; line-clamp: 7; }
+  .tile .num { opacity: .6; }
+  .tile .quick { position: absolute; top: 2px; right: 2px; display: none; gap: 2px; }
+  @media (hover: hover) and (pointer: fine) {
+    .tile:hover .quick { display: flex; }
+    body.is-dragging .tile:hover .quick { display: none; }
+  }
+  .tile.drag-src { opacity: .2; }
+  .ghost { position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; will-change: transform; }
+  .ghost .badge { position: absolute; top: -4px; right: -4px; background: CanvasText; color: Canvas; font-size: 12px; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .chip.ghost { background: Canvas; }
+  body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+
+  #drop { position: fixed; inset: 8px; z-index: 900; display: none; outline: 2px dashed CanvasText; pointer-events: none; }
+  body.file-over #drop { display: block; }
+  footer { margin-top: 48px; padding-top: 12px; border-top: 1px solid rgba(128,128,128,.4); font-size: .85em; opacity: .8; }
+  footer ul { margin: 6px 0; padding-left: 1.2em; }
+  footer li { margin: 3px 0; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+<script src="lib/pdf-lib.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Merge PDFs</h1>
+    <p>Combine, reorder, remove pages in-browser</p>
+  </header>
+
+  <section id="empty">
+    <p><button data-add>Add PDFs/images…</button> You can also drop files anywhere on the page.</p>
+  </section>
+
+  <div id="bar">
+    <div id="chips" aria-label="Files"></div>
+    <div id="actions">
+      <span id="count"></span>
+      <span id="selActions" hidden>
+        <button id="delSel" title="Delete selected (Delete)">Delete</button>
+        <button id="clearSel" title="Deselect (Esc)">Deselect</button>
+      </span>
+      <span class="spacer"></span>
+      <button id="undo" title="Undo (⌘Z / Ctrl+Z)" disabled>Undo</button>
+      <button data-add>Add…</button>
+      <label class="sr" for="fname">File name</label>
+      <input id="fname" value="merged.pdf" spellcheck="false" autocomplete="off">
+      <button id="save">Download</button>
+    </div>
+    <div id="status" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="grid" role="listbox" aria-multiselectable="true" aria-label="Pages"></div>
+
+  <footer>
+    <p>Built on <a href="https://pdf-lib.js.org/">pdf-lib</a> 1.17.1 by Andrew Dillon and contributors. MIT (<a href="lib/LICENSE-pdf-lib.md">license</a>)</p>
+    <ul>
+      <li><a href="https://github.com/nodeca/pako">pako</a> by Vitaly Puzrin and Andrei Tuputcyn (a port of zlib by Jean-loup Gailly and Mark Adler; MIT and zlib licenses)</li>
+      <li><a href="https://github.com/photopea/UPNG.js">UPNG.js</a> by Photopea (MIT)</li>
+      <li>font metrics from Adobe's Core 14 AFM files via <a href="https://github.com/Hopding/standard-fonts">@pdf-lib/standard-fonts</a> (MIT)</li>
+      <li>tslib by Microsoft (Apache 2.0) (<a href="lib/LICENSE-pdf-lib-bundled.txt">licenses</a>)</li>
+    </ul>
+  </footer>
+</div>
+
+<input id="file" type="file" multiple accept="application/pdf,.pdf,image/*" hidden>
+<div id="drop"></div>
+
+<script type="module">
+const { PDFDocument } = window.PDFLib;
+
+const $ = s => document.querySelector(s);
+const grid = $('#grid'), chips = $('#chips'), fileInput = $('#file'), fname = $('#fname');
+
+/** @type {Map<string, any>} */ const sources = new Map();
+/** @type {Map<string, any>} */ const pageById = new Map();
+let pages = [];
+let selected = new Set();
+let anchorId = null;
+let undoStack = [];
+let lastDragEnd = 0;
+let busy = 0;   // count of in-flight add/save operations
+let nextId = 1;
+const uid = p => p + (nextId++);
+
+const ICON_X = '×';
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, ms = 4000) {
+  const t = $('#status');
+  t.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.textContent = ''; }, ms);
+}
+
+/* ---------- undo ---------- */
+function snapshot() {
+  return { pages: [...pages], sel: [...selected] };
+}
+function pushUndo() {
+  undoStack.push(snapshot());
+  if (undoStack.length > 100) undoStack.shift();
+}
+function undo() {
+  const s = undoStack.pop();
+  if (!s) return;
+  pages = s.pages;
+  selected = new Set(s.sel);
+  render();
+}
+
+/* ---------- adding files ---------- */
+function isPdf(f) { return f.type === 'application/pdf' || /\.pdf$/i.test(f.name); }
+function isImage(f) { return f.type.startsWith('image/') || /\.(jpe?g|png|gif|webp|bmp|avif|heic|heif)$/i.test(f.name); }
+
+async function addFiles(list) {
+  const files = [...list];
+  if (!files.length) return;
+  const usable = files.filter(f => isPdf(f) || isImage(f));
+  const skipped = files.length - usable.length;
+  if (!usable.length) { toast('Only PDFs and images can be added.'); return; }
+  busy++; updateBar();
+  const before = snapshot();
+  const added = [];
+  const errors = [];
+  for (const f of usable) {
+    toast(`Reading ${f.name}…`, 60000);
+    try {
+      const newPages = isPdf(f) ? await addPdf(f) : await addImage(f);
+      added.push(...newPages);
+    } catch (e) {
+      errors.push(`${f.name} ${e.message || 'couldn’t be read'}`);
+    }
+  }
+  if (added.length) {
+    undoStack.push(before);
+    pages = pages.concat(added);
+    // Starting from empty: name the output after the first file.
+    if (pages.length === added.length) fname.value = sources.get(added[0].src).name.replace(/\.[^.]+$/, '') + '-merged.pdf';
+  }
+  busy--;
+  render();
+  if (skipped) errors.push(`Skipped ${skipped} file${skipped > 1 ? 's' : ''} that ${skipped > 1 ? 'aren’t PDFs or images' : 'isn’t a PDF or image'}`);
+  if (errors.length) toast(errors.join(' · '), 7000);
+  else { clearTimeout(toastTimer); $('#status').textContent = ''; }
+}
+
+function newSource(name, kind) {
+  const id = uid('s');
+  const src = { id, name, kind };
+  sources.set(id, src);
+  return src;
+}
+
+async function addPdf(f) {
+  const bytes = new Uint8Array(await f.arrayBuffer());
+  let libDoc, n;
+  try {
+    libDoc = await PDFDocument.load(bytes, { updateMetadata: false });
+    // Malformed files can load fine and only fail once the page tree is read.
+    n = libDoc.getPageCount();
+  } catch (e) {
+    if ((e && e.name === 'EncryptedPDFError') || /encrypt/i.test(String(e && e.message))) {
+      throw new Error('is encrypted or password-protected, so it can’t be merged');
+    }
+    throw new Error('couldn’t be read as a PDF');
+  }
+  if (!n) throw new Error('has no pages');
+  const src = newSource(f.name, 'pdf');
+  src.libDoc = libDoc;
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(makePage(src, i));
+  return out;
+}
+
+async function addImage(f) {
+  let bmp;
+  try { bmp = await createImageBitmap(f); }
+  catch { throw new Error('couldn’t be decoded as an image in this browser'); }
+  const w = bmp.width, h = bmp.height;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  const png = f.type === 'image/png';
+  if (!png) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+  ctx.drawImage(bmp, 0, 0);
+  // Re-encode so EXIF orientation is baked in and any browser-decodable format works.
+  const blob = await new Promise(r => c.toBlob(r, png ? 'image/png' : 'image/jpeg', 0.92));
+  if (!blob) { bmp.close(); throw new Error('couldn’t be converted'); }
+  const src = newSource(f.name, 'image');
+  src.imgBytes = new Uint8Array(await blob.arrayBuffer());
+  src.imgType = png ? 'png' : 'jpg';
+  const s = Math.min(1, 792 / Math.max(w, h));
+  src.pageW = w * s; src.pageH = h * s;
+  bmp.close();
+  return [makePage(src, 0)];
+}
+
+function makePage(src, index) {
+  const id = uid('p');
+  const el = document.createElement('div');
+  el.className = 'tile';
+  el.dataset.id = id;
+  el.tabIndex = 0;
+  el.setAttribute('role', 'option');
+  const label = src.kind === 'pdf' ? `${src.name}, page ${index + 1}` : src.name;
+  el.title = label;
+  el.innerHTML = `<div class="src"></div>${src.kind === 'pdf' ? '<div class="num"></div>' : ''}
+    <div class="quick"><button data-act="del" aria-label="Delete">${ICON_X}</button></div>`;
+  el.setAttribute('aria-label', label);
+  el.querySelector('.src').textContent = src.name.replace(/\.[^.]+$/, '');
+  if (src.kind === 'pdf') el.querySelector('.num').textContent = index + 1;
+  const p = { id, src: src.id, index, el };
+  pageById.set(id, p);
+  return p;
+}
+
+/* ---------- rendering ---------- */
+function orderedSources() {
+  const seen = new Map();
+  for (const p of pages) {
+    const s = seen.get(p.src);
+    if (s) s.n++; else seen.set(p.src, { src: sources.get(p.src), n: 1 });
+  }
+  return [...seen.values()];
+}
+
+function render() {
+  document.body.classList.toggle('has-pages', pages.length > 0);
+  const live = new Set(pages.map(p => p.id));
+  for (const id of [...selected]) if (!live.has(id)) selected.delete(id);
+  grid.replaceChildren(...pages.map(p => p.el));
+  for (const p of pages) {
+    const sel = selected.has(p.id);
+    p.el.classList.toggle('sel', sel);
+    p.el.setAttribute('aria-selected', sel);
+  }
+  chips.replaceChildren(...orderedSources().map(({ src, n }) => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.dataset.id = src.id;
+    c.title = src.name;
+    const srcPages = pages.filter(p => p.src === src.id);
+    if (srcPages.every(p => selected.has(p.id))) c.classList.add('on');
+    c.innerHTML = `<span class="name"></span> <span class="n">(${n})</span> <button aria-label="Remove file">${ICON_X}</button>`;
+    c.querySelector('.name').textContent = src.name.replace(/\.[^.]+$/, '');
+    return c;
+  }));
+  updateBar();
+}
+
+function updateBar() {
+  const n = pages.length;
+  $('#count').textContent = selected.size
+    ? `${selected.size} of ${n} selected`
+    : `${n} page${n === 1 ? '' : 's'}`;
+  $('#selActions').hidden = selected.size === 0;
+  $('#undo').disabled = undoStack.length === 0;
+  $('#save').disabled = busy || n === 0;
+}
+
+/* ---------- operations ---------- */
+function remove(ids) {
+  if (!ids.length) return;
+  pushUndo();
+  const kill = new Set(ids);
+  pages = pages.filter(p => !kill.has(p.id));
+  for (const id of ids) selected.delete(id);
+  render();
+  toast(`Removed ${ids.length} page${ids.length > 1 ? 's' : ''}.`, 2500);
+}
+function removeSource(srcId) {
+  remove(pages.filter(p => p.src === srcId).map(p => p.id));
+}
+
+/* ---------- export ---------- */
+async function save() {
+  if (!pages.length || busy) return;
+  busy++; updateBar();
+  toast('Merging…', 600000);
+  try {
+    // Snapshot the layout: files can still be added (and pages edited) while we await below.
+    const list = pages.map(p => ({ src: p.src, index: p.index }));
+    const out = await PDFDocument.create();
+    const wanted = new Map();
+    for (const p of list) {
+      if (sources.get(p.src).kind !== 'pdf') continue;
+      if (!wanted.has(p.src)) wanted.set(p.src, []);
+      wanted.get(p.src).push(p.index);
+    }
+    const copies = new Map();
+    for (const [srcId, idxs] of wanted) {
+      const uniq = [...new Set(idxs)];
+      const copied = await out.copyPages(sources.get(srcId).libDoc, uniq);
+      copies.set(srcId, new Map(uniq.map((ix, k) => [ix, copied[k]])));
+    }
+    const embedded = new Map();
+    for (const p of list) {
+      const src = sources.get(p.src);
+      if (src.kind === 'pdf') {
+        out.addPage(copies.get(p.src).get(p.index));
+      } else {
+        let img = embedded.get(src.id);
+        if (!img) {
+          img = src.imgType === 'png' ? await out.embedPng(src.imgBytes) : await out.embedJpg(src.imgBytes);
+          embedded.set(src.id, img);
+        }
+        const page = out.addPage([src.pageW, src.pageH]);
+        page.drawImage(img, { x: 0, y: 0, width: src.pageW, height: src.pageH });
+      }
+    }
+    out.setProducer('Merge PDFs (pdf-lib, in-browser)');
+    const bytes = await out.save();
+    let name = (fname.value.trim() || 'merged').replace(/[\\/:*?"<>|]+/g, '-');
+    if (!/\.pdf$/i.test(name)) name += '.pdf';
+    deliver(bytes, name);
+  } catch (e) {
+    console.error(e);
+    toast('Merging failed: ' + (e && e.message ? e.message : e), 8000);
+  } finally {
+    if ($('#status').textContent === 'Merging…') { clearTimeout(toastTimer); $('#status').textContent = ''; }
+    busy--; updateBar();
+  }
+}
+
+function deliver(bytes, name) {
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+/* ---------- pointer-based sortable (mouse + touch) ---------- */
+function makeSortable(container, itemSel, opts) {
+  let st = null;
+  const FLIP_MS = 150;
+
+  container.addEventListener('pointerdown', e => {
+    if (st || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (e.target.closest('button, input')) return;
+    const item = e.target.closest(itemSel);
+    if (!item || !container.contains(item)) return;
+    st = { item, pid: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY,
+           touch: e.pointerType !== 'mouse', active: false, lock: 0 };
+    if (st.touch) st.timer = setTimeout(() => { if (st && !st.active) begin(); }, 260);
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (!st || e.pointerId !== st.pid) return;
+    st.x = e.clientX; st.y = e.clientY;
+    if (!st.active) {
+      if (Math.hypot(st.x - st.x0, st.y - st.y0) > 6) {
+        if (st.touch) { clearTimeout(st.timer); st = null; }   // it's a scroll
+        else begin();
+      }
+      return;
+    }
+    position(); reorder();
+  }, { passive: true });
+
+  const up = e => {
+    if (!st || e.pointerId !== st.pid) return;
+    clearTimeout(st.timer);
+    const s = st; st = null;
+    if (s.active) finish(s);
+  };
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+  document.addEventListener('touchmove', e => { if (st && st.active) e.preventDefault(); }, { passive: false });
+  container.addEventListener('contextmenu', e => { if (st) e.preventDefault(); });
+
+  function begin() {
+    st.active = true;
+    const r = st.item.getBoundingClientRect();
+    st.offX = st.x0 - r.left; st.offY = st.y0 - r.top;
+    st.ghost = opts.ghost(st.item);
+    st.ghost.classList.add('ghost');
+    st.ghost.style.width = r.width + 'px';
+    document.body.append(st.ghost);
+    const srcs = opts.dragSet ? opts.dragSet(st.item) : [st.item];
+    for (const el of srcs) el.classList.add('drag-src');
+    document.body.classList.add('is-dragging');
+    try { st.item.setPointerCapture(st.pid); } catch {}
+    if (st.touch && navigator.vibrate) { try { navigator.vibrate(8); } catch {} }
+    position();
+    const loop = () => {
+      if (!st || !st.active) return;
+      const top = opts.topInset ? opts.topInset() : 0;
+      const edge = 56;
+      let dy = 0;
+      if (st.y < top + edge) dy = -Math.min(24, (top + edge - st.y) / 3);
+      else if (st.y > innerHeight - edge) dy = Math.min(24, (st.y - (innerHeight - edge)) / 3);
+      if (dy) { window.scrollBy(0, dy); reorder(); }
+      st.raf = requestAnimationFrame(loop);
+    };
+    st.raf = requestAnimationFrame(loop);
+  }
+
+  function position() {
+    st.ghost.style.transform = `translate(${st.x - st.offX}px, ${st.y - st.offY}px) scale(1.05)`;
+  }
+
+  function flip(mutate) {
+    const items = [...container.querySelectorAll(itemSel)];
+    const before = new Map(items.map(i => [i, i.getBoundingClientRect()]));
+    mutate();
+    for (const i of items) {
+      const a = before.get(i), b = i.getBoundingClientRect();
+      const dx = a.left - b.left, dy = a.top - b.top;
+      if (dx || dy) i.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
+                              { duration: FLIP_MS, easing: 'ease-out' });
+    }
+    st.lock = performance.now() + FLIP_MS * 0.6;
+  }
+
+  function reorder() {
+    if (performance.now() < st.lock) return;
+    const item = st.item;
+    const hit = document.elementFromPoint(st.x, st.y);
+    const tgt = hit && hit.closest(itemSel);
+    if (tgt && tgt !== item && container.contains(tgt)) {
+      const r = tgt.getBoundingClientRect();
+      const after = st.x > r.left + r.width / 2;
+      if (after && tgt.nextElementSibling !== item) flip(() => tgt.after(item));
+      else if (!after && tgt.previousElementSibling !== item) flip(() => tgt.before(item));
+      return;
+    }
+    if (!tgt) {
+      const items = container.querySelectorAll(itemSel);
+      const last = items[items.length - 1];
+      if (!last || last === item) return;
+      const r = last.getBoundingClientRect();
+      const cr = container.getBoundingClientRect();
+      if (st.x >= cr.left && st.x <= cr.right &&
+          (st.y > r.bottom || (st.y > r.top && st.x > r.right))) flip(() => container.append(item));
+    }
+  }
+
+  function finish(s) {
+    cancelAnimationFrame(s.raf);
+    s.ghost.remove();
+    for (const el of document.querySelectorAll('.drag-src')) el.classList.remove('drag-src');
+    document.body.classList.remove('is-dragging');
+    lastDragEnd = performance.now();
+    opts.onEnd(s.item, [...container.querySelectorAll(itemSel)].map(el => el.dataset.id));
+  }
+}
+
+const barHeight = () => $('#bar').getBoundingClientRect().bottom;
+
+makeSortable(grid, '.tile', {
+  topInset: barHeight,
+  dragSet(item) {
+    const id = item.dataset.id;
+    if (selected.has(id) && selected.size > 1) return pages.filter(p => selected.has(p.id)).map(p => p.el);
+    return [item];
+  },
+  ghost(item) {
+    const g = item.cloneNode(true);
+    g.querySelector('.quick').remove();
+    if (selected.has(item.dataset.id) && selected.size > 1) {
+      const b = document.createElement('div'); b.className = 'badge'; b.textContent = selected.size; g.append(b);
+    }
+    return g;
+  },
+  onEnd(item, ids) {
+    const dragged = item.dataset.id;
+    let order = ids.map(id => pageById.get(id));
+    if (selected.has(dragged) && selected.size > 1) {
+      const block = pages.filter(p => selected.has(p.id));
+      order = order.filter(p => !selected.has(p.id) || p.id === dragged);
+      order.splice(order.findIndex(p => p.id === dragged), 1, ...block);
+    }
+    if (order.every((p, i) => p === pages[i])) { render(); return; }
+    pushUndo();
+    pages = order;
+    render();
+  },
+});
+
+makeSortable(chips, '.chip', {
+  topInset: () => 0,
+  ghost(item) { return item.cloneNode(true); },
+  onEnd(item, ids) {
+    const rank = new Map(ids.map((id, i) => [id, i]));
+    const order = pages.map((p, i) => [p, i])
+      .sort((a, b) => (rank.get(a[0].src) - rank.get(b[0].src)) || (a[1] - b[1]))
+      .map(x => x[0]);
+    if (order.every((p, i) => p === pages[i])) { render(); return; }
+    pushUndo();
+    pages = order;
+    render();
+  },
+});
+
+/* ---------- clicks & keys ---------- */
+grid.addEventListener('click', e => {
+  if (performance.now() - lastDragEnd < 250) return;
+  const btn = e.target.closest('button[data-act]');
+  const tile = e.target.closest('.tile');
+  if (!tile) return;
+  const id = tile.dataset.id;
+  if (btn) {
+    const ids = selected.has(id) && selected.size > 1 ? [...selected] : [id];
+    remove(ids);
+    return;
+  }
+  if (e.shiftKey && anchorId && pageById.has(anchorId)) {
+    const a = pages.findIndex(p => p.id === anchorId), b = pages.findIndex(p => p.id === id);
+    if (a >= 0 && b >= 0) {
+      const [lo, hi] = a < b ? [a, b] : [b, a];
+      for (let i = lo; i <= hi; i++) selected.add(pages[i].id);
+    }
+  } else {
+    if (selected.has(id)) selected.delete(id); else selected.add(id);
+    anchorId = id;
+  }
+  render();
+});
+grid.addEventListener('keydown', e => {
+  const tile = e.target.closest('.tile');
+  if (!tile || e.target !== tile || (e.key !== 'Enter' && e.key !== ' ')) return;
+  e.preventDefault();
+  const id = tile.dataset.id;
+  if (selected.has(id)) selected.delete(id); else selected.add(id);
+  anchorId = id;
+  render();
+  pageById.get(id).el.focus();
+});
+
+chips.addEventListener('click', e => {
+  if (performance.now() - lastDragEnd < 250) return;
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const srcId = chip.dataset.id;
+  if (e.target.closest('button')) { removeSource(srcId); return; }
+  const ids = pages.filter(p => p.src === srcId).map(p => p.id);
+  const all = ids.every(id => selected.has(id));
+  for (const id of ids) all ? selected.delete(id) : selected.add(id);
+  render();
+});
+
+$('#delSel').onclick = () => remove([...selected]);
+$('#clearSel').onclick = () => { selected.clear(); render(); };
+$('#undo').onclick = undo;
+$('#save').onclick = save;
+for (const b of document.querySelectorAll('[data-add]')) b.onclick = () => fileInput.click();
+fileInput.onchange = () => { const f = fileInput.files; addFiles(f).finally(() => { fileInput.value = ''; }); };
+
+document.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input, textarea')) return;
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (mod && e.key.toLowerCase() === 'a' && pages.length) { e.preventDefault(); selected = new Set(pages.map(p => p.id)); render(); }
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && selected.size) { e.preventDefault(); remove([...selected]); }
+  else if (e.key === 'Escape' && selected.size) { selected.clear(); render(); }
+});
+
+/* ---------- file drag & drop ---------- */
+let dragDepth = 0;
+const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; document.body.classList.add('file-over'); });
+window.addEventListener('dragover', e => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('file-over'); } });
+window.addEventListener('drop', e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault(); dragDepth = 0; document.body.classList.remove('file-over');
+  addFiles(e.dataTransfer.files);
+});
+
+render();
+</script>
+</body>
+</html>

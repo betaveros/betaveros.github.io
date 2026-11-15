@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crossword transcriber/parser</title>
+<style>
+body { font-family: sans-serif; max-width: 48em; margin: 1em auto; padding: 0 1em; }
+h1 { text-align: center; font-weight: normal; margin: 0; }
+aside { text-align: center; }
+svg { display: block; max-width: 100%; height: auto; touch-action: none; }
+textarea { width: 100%; box-sizing: border-box; }
+input[type=number] { width: 4em; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em 1.5em; }
+.controls > * { white-space: nowrap; }
+#import { background: #def; padding: 0.5em; }
+details.advanced { background: #ffc; padding: 0.5em; margin-top: 1em; }
+details.advanced input[type=text] { width: 20em; font-family: monospace; }
+</style>
+</head>
+<body>
+<h1>Crossword transcriber/parser</h1>
+<aside>vibecoded — see <a href="https://www.npinsker.me/puzzles/crossword/">npinsker's crossword parser</a> or <a href="https://xword.group/">xword.group</a> if that's not your thing</aside>
+<p class="controls">
+  <label>Rows <input id="rcount" type="number" min="1"></label>
+  <label>Columns <input id="ccount" type="number" min="1"></label>
+  <span>
+    <label><input type="radio" name="mode" value="block" checked> Block</label>
+    <label><input type="radio" name="mode" value="bar"> Bar</label>
+  </span>
+  <label>Symmetry
+    <select id="sym">
+      <option value="none">None</option>
+      <option value="rot180" selected>180° rotation</option>
+      <option value="rot90">90° rotation</option>
+      <option value="lr">Left–right mirror</option>
+      <option value="ud">Up–down mirror</option>
+      <option value="both">Both mirrors</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="num" checked> Auto-number</label>
+  <span>
+    <button id="undo">Undo</button>
+    <button id="clear">Clear</button>
+  </span>
+</p>
+<p id="import" hidden>
+  Paste or drag an image in, or import: <input type="file" id="importFile" accept="image/*">
+  <span id="importMsg"></span>
+  <span id="importControls" hidden><br>
+    <label>Rows <input type="number" id="importRows" min="1"></label>
+    <label>Columns <input type="number" id="importCols" min="1"></label>
+    <label>Block threshold <input type="number" id="blockThresh" min="0" max="1" step="0.01"></label>
+    <label>Bar threshold <input type="number" id="barThresh" min="0" step="0.01"></label>
+  </span>
+</p>
+<svg id="grid" xmlns="http://www.w3.org/2000/svg"></svg>
+<p>
+  <button id="copy">Copy for Sheets</button>
+  <span id="status"></span>
+</p>
+<textarea id="out" rows="8" spellcheck="false"></textarea>
+<details class="advanced">
+  <summary>Advanced</summary>
+  <p>Raw CSS inserted into the exported HTML, not validated. Bad values will break the export.</p>
+  <p><label>Bar border <input type="text" id="barStyle" value="3px solid #000000" spellcheck="false"></label></p>
+  <p><label>Block cell style <input type="text" id="blockStyle" value="background-color:#000000;" spellcheck="false"></label></p>
+</details>
+
+<script>
+const CELL = 32;        // editor cell size (svg units)
+const PAD = 3;
+const MAX_SIZE = 100;   // max rows/columns
+
+const $ = id => document.getElementById(id);
+const svg = $('grid'), out = $('out'), symSel = $('sym'), numBox = $('num');
+
+let state = { R: 15, C: 15, blocks: new Set(), bars: new Set() };
+let hover = null;      // {type:'cell', r, c} | {type:'edge', k}
+let stroke = null;     // active drag
+const history = [];
+
+// ---------- undo ----------
+function pushHistory() {
+  history.push({ R: state.R, C: state.C, blocks: new Set(state.blocks), bars: new Set(state.bars) });
+}
+function undo() {
+  if (!history.length) return;
+  state = history.pop();
+  render();
+}
+
+// ---------- model ----------
+const key = (r, c) => r + ',' + c;
+const mode = () => document.querySelector('input[name=mode]:checked').value;
+const inRange = (r, c) => r >= 0 && c >= 0 && r < state.R && c < state.C;
+const isOpen = (r, c) => inRange(r, c) && !state.blocks.has(key(r, c));
+const hasBar = (dir, r, c) => state.bars.has(dir + ',' + r + ',' + c);
+
+// edge between two orthogonally adjacent cells -> canonical key
+// h,r,c = bar below (r,c); v,r,c = bar right of (r,c)
+function edgeKey(r1, c1, r2, c2) {
+  if (r1 === r2) return 'v,' + r1 + ',' + Math.min(c1, c2);
+  return 'h,' + Math.min(r1, r2) + ',' + c1;
+}
+// edge key -> [r1, c1, r2, c2] of the two cells it separates
+function edgeCells(k) {
+  const [dir, rs, cs] = k.split(','); const r = +rs, c = +cs;
+  return dir === 'h' ? [r, c, r + 1, c] : [r, c, r, c + 1];
+}
+function edgeValid(k) {
+  const [r1, c1, r2, c2] = edgeCells(k);
+  return inRange(r1, c1) && inRange(r2, c2);
+}
+
+// list of (r, c) -> [r, c] maps for the selected symmetry (identity included)
+function transforms() {
+  const { R, C } = state;
+  const id = (r, c) => [r, c];
+  const r180 = (r, c) => [R - 1 - r, C - 1 - c];
+  const lr = (r, c) => [r, C - 1 - c];
+  const ud = (r, c) => [R - 1 - r, c];
+  const r90 = (r, c) => [c, R - 1 - r];
+  const r270 = (r, c) => [C - 1 - c, r];
+  switch (symSel.value) {
+    case 'rot180': return [id, r180];
+    case 'rot90': return R === C ? [id, r90, r180, r270] : [id, r180];
+    case 'lr': return [id, lr];
+    case 'ud': return [id, ud];
+    case 'both': return [id, lr, ud, r180];
+    default: return [id];
+  }
+}
+function setIn(set, k, value) { value ? set.add(k) : set.delete(k); }
+
+// set cell (r, c) and its symmetric images to block (value=true) or open
+function applyCell(r, c, value) {
+  for (const f of transforms()) {
+    const [rr, cc] = f(r, c);
+    setIn(state.blocks, key(rr, cc), value);
+  }
+}
+// set edge k and its symmetric images to bar (value=true) or no bar
+function applyEdge(k, value) {
+  const [r1, c1, r2, c2] = edgeCells(k);
+  for (const f of transforms()) {
+    const [rr1, cc1] = f(r1, c1), [rr2, cc2] = f(r2, c2);
+    setIn(state.bars, edgeKey(rr1, cc1, rr2, cc2), value);
+  }
+}
+
+// resize (clamped to MAX_SIZE), dropping blocks/bars that fall outside;
+// invalid sizes (blank, < 1) just restore the inputs
+function setSize(R, C) {
+  if (!(R >= 1 && C >= 1)) { render(); return; }
+  R = Math.min(MAX_SIZE, R | 0);
+  C = Math.min(MAX_SIZE, C | 0);
+  if (R === state.R && C === state.C) { render(); return; }
+  pushHistory();
+  state.R = R; state.C = C;
+  for (const k of [...state.blocks]) {
+    const [r, c] = k.split(',').map(Number);
+    if (!inRange(r, c)) state.blocks.delete(k);
+  }
+  for (const k of [...state.bars]) if (!edgeValid(k)) state.bars.delete(k);
+  render();
+}
+
+// -> { key(r, c): clue number } for each cell that starts an across or down entry
+function numbers() {
+  const nums = {}; let count = 0;
+  for (let r = 0; r < state.R; r++) for (let c = 0; c < state.C; c++) {
+    if (!isOpen(r, c)) continue;
+    const across = (!isOpen(r, c - 1) || hasBar('v', r, c - 1))
+      && isOpen(r, c + 1) && !hasBar('v', r, c);
+    const down = (!isOpen(r - 1, c) || hasBar('h', r - 1, c))
+      && isOpen(r + 1, c) && !hasBar('h', r, c);
+    if (across || down) nums[key(r, c)] = ++count;
+  }
+  return nums;
+}
+
+// ---------- hit testing ----------
+// pointer event -> {x, y} in svg units
+function svgPoint(e) {
+  const p = svg.createSVGPoint();
+  p.x = e.clientX; p.y = e.clientY;
+  const q = p.matrixTransform(svg.getScreenCTM().inverse());
+  return { x: q.x, y: q.y };
+}
+function cellAt(x, y) {
+  const r = Math.floor(y / CELL), c = Math.floor(x / CELL);
+  return inRange(r, c) ? { r, c } : null;
+}
+// (x, y) in svg units -> key of the nearest valid edge, or null. With
+// `strict`, only edges the point is close to and away from the edge's ends
+// count, so dragging along one line doesn't catch the perpendicular edges it
+// passes, but turning a corner picks up the new direction.
+function nearestEdge(x, y, strict) {
+  const gx = x / CELL, gy = y / CELL;
+  const vLine = Math.round(gx), hLine = Math.round(gy);
+  const candidates = [
+    { dist: Math.abs(gx - vLine), along: gy - Math.floor(gy), k: 'v,' + Math.floor(gy) + ',' + (vLine - 1) },
+    { dist: Math.abs(gy - hLine), along: gx - Math.floor(gx), k: 'h,' + (hLine - 1) + ',' + Math.floor(gx) },
+  ].sort((e1, e2) => e1.dist - e2.dist);
+  for (const { dist, along, k } of candidates) {
+    if (strict && (dist > 0.3 || along < 0.2 || along > 0.8)) continue;
+    if (edgeValid(k)) return k;
+  }
+  return null;
+}
+// (x, y) -> cell or edge target for the current mode (same shape as `hover`), or null
+function targetAt(x, y, strict) {
+  if (mode() === 'block') {
+    const cell = cellAt(x, y);
+    return cell && { type: 'cell', ...cell };
+  }
+  const k = nearestEdge(x, y, strict);
+  return k && { type: 'edge', k };
+}
+const targetKey = t => t && (t.type === 'cell' ? key(t.r, t.c) : t.k);
+// apply the active stroke's value to target, at most once per stroke
+function paint(target) {
+  if (!target || target.type !== stroke.type) return;
+  const k = targetKey(target);
+  if (stroke.seen.has(k)) return;
+  stroke.seen.add(k);
+  target.type === 'cell' ? applyCell(target.r, target.c, stroke.value) : applyEdge(target.k, stroke.value);
+}
+
+svg.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const p = svgPoint(e);
+  const target = targetAt(p.x, p.y, false);
+  if (!target) return;
+  e.preventDefault();
+  svg.setPointerCapture(e.pointerId);
+  pushHistory();
+  const value = target.type === 'cell' ? !state.blocks.has(key(target.r, target.c)) : !state.bars.has(target.k);
+  stroke = { type: target.type, value, seen: new Set(), last: p };
+  paint(target);
+  hover = target;
+  render();
+});
+svg.addEventListener('pointermove', e => {
+  const p = svgPoint(e);
+  if (stroke) {
+    // sample along the segment so fast drags don't skip edges/cells
+    const { x: x0, y: y0 } = stroke.last;
+    const steps = Math.max(1, Math.ceil(Math.hypot(p.x - x0, p.y - y0) / (CELL / 10)));
+    for (let i = 1; i <= steps; i++) {
+      paint(targetAt(x0 + (p.x - x0) * i / steps, y0 + (p.y - y0) * i / steps, true));
+    }
+    stroke.last = p;
+  }
+  const next = targetAt(p.x, p.y, false);
+  if (!stroke && targetKey(next) === targetKey(hover)) return;
+  hover = next;
+  render();
+});
+const endStroke = () => { if (stroke) { stroke = null; render(); } };
+svg.addEventListener('pointerup', endStroke);
+svg.addEventListener('pointercancel', endStroke);
+svg.addEventListener('pointerleave', () => { if (!stroke) { hover = null; render(); } });
+
+// ---------- rendering ----------
+// edge key -> [x1, y1, x2, y2] of its line in svg units
+function edgeLine(k) {
+  const [dir, rs, cs] = k.split(','); const r = +rs, c = +cs;
+  return dir === 'h'
+    ? [c * CELL, (r + 1) * CELL, (c + 1) * CELL, (r + 1) * CELL]
+    : [(c + 1) * CELL, r * CELL, (c + 1) * CELL, (r + 1) * CELL];
+}
+
+// -> new svg element with the given attributes (and text content, if any)
+function svgEl(tag, attrs, text) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [name, value] of Object.entries(attrs)) el.setAttribute(name, value);
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
+let lastHtml = null; // last export written to the textarea
+
+// redraw the svg and controls from state; also refresh the export textarea if
+// the export changed (so hovering doesn't clobber manual edits to it)
+function render() {
+  const { R, C } = state;
+  const w = C * CELL + 2 * PAD, h = R * CELL + 2 * PAD;
+  svg.setAttribute('viewBox', `${-PAD} ${-PAD} ${w} ${h}`);
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+  const nums = numBox.checked ? numbers() : {};
+  const frag = document.createDocumentFragment();
+  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+    const isBlock = state.blocks.has(key(r, c));
+    frag.append(svgEl('rect', { x: c * CELL, y: r * CELL, width: CELL, height: CELL,
+      fill: isBlock ? '#000' : '#fff', stroke: '#000', 'stroke-width': 1 }));
+    const num = nums[key(r, c)];
+    if (num) frag.append(svgEl('text', { x: c * CELL + 2, y: r * CELL + 10, 'font-size': 9 }, num));
+  }
+  for (const k of state.bars) {
+    const [x1, y1, x2, y2] = edgeLine(k);
+    frag.append(svgEl('line', { x1, y1, x2, y2, stroke: '#000', 'stroke-width': 5, 'stroke-linecap': 'square' }));
+  }
+  frag.append(svgEl('rect', { x: 0, y: 0, width: C * CELL, height: R * CELL, fill: 'none', stroke: '#000', 'stroke-width': 5 }));
+  if (hover && !stroke) {
+    if (hover.type === 'cell' && inRange(hover.r, hover.c)) {
+      frag.append(svgEl('rect', { x: hover.c * CELL, y: hover.r * CELL, width: CELL, height: CELL,
+        fill: '#8a8', opacity: 0.5, 'pointer-events': 'none' }));
+    } else if (hover.type === 'edge' && edgeValid(hover.k)) {
+      const [x1, y1, x2, y2] = edgeLine(hover.k);
+      frag.append(svgEl('line', { x1, y1, x2, y2, stroke: '#8a8', 'stroke-width': 5, opacity: 0.7, 'pointer-events': 'none' }));
+    }
+  }
+  svg.replaceChildren(frag);
+  $('rcount').value = R;
+  $('ccount').value = C;
+  $('undo').disabled = !history.length;
+  if (!stroke) {
+    const html = exportHtml(nums);
+    if (html !== lastHtml) { out.value = lastHtml = html; $('status').textContent = ''; }
+  }
+}
+
+// ---------- export ----------
+// clue numbers (as from numbers()) -> HTML table string for pasting into Sheets
+function exportHtml(nums) {
+  const { R, C } = state;
+  const bar = $('barStyle').value, block = $('blockStyle').value;
+  let s = '<table style="border-collapse:collapse;table-layout:fixed">\n<tbody>\n';
+  for (let r = 0; r < R; r++) {
+    s += `<tr>`;
+    for (let c = 0; c < C; c++) {
+      let style = '';
+      if (r === 0 || hasBar('h', r - 1, c)) style += `border-top:${bar};`;
+      if (c === C - 1 || hasBar('v', r, c)) style += `border-right:${bar};`;
+      if (r === R - 1 || hasBar('h', r, c)) style += `border-bottom:${bar};`;
+      if (c === 0 || hasBar('v', r, c - 1)) style += `border-left:${bar};`;
+      if (state.blocks.has(key(r, c))) style += block;
+      const num = nums[key(r, c)];
+      s += (style ? `<td style="${style}">` : '<td>') + (num || '') + '</td>';
+    }
+    s += '</tr>\n';
+  }
+  return s + '</tbody>\n</table>';
+}
+// -> tab-separated clue numbers, the plain-text fallback for copying
+function exportTsv() {
+  const nums = numBox.checked ? numbers() : {};
+  const rows = [];
+  for (let r = 0; r < state.R; r++) {
+    const row = [];
+    for (let c = 0; c < state.C; c++) row.push(nums[key(r, c)] || '');
+    rows.push(row.join('\t'));
+  }
+  return rows.join('\n');
+}
+
+// copy the textarea's HTML (plus TSV) to the clipboard, trying the
+// synchronous copy event first and the async Clipboard API as a fallback
+function copy() {
+  const html = out.value, tsv = exportTsv();
+  const status = $('status');
+  let ok = false;
+  const onCopy = e => {
+    e.clipboardData.setData('text/html', html);
+    e.clipboardData.setData('text/plain', tsv);
+    e.preventDefault();
+    ok = true;
+  };
+  document.addEventListener('copy', onCopy);
+  try { document.execCommand('copy'); } catch (e) {}
+  document.removeEventListener('copy', onCopy);
+  if (ok) { status.textContent = 'Copied'; return; }
+  try {
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([tsv], { type: 'text/plain' }),
+    })]).then(() => status.textContent = 'Copied',
+              () => status.textContent = 'Copy failed');
+  } catch (e) { status.textContent = 'Copy failed'; }
+}
+
+// ---------- controls ----------
+$('rcount').max = $('ccount').max = MAX_SIZE;
+$('rcount').addEventListener('change', e => setSize(+e.target.value, state.C));
+$('ccount').addEventListener('change', e => setSize(state.R, +e.target.value));
+$('undo').addEventListener('click', undo);
+$('clear').addEventListener('click', () => {
+  if (!state.blocks.size && !state.bars.size) return;
+  pushHistory(); state.blocks.clear(); state.bars.clear(); render();
+});
+$('copy').addEventListener('click', copy);
+numBox.addEventListener('change', render);
+for (const id of ['barStyle', 'blockStyle']) $(id).addEventListener('input', render);
+document.querySelectorAll('input[name=mode]').forEach(el => el.addEventListener('change', () => { hover = null; render(); }));
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z'
+      && !document.activeElement.matches('input[type=text], input[type=number], textarea')) {
+    e.preventDefault(); undo();
+  }
+});
+out.addEventListener('input', () => $('status').textContent = '');
+
+render();
+</script>
+
+<script>
+// ---------- image import ----------
+// Self-contained: uses state, pushHistory, render, key, edgeCells, $,
+// MAX_SIZE from above, plus the hidden #import paragraph, which this shows;
+// nothing above refers to this. Delete this <script> and #import to remove it.
+(() => {
+  $('import').hidden = false;
+  const input = $('importFile'), msg = $('importMsg'), controls = $('importControls');
+  const rowsInput = $('importRows'), colsInput = $('importCols');
+  const blockInput = $('blockThresh'), barInput = $('barThresh');
+  rowsInput.max = colsInput.max = MAX_SIZE;
+  let img = null;  // analysis of the last imported image (see analyze())
+  let meas = null; // its measurements at the current rows/cols (see measureGrid())
+
+  input.addEventListener('change', () => { if (input.files[0]) handle(input.files[0]); input.value = ''; });
+  document.addEventListener('paste', e => {
+    const f = [...(e.clipboardData ? e.clipboardData.files : [])].find(f => f.type.startsWith('image/'));
+    if (f) { e.preventDefault(); handle(f); }
+  });
+  document.addEventListener('dragover', e => {
+    if ([...e.dataTransfer.types].includes('Files')) e.preventDefault();
+  });
+  document.addEventListener('drop', e => {
+    if (!e.dataTransfer.files.length) return;
+    e.preventDefault();
+    const f = [...e.dataTransfer.files].find(f => f.type.startsWith('image/'));
+    if (f) handle(f);
+  });
+  for (const el of [blockInput, barInput])
+    el.addEventListener('input', () => { if (meas) { state = derive(); render(); } });
+  for (const el of [rowsInput, colsInput])
+    el.addEventListener('change', () => { if (img) remeasure(); });
+
+  // image file -> analyze it, reset controls, and replace the grid (undoably)
+  async function handle(file) {
+    msg.textContent = '';
+    let bmp;
+    try { bmp = await createImageBitmap(file); }
+    catch (e) { msg.textContent = 'Couldn’t read image'; return; }
+    const result = analyze(bmp);
+    bmp.close();
+    if (!result) { msg.textContent = 'No grid found'; return; }
+    img = result;
+    rowsInput.value = img.R;
+    colsInput.value = img.C;
+    blockInput.value = 0.5;
+    controls.hidden = false;
+    pushHistory();
+    remeasure();
+  }
+
+  // measure img at the rows/cols inputs, reset the bar threshold (ink scales
+  // with cell size), and replace the grid
+  function remeasure() {
+    const clamp = v => Math.max(1, Math.min(MAX_SIZE, v | 0));
+    const R = clamp(+rowsInput.value), C = clamp(+colsInput.value);
+    rowsInput.value = R; colsInput.value = C;
+    meas = measureGrid(img, R, C);
+    barInput.max = Math.max(...meas.edges.map(([, v]) => v), 1).toFixed(2);
+    barInput.value = autoBarThreshold();
+    state = derive();
+    render();
+  }
+
+  // -> new state from the measurements and current threshold values
+  function derive() {
+    const { R, C } = meas, blockThresh = +blockInput.value, barThresh = +barInput.value;
+    const blocks = new Set(), bars = new Set();
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++)
+      if (meas.cells[r * C + c] > blockThresh) blocks.add(key(r, c));
+    for (const [k, v] of meas.edges) {
+      const [r1, c1, r2, c2] = edgeCells(k);
+      if (v > barThresh && !blocks.has(key(r1, c1)) && !blocks.has(key(r2, c2))) bars.add(k);
+    }
+    return { R, C, blocks, bars };
+  }
+
+  // -> bar threshold: split edge ink values into two classes (Otsu); no
+  // bars (the max allowed) unless the heavy class is clearly heavier
+  function autoBarThreshold() {
+    const vals = meas.edges.filter(([k]) => {
+      const [r1, c1, r2, c2] = edgeCells(k);
+      return meas.cells[r1 * meas.C + c1] <= 0.5 && meas.cells[r2 * meas.C + c2] <= 0.5;
+    }).map(([, v]) => v).sort((a, b) => a - b);
+    const none = barInput.max;
+    if (vals.length < 2) return none;
+    const n = vals.length, total = vals.reduce((acc, v) => acc + v, 0);
+    let sumLo = 0, best = -1, split = -1;
+    for (let i = 1; i < n; i++) {
+      sumLo += vals[i - 1];
+      const meanLo = sumLo / i, meanHi = (total - sumLo) / (n - i);
+      const between = i * (n - i) * (meanHi - meanLo) ** 2;
+      if (between > best) { best = between; split = i; }
+    }
+    const lo = vals.slice(0, split), hi = vals.slice(split);
+    const mean = arr => arr.reduce((acc, v) => acc + v, 0) / arr.length;
+    // bars must be clearly heavier than ordinary lines (and the minority)
+    if (mean(hi) < 1.8 * mean(lo) || mean(hi) - mean(lo) < 0.75 || hi.length > lo.length) return none;
+    return ((lo[lo.length - 1] + hi[0]) / 2).toFixed(2);
+  }
+
+  // ImageBitmap -> { w, h, dark, x0, y0, bw, bh, colProf, rowProf, R, C } or
+  // null if no grid found: the darkness map, grid bounding box, line profiles,
+  // and best-guess rows/cols
+  function analyze(bmp) {
+    // --- grayscale, white background, invert if mostly dark ---
+    const scale = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const h = Math.max(1, Math.round(bmp.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    const px = ctx.getImageData(0, 0, w, h).data;
+    const dark = new Float32Array(w * h); // darkness 0..1
+    let sum = 0;
+    for (let i = 0; i < w * h; i++) {
+      dark[i] = 1 - (0.299 * px[4 * i] + 0.587 * px[4 * i + 1] + 0.114 * px[4 * i + 2]) / 255;
+      sum += dark[i];
+    }
+    if (sum / (w * h) > 0.5) for (let i = 0; i < w * h; i++) dark[i] = 1 - dark[i];
+
+    const thresh = otsu(dark);
+    const mask = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) mask[i] = dark[i] > thresh ? 1 : 0;
+
+    // --- grid extent = bounding box of largest dark connected component ---
+    const bbox = largestComponent(mask, w, h);
+    if (!bbox) return null;
+    const { x0, y0, x1, y1 } = bbox;
+    const bw = x1 - x0, bh = y1 - y0;
+    if (bw < 20 || bh < 20) return null;
+
+    // --- line profiles; fit evenly spaced lines ---
+    // "ridge" darkness: how much darker a pixel is than both pixels a few
+    // steps away across the line, so solid blocks and text edges mostly cancel
+    const colProf = new Float32Array(bw + 1), rowProf = new Float32Array(bh + 1);
+    const darkAt = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? 0 : dark[y * w + x];
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const d = dark[y * w + x];
+      colProf[x - x0] += Math.max(0, d - Math.max(darkAt(x - 3, y), darkAt(x + 3, y))) / (bh + 1);
+      rowProf[y - y0] += Math.max(0, d - Math.max(darkAt(x, y - 3), darkAt(x, y + 3))) / (bw + 1);
+    }
+    const colScores = lineScores(colProf), rowScores = lineScores(rowProf);
+    let best = null;
+    for (const [R, rowScore] of rowScores) for (const [C, colScore] of colScores) {
+      if (Math.abs(Math.log((bw / C) / (bh / R))) > 0.25) continue; // ~square cells
+      if (!best || rowScore + colScore > best.score) best = { R, C, score: rowScore + colScore };
+    }
+    if (!best) return null;
+    return { w, h, dark, x0, y0, bw, bh, colProf, rowProf, R: best.R, C: best.C };
+  }
+
+  // analysis (from analyze()), rows, cols -> { R, C, cells, edges }, where
+  // cells[r * C + c] = mean darkness 0..1 of the cell's middle, and edges is
+  // a list of [edge key, ink] for every interior edge
+  function measureGrid({ w, h, dark, x0, y0, bw, bh, colProf, rowProf }, R, C) {
+    const cellW = bw / C, cellH = bh / R;
+    // snap each line to the darkest nearby column/row of the profile
+    const snap = (prof, cellSize, N, offset) => Array.from({ length: N + 1 }, (_, i) => {
+      let bestQ = Math.round(i * cellSize), bestV = -1;
+      for (let q = Math.max(0, Math.round((i - 0.15) * cellSize)); q <= Math.min(prof.length - 1, Math.round((i + 0.15) * cellSize)); q++)
+        if (prof[q] > bestV) { bestV = prof[q]; bestQ = q; }
+      return bestQ + offset;
+    });
+    const xs = snap(colProf, cellW, C, x0), ys = snap(rowProf, cellH, R, y0);
+
+    // --- cells: mean darkness of each cell's middle ---
+    const cells = new Float32Array(R * C);
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+      let s = 0, n = 0;
+      const top = ys[r], bottom = ys[r + 1], left = xs[c], right = xs[c + 1];
+      for (let y = Math.round(top + (bottom - top) * 0.25); y <= top + (bottom - top) * 0.75; y++)
+        for (let x = Math.round(left + (right - left) * 0.25); x <= left + (right - left) * 0.75; x++) {
+          s += dark[y * w + x]; n++;
+        }
+      cells[r * C + c] = n ? s / n : 0;
+    }
+
+    // --- edges: "ink" = darkness summed across a narrow window centered
+    // on the line, median over the middle half of the edge ---
+    const halfWidth = Math.max(2, Math.round(Math.min(cellW, cellH) * 0.06));
+    // line = x (vertical) or y (horizontal) of the line; from..to = range along it
+    function ink(line, from, to, vertical) {
+      const vals = [];
+      for (let along = Math.round(from); along <= to; along++) {
+        let s = 0;
+        for (let q = line - halfWidth; q <= line + halfWidth; q++)
+          s += vertical ? (q >= 0 && q < w ? dark[along * w + q] : 0) : (q >= 0 && q < h ? dark[q * w + along] : 0);
+        vals.push(s);
+      }
+      vals.sort((a, b) => a - b);
+      return vals.length ? vals[vals.length >> 1] : 0;
+    }
+    const edges = [];
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+      const top = ys[r], bottom = ys[r + 1], left = xs[c], right = xs[c + 1];
+      if (c + 1 < C) edges.push(['v,' + r + ',' + c,
+        ink(right, top + (bottom - top) * 0.25, top + (bottom - top) * 0.75, true)]);
+      if (r + 1 < R) edges.push(['h,' + r + ',' + c,
+        ink(bottom, left + (right - left) * 0.25, left + (right - left) * 0.75, false)]);
+    }
+    return { R, C, cells, edges };
+  }
+
+  // profile -> list of [N, score] for N cells across the profile: how much
+  // darker the N-1 evenly spaced interior lines are than anything between them
+  function lineScores(prof) {
+    const len = prof.length - 1, scores = [];
+    const maxIn = (lo, hi) => {
+      let v = 0;
+      for (let q = Math.max(0, Math.round(lo)); q <= Math.min(len, Math.round(hi)); q++) v = Math.max(v, prof[q]);
+      return v;
+    };
+    for (let N = 3; N <= MAX_SIZE && len / N >= 6; N++) {
+      const cellSize = len / N, tol = Math.max(1, cellSize * 0.1);
+      let lines = 0, gaps = 0;
+      for (let i = 1; i < N; i++) lines += maxIn(i * cellSize - tol, i * cellSize + tol);
+      for (let i = 0; i < N; i++) gaps += maxIn(i * cellSize + tol + 1, (i + 1) * cellSize - tol - 1);
+      scores.push([N, lines / (N - 1) - gaps / N]);
+    }
+    return scores;
+  }
+
+  // values in 0..1 -> threshold separating them into two classes (Otsu's method)
+  function otsu(vals) {
+    const hist = new Float64Array(256);
+    for (const v of vals) hist[Math.min(255, Math.floor(v * 256))]++;
+    let total = vals.length, sumAll = 0;
+    for (let i = 0; i < 256; i++) sumAll += i * hist[i];
+    // B = background (bins <= i), F = foreground
+    let weightB = 0, sumB = 0, best = 0, bestT = 128;
+    for (let i = 0; i < 256; i++) {
+      weightB += hist[i]; if (!weightB) continue;
+      const weightF = total - weightB; if (!weightF) break;
+      sumB += i * hist[i];
+      const meanB = sumB / weightB, meanF = (sumAll - sumB) / weightF;
+      const between = weightB * weightF * (meanB - meanF) ** 2;
+      if (between > best) { best = between; bestT = i; }
+    }
+    return (bestT + 0.5) / 256;
+  }
+
+  // w*h 0/1 mask -> { size, x0, y0, x1, y1 } bounding box of its largest
+  // 4-connected component, or null if empty
+  function largestComponent(mask, w, h) {
+    const seen = new Uint8Array(w * h), stack = new Int32Array(w * h);
+    let best = null;
+    for (let start = 0; start < w * h; start++) {
+      if (!mask[start] || seen[start]) continue;
+      let top = 0, size = 0, x0 = w, y0 = h, x1 = 0, y1 = 0;
+      stack[top++] = start; seen[start] = 1;
+      while (top) {
+        const i = stack[--top], x = i % w, y = (i - x) / w;
+        size++;
+        if (x < x0) x0 = x; if (x > x1) x1 = x;
+        if (y < y0) y0 = y; if (y > y1) y1 = y;
+        for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1])
+          if (j >= 0 && mask[j] && !seen[j]) { seen[j] = 1; stack[top++] = j; }
+      }
+      if (!best || size > best.size) best = { size, x0, y0, x1, y1 };
+    }
+    return best;
+  }
+})();
+</script>
+</body>
+</html>
