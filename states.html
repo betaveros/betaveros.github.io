@@ -75,6 +75,7 @@ for (const th of document.querySelectorAll('.state-list th')) {
 			sortDirection *= -1;
 		} else {
 			sortKey = key;
+			sortDirection = 1;
 		}
 		const tbody = document.querySelector('.state-list tbody');
 		const rows = [...tbody.rows];
